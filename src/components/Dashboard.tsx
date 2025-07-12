@@ -17,7 +17,9 @@ export function Dashboard() {
     equipment: '',
     dateFrom: '',
     dateTo: '',
-    name: ''
+    name: '',
+    status: '',
+    oldBalanceStatus: '',
   });
   const [editRecord, setEditRecord] = useState<RentalRecord | null>(null);
   const { signOut } = useAuth();
@@ -46,7 +48,7 @@ export function Dashboard() {
     let filtered = records;
 
     if (filter.equipment) {
-      filtered = filtered.filter(record => record.equipment_type === filter.equipment);
+      filtered = filtered.filter(record => record.details.some(d => d.equipment_type === filter.equipment) || record.details.some(d => filter.equipment === 'Others' && !['Cage Wheel', 'Rotator', 'புழுதி', 'Mini'].includes(d.equipment_type)));
     }
 
     if (filter.dateFrom) {
@@ -63,6 +65,25 @@ export function Dashboard() {
 
     if (filter.name) {
       filtered = filtered.filter(record => record.name.toLowerCase().includes(filter.name.toLowerCase()));
+    }
+
+    if (filter.status) {
+      filtered = filtered.filter(record => {
+        let status;
+        if (record.old_balance_status) {
+          status = record.old_balance_status;
+        } else {
+          status = (record.received_amount >= record.total_amount) ? 'paid' : 'pending';
+        }
+        return status === filter.status;
+      });
+    }
+
+    if (filter.oldBalanceStatus) {
+      filtered = filtered.filter(record => {
+        if (!record.old_balance) return false;
+        return record.old_balance_status === filter.oldBalanceStatus;
+      });
     }
 
     setFilteredRecords(filtered);
@@ -91,7 +112,7 @@ export function Dashboard() {
   };
 
   const handleClearFilters = () => {
-    setFilter({ equipment: '', dateFrom: '', dateTo: '', name: '' });
+    setFilter({ equipment: '', dateFrom: '', dateTo: '', name: '', status: '', oldBalanceStatus: '' });
   };
 
   const totalAmount = filteredRecords.reduce((sum, record) => sum + record.total_amount, 0);
@@ -194,16 +215,40 @@ export function Dashboard() {
 
         {/* Filters and Export */}
         <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-            <div className="flex flex-col gap-2 sm:flex-row sm:gap-4 w-full">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
+            <div className="flex flex-wrap gap-3 w-full">
               <select
                 value={filter.equipment}
                 onChange={(e) => setFilter(prev => ({ ...prev, equipment: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
               >
                 <option value="">அனைத்து வகைகள்</option>
                 <option value="Cage Wheel">Cage Wheel</option>
                 <option value="Rotator">Rotator</option>
+                <option value="புழுதி">புழுதி</option>
+                <option value="Mini">Mini</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={filter.status}
+                onChange={e => setFilter(prev => ({ ...prev, status: e.target.value }))}
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+              >
+                <option value="">அனைத்து நிலைகள்</option>
+                <option value="paid">முழுமையாக பெறப்பட்டது</option>
+                <option value="pending">நிலுவையில்</option>
+              </select>
+
+              {/* Old Balance Status Filter */}
+              <select
+                value={filter.oldBalanceStatus}
+                onChange={e => setFilter(prev => ({ ...prev, oldBalanceStatus: e.target.value }))}
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px]"
+              >
+                <option value="">பழைய பாக்கி நிலை</option>
+                <option value="paid">பழைய பாக்கி - முழுமையாக பெறப்பட்டது</option>
+                <option value="pending">பழைய பாக்கி - நிலுவையில்</option>
               </select>
 
               <input
@@ -211,11 +256,11 @@ export function Dashboard() {
                 value={filter.name || ''}
                 onChange={e => setFilter(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Search rental person..."
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
               />
               <button
                 onClick={handleClearFilters}
-                className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg"
+                className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg min-w-[100px]"
               >
                 Clear Filters
               </button>
