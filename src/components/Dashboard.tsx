@@ -225,6 +225,7 @@ export function Dashboard() {
                 <option value="">அனைத்து வகைகள்</option>
                 <option value="Cage Wheel">Cage Wheel</option>
                 <option value="Rotavator">Rotavator</option>
+                <option value="Dipper">Dipper</option>
                 <option value="புழுதி">புழுதி</option>
                 <option value="Mini">Mini</option>
               </select>
