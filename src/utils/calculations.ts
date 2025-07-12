@@ -1,12 +1,13 @@
-export const EQUIPMENT_RATES = {
+export const EQUIPMENT_RATES: Record<'Cage Wheel' | 'Rotator' | 'புழுதி', number> = {
   'Cage Wheel': 350,
-  'Rotator': 700
-} as const;
+  'Rotator': 700,
+  'புழுதி': 350,
+};
 
 export function calculateTotalAmount(
   acres: number,
   rounds: number,
-  equipmentType: 'Cage Wheel' | 'Rotator'
+  equipmentType: 'Cage Wheel' | 'Rotator' | 'புழுதி'
 ): number {
   const rate = EQUIPMENT_RATES[equipmentType];
   return acres * rounds * rate;

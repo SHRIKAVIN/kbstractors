@@ -186,6 +186,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                    <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
                     <option value="Rotator">Rotator (₹{EQUIPMENT_RATES['Rotator']}/சால்)</option>
                   </select>
                 </div>
@@ -227,7 +228,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
               </div>
               <div className="mt-3 pt-3 border-t border-blue-200">
                 <p className="text-lg font-bold text-blue-900">
-                  மொத்த தொகை: ₹{formatCurrency(totalAmount)}
+                  மொத்த தொகை: {formatCurrency(totalAmount)}
                 </p>
               </div>
             </div>
