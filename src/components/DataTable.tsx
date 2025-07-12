@@ -68,22 +68,15 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-top">
                     <div className="text-sm text-gray-900">
-                      <div className="font-semibold text-base">
-                        <span>{record.acres} மா</span>
-                        <span className="mx-2">•</span>
-                        <span>{record.rounds} சால்</span>
-                        <span className="mx-2">•</span>
-                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{record.equipment_type}</span>
-                      </div>
-                      {record.acres2 && record.rounds2 ? (
-                        <div className="font-semibold text-base mt-1">
-                          <span>{record.acres2} மா</span>
+                      {(record.details ?? []).map((d, idx) => (
+                        <div key={idx} className="font-semibold text-base mt-0.5">
+                          <span>{d.acres} மா</span>
                           <span className="mx-2">•</span>
-                          <span>{record.rounds2} சால்</span>
+                          <span>{d.rounds} சால்</span>
                           <span className="mx-2">•</span>
-                          <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{record.equipment_type2}</span>
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type}</span>
                         </div>
-                      ) : null}
+                      ))}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{formatCurrency(record.total_amount)}</td>
@@ -93,6 +86,11 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
                       {isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்'}
                     </span>
+                    {record.old_balance && (
+                      <div className="mt-2 inline-block bg-gray-100 rounded px-3 py-1 text-xs text-gray-700 font-medium">
+                        பழைய பாக்கி: {record.old_balance}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex justify-center gap-3">
