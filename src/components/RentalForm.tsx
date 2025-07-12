@@ -239,7 +239,13 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
 
                 {/* Details Sets */}
                 {formData.details.map((d, i) => (
-                  <div key={i} className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 mb-2 items-end">
+                  <div
+                    key={i}
+                    className={
+                      'grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 mb-2 items-end' +
+                      (i !== formData.details.length - 1 ? ' border-b-2 border-gray-400 pb-4' : '')
+                    }
+                  >
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
                       <input
@@ -253,7 +259,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                       />
                       {errors[`acres_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
                     </div>
-                    <div>
+                    <div className="sm:border-l sm:border-gray-300 sm:pl-4">
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
                       <select
                         value={d.equipment_type}

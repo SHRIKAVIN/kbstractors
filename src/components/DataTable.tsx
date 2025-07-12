@@ -29,7 +29,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
         <p className="text-sm text-gray-600 mt-1">மொத்தம் {records.length} பதிவுகள்</p>
       </div>
       <div className="overflow-x-auto max-h-[60vh]">
-        <table className="min-w-full divide-y divide-gray-200 table-fixed">
+        <table className="min-w-full border border-gray-300 table-fixed">
           <colgroup>
             <col style={{ width: '18%' }} />
             <col style={{ width: '22%' }} />
@@ -40,17 +40,17 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
             <col style={{ width: '10%' }} />
           </colgroup>
           <thead className="bg-gray-50 sticky top-0 z-10">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">பெயர்</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">விவரங்கள்</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">மொத்தம்</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">பெறப்பட்டது</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">நிலுவை</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">நிலை</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ minWidth: '90px' }}>Actions</th>
+            <tr className="divide-x divide-gray-300">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">பெயர்</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">விவரங்கள்</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">மொத்தம்</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">பெறப்பட்டது</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">நிலுவை</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">நிலை</th>
+              <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300" style={{ minWidth: '90px' }}>Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white">
             {records.map((record) => {
               let isPaid = false;
               let pendingAmount = record.total_amount - record.received_amount;
@@ -66,8 +66,8 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                 statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
               }
               return (
-                <tr key={record.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={record.id} className="hover:bg-gray-50 divide-x divide-gray-300 border-b border-gray-300">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
                         <User className="h-5 w-5 text-blue-600" />
@@ -77,7 +77,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap align-top">
+                  <td className="px-3 py-2 whitespace-nowrap align-top">
                     <div className="text-sm text-gray-900 flex flex-col gap-1">
                       {(record.details && record.details.length > 0) ? (
                         record.details.map((d, idx) => (
@@ -94,10 +94,10 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{formatCurrency(record.total_amount)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">{formatCurrency(record.received_amount)}</td>
-                  <td className={"px-6 py-4 whitespace-nowrap font-semibold " + (pendingAmount > 0 ? 'text-orange-600' : 'text-green-600')}>{formatCurrency(pendingAmount)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap font-semibold text-gray-900">{formatCurrency(record.total_amount)}</td>
+                  <td className="px-3 py-2 whitespace-nowrap font-semibold text-green-600">{formatCurrency(record.received_amount)}</td>
+                  <td className={"px-3 py-2 whitespace-nowrap font-semibold " + (pendingAmount > 0 ? 'text-orange-600' : 'text-green-600')}>{formatCurrency(pendingAmount)}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
                       {statusText}
                     </span>
@@ -107,7 +107,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-3 py-2 whitespace-nowrap text-center">
                     <div className="flex justify-center gap-3">
                       <button onClick={() => onEdit && onEdit(record)}>
                         <Pencil className="w-5 h-5 text-orange-500 hover:text-orange-700" />
