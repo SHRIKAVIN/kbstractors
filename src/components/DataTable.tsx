@@ -78,16 +78,20 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-top">
-                    <div className="text-sm text-gray-900">
-                      {(record.details ?? []).map((d, idx) => (
-                        <div key={idx} className="font-semibold text-base mt-0.5">
-                          <span>{d.acres} மா</span>
-                          <span className="mx-2">•</span>
-                          <span>{d.rounds} சால்</span>
-                          <span className="mx-2">•</span>
-                          <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type}</span>
-                        </div>
-                      ))}
+                    <div className="text-sm text-gray-900 flex flex-col gap-1">
+                      {(record.details && record.details.length > 0) ? (
+                        record.details.map((d, idx) => (
+                          <div key={idx} className="font-semibold text-base">
+                            <span>{d.acres} மா</span>
+                            <span className="mx-2">•</span>
+                            <span>{d.rounds} சால்</span>
+                            <span className="mx-2">•</span>
+                            <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{formatCurrency(record.total_amount)}</td>
