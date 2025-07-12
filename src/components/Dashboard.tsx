@@ -48,7 +48,13 @@ export function Dashboard() {
     let filtered = records;
 
     if (filter.equipment) {
-      filtered = filtered.filter(record => record.details.some(d => d.equipment_type === filter.equipment) || record.details.some(d => filter.equipment === 'Others' && !['Cage Wheel', 'Rotavator', 'புழுதி', 'Mini'].includes(d.equipment_type)));
+      filtered = filtered.filter(record =>
+        Array.isArray(record.details) &&
+        (
+          record.details.some(d => d.equipment_type === filter.equipment) ||
+          (filter.equipment === 'Others' && record.details.some(d => !['Cage Wheel', 'Rotavator', 'புழுதி', 'Mini', 'Dipper'].includes(d.equipment_type)))
+        )
+      );
     }
 
     if (filter.dateFrom) {
