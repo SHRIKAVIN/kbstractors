@@ -7,6 +7,9 @@ export interface RentalRecord {
   total_amount: number;
   received_amount: number;
   created_at: string;
+  acres2?: number;
+  equipment_type2?: 'Cage Wheel' | 'Rotator';
+  rounds2?: number;
 }
 
 export interface User {

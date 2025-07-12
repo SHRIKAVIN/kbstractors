@@ -66,13 +66,24 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-top">
                     <div className="text-sm text-gray-900">
-                      <span>{record.acres} மா</span>
-                      <span className="mx-2">•</span>
-                      <span>{record.rounds} சால்</span>
-                      <span className="mx-2">•</span>
-                      <span className="text-xs bg-gray-100 px-2 py-1 rounded">{record.equipment_type}</span>
+                      <div className="font-semibold text-base">
+                        <span>{record.acres} மா</span>
+                        <span className="mx-2">•</span>
+                        <span>{record.rounds} சால்</span>
+                        <span className="mx-2">•</span>
+                        <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{record.equipment_type}</span>
+                      </div>
+                      {record.acres2 && record.rounds2 ? (
+                        <div className="font-semibold text-base mt-1">
+                          <span>{record.acres2} மா</span>
+                          <span className="mx-2">•</span>
+                          <span>{record.rounds2} சால்</span>
+                          <span className="mx-2">•</span>
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{record.equipment_type2}</span>
+                        </div>
+                      ) : null}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{formatCurrency(record.total_amount)}</td>

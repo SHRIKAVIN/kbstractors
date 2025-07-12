@@ -16,18 +16,30 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     acres: initialData ? String(initialData.acres) : '',
     equipment_type: initialData?.equipment_type || 'Cage Wheel',
     rounds: initialData ? String(initialData.rounds) : '',
-    received_amount: initialData ? String(initialData.received_amount) : ''
+    received_amount: initialData ? String(initialData.received_amount) : '',
+    acres2: initialData?.acres2 !== undefined && initialData?.acres2 !== null ? String(initialData.acres2) : '',
+    equipment_type2: initialData?.equipment_type2 || 'Cage Wheel',
+    rounds2: initialData?.rounds2 !== undefined && initialData?.rounds2 !== null ? String(initialData.rounds2) : ''
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const totalAmount = formData.acres && formData.rounds 
+  // Calculate total for both sets
+  const totalAmount1 = formData.acres && formData.rounds
     ? calculateTotalAmount(
         parseFloat(formData.acres) || 0,
         parseFloat(formData.rounds) || 0,
-        formData.equipment_type
+        formData.equipment_type as 'Cage Wheel' | 'Rotator'
       )
     : 0;
+  const totalAmount2 = formData.acres2 && formData.rounds2
+    ? calculateTotalAmount(
+        parseFloat(formData.acres2) || 0,
+        parseFloat(formData.rounds2) || 0,
+        formData.equipment_type2 as 'Cage Wheel' | 'Rotator'
+      )
+    : 0;
+  const totalAmount = totalAmount1 + totalAmount2;
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -47,7 +59,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     if (!formData.received_amount || parseFloat(formData.received_amount) < 0) {
       newErrors.received_amount = 'சரியான பெறப்பட்ட தொகையை உள்ளிடவும்';
     }
-
+    // No required validation for acres2/rounds2
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -64,19 +76,20 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     try {
       const recordData = {
         name: formData.name.trim(),
-        acres: parseFloat(formData.acres),
+        acres: parseFloat(formData.acres || '0'),
         equipment_type: formData.equipment_type,
-        rounds: parseFloat(formData.rounds),
+        rounds: parseFloat(formData.rounds || '0'),
+        acres2: formData.acres2 ? parseFloat(formData.acres2) : undefined,
+        equipment_type2: formData.acres2 && formData.rounds2 ? formData.equipment_type2 : undefined,
+        rounds2: formData.rounds2 ? parseFloat(formData.rounds2) : undefined,
         total_amount: totalAmount,
         received_amount: parseFloat(formData.received_amount)
       };
 
       let newRecord;
       if (initialData) {
-        // Editing: update the record in the database
         newRecord = await rentalService.update(initialData.id, recordData);
       } else {
-        // Creating: call rentalService.create
         newRecord = await rentalService.create(recordData);
       }
       onSave(newRecord);
@@ -134,7 +147,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </div>
 
-            {/* Acres and Equipment Type Row */}
+            {/* Acres and Equipment Type Row 1 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="acres" className="block text-sm font-medium text-gray-700 mb-2">
@@ -154,7 +167,6 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 />
                 {errors.acres && <p className="text-red-500 text-sm mt-1">{errors.acres}</p>}
               </div>
-
               <div>
                 <label htmlFor="equipment_type" className="block text-sm font-medium text-gray-700 mb-2">
                   வகை *
@@ -170,8 +182,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 </select>
               </div>
             </div>
-
-            {/* Rounds */}
+            {/* Rounds 1 */}
             <div>
               <label htmlFor="rounds" className="block text-sm font-medium text-gray-700 mb-2">
                 சால் *
@@ -190,24 +201,71 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
               />
               {errors.rounds && <p className="text-red-500 text-sm mt-1">{errors.rounds}</p>}
             </div>
-
+            {/* Acres and Equipment Type Row 2 (optional) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="acres2" className="block text-sm font-medium text-gray-700 mb-2">
+                  மா
+                </label>
+                <input
+                  type="number"
+                  id="acres2"
+                  value={formData.acres2}
+                  onChange={(e) => handleInputChange('acres2', e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="மா எண்ணிக்கை"
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+              <div>
+                <label htmlFor="equipment_type2" className="block text-sm font-medium text-gray-700 mb-2">
+                  வகை
+                </label>
+                <select
+                  id="equipment_type2"
+                  value={formData.equipment_type2}
+                  onChange={(e) => handleInputChange('equipment_type2', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                  <option value="Rotator">Rotator (₹{EQUIPMENT_RATES['Rotator']}/சால்)</option>
+                </select>
+              </div>
+            </div>
+            {/* Rounds 2 (optional) */}
+            <div>
+              <label htmlFor="rounds2" className="block text-sm font-medium text-gray-700 mb-2">
+                சால்
+              </label>
+              <input
+                type="number"
+                id="rounds2"
+                value={formData.rounds2}
+                onChange={(e) => handleInputChange('rounds2', e.target.value)}
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="சால் எண்ணிக்கை"
+                min="0"
+                step="1"
+              />
+            </div>
             {/* Calculation Display */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center mb-3">
                 <Calculator className="w-5 h-5 text-blue-600 mr-2" />
                 <h3 className="text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-600">வகை விலை:</p>
-                  <p className="font-semibold text-gray-900">₹{EQUIPMENT_RATES[formData.equipment_type]}/சால்</p>
+                  <p className="text-gray-600">முதல் தொகுதி:</p>
+                  <p className="font-semibold text-gray-900">{formData.acres || 0} × {formData.rounds || 0} × ₹{EQUIPMENT_RATES[formData.equipment_type as 'Cage Wheel' | 'Rotator']} = {formatCurrency(totalAmount1)}</p>
                 </div>
-                <div>
-                  <p className="text-gray-600">கணக்கீடு:</p>
-                  <p className="font-semibold text-gray-900">
-                    {formData.acres || 0} × {formData.rounds || 0} × ₹{EQUIPMENT_RATES[formData.equipment_type]}
-                  </p>
-                </div>
+                {formData.acres2 && formData.rounds2 ? (
+                  <div>
+                    <p className="text-gray-600">இரண்டாம் தொகுதி:</p>
+                    <p className="font-semibold text-gray-900">{formData.acres2 || 0} × {formData.rounds2 || 0} × ₹{EQUIPMENT_RATES[formData.equipment_type2 as 'Cage Wheel' | 'Rotator']} = {formatCurrency(totalAmount2)}</p>
+                  </div>
+                ) : null}
               </div>
               <div className="mt-3 pt-3 border-t border-blue-200">
                 <p className="text-lg font-bold text-blue-900">
