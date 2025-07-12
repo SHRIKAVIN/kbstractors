@@ -52,8 +52,19 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {records.map((record) => {
-              const isPaid = record.received_amount >= record.total_amount;
-              const pendingAmount = record.total_amount - record.received_amount;
+              let isPaid = false;
+              let pendingAmount = record.total_amount - record.received_amount;
+              let statusText = '';
+              let statusClass = '';
+              if (record.old_balance_status) {
+                isPaid = record.old_balance_status === 'paid';
+                statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
+                statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
+              } else {
+                isPaid = record.received_amount >= record.total_amount;
+                statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
+                statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
+              }
               return (
                 <tr key={record.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -83,8 +94,8 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                   <td className="px-6 py-4 whitespace-nowrap font-semibold text-green-600">{formatCurrency(record.received_amount)}</td>
                   <td className={"px-6 py-4 whitespace-nowrap font-semibold " + (pendingAmount > 0 ? 'text-orange-600' : 'text-green-600')}>{formatCurrency(pendingAmount)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
-                      {isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்'}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
+                      {statusText}
                     </span>
                     {record.old_balance && (
                       <div className="mt-2 inline-block bg-gray-100 rounded px-3 py-1 text-xs text-gray-700 font-medium">

@@ -32,6 +32,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Add state for oldBalanceOnly
+  const [oldBalanceOnly, setOldBalanceOnly] = useState(false);
+  const [oldBalanceStatus, setOldBalanceStatus] = useState<'paid' | 'pending'>('pending');
 
   // Calculate total for all sets
   const totalAmount = formData.details.reduce((sum, d) => {
@@ -50,16 +53,22 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     if (!formData.name.trim()) {
       newErrors.name = 'பெயர் அவசியம்';
     }
-    formData.details.forEach((d, i) => {
-      if (!d.acres || parseFloat(d.acres) <= 0) {
-        newErrors[`acres_${i}`] = 'சரியான மா எண்ணை உள்ளிடவும்';
+    if (oldBalanceOnly) {
+      if (!formData.old_balance || !formData.old_balance.trim()) {
+        newErrors.old_balance = 'பழைய பாக்கி அவசியம்';
       }
-      if (!d.rounds || parseFloat(d.rounds) <= 0) {
-        newErrors[`rounds_${i}`] = 'சரியான சால் எண்ணை உள்ளிடவும்';
+    } else {
+      formData.details.forEach((d, i) => {
+        if (!d.acres || parseFloat(d.acres) <= 0) {
+          newErrors[`acres_${i}`] = 'சரியான மா எண்ணை உள்ளிடவும்';
+        }
+        if (!d.rounds || parseFloat(d.rounds) <= 0) {
+          newErrors[`rounds_${i}`] = 'சரியான சால் எண்ணை உள்ளிடவும்';
+        }
+      });
+      if (!formData.received_amount || parseFloat(formData.received_amount) < 0) {
+        newErrors.received_amount = 'சரியான பெறப்பட்ட தொகையை உள்ளிடவும்';
       }
-    });
-    if (!formData.received_amount || parseFloat(formData.received_amount) < 0) {
-      newErrors.received_amount = 'சரியான பெறப்பட்ட தொகையை உள்ளிடவும்';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -96,18 +105,30 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     if (!validateForm()) return;
     setLoading(true);
     try {
-      const details: RentalDetail[] = formData.details.map(d => ({
-        acres: parseFloat(d.acres),
-        equipment_type: d.equipment_type as 'Cage Wheel' | 'Rotator',
-        rounds: parseFloat(d.rounds),
-      }));
-      const recordData = {
-        name: formData.name.trim(),
-        details,
-        total_amount: totalAmount,
-        received_amount: parseFloat(formData.received_amount),
-        old_balance: formData.old_balance || undefined,
-      };
+      let recordData;
+      if (oldBalanceOnly) {
+        recordData = {
+          name: formData.name.trim(),
+          old_balance: formData.old_balance || undefined,
+          old_balance_status: oldBalanceStatus,
+          details: [],
+          total_amount: 0,
+          received_amount: 0,
+        };
+      } else {
+        const details: RentalDetail[] = formData.details.map(d => ({
+          acres: parseFloat(d.acres),
+          equipment_type: d.equipment_type as 'Cage Wheel' | 'Rotator',
+          rounds: parseFloat(d.rounds),
+        }));
+        recordData = {
+          name: formData.name.trim(),
+          details,
+          total_amount: totalAmount,
+          received_amount: parseFloat(formData.received_amount),
+          old_balance: formData.old_balance || undefined,
+        };
+      }
       let newRecord;
       if (initialData) {
         newRecord = await rentalService.update(initialData.id, recordData);
@@ -144,128 +165,187 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Customer Name */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                பெயர் *
-              </label>
+            {/* Old Balance Only Checkbox */}
+            <div className="mb-4 flex items-center">
               <input
-                type="text"
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="வாடகை பெறுபவரின் பெயர்"
+                type="checkbox"
+                id="oldBalanceOnly"
+                checked={oldBalanceOnly}
+                onChange={e => setOldBalanceOnly(e.target.checked)}
+                className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              <label htmlFor="oldBalanceOnly" className="text-sm font-medium text-gray-700 select-none">பழைய பாக்கி மட்டும்</label>
             </div>
 
-            {/* Details Sets */}
-            {formData.details.map((d, i) => (
-              <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 items-end">
+            {oldBalanceOnly ? (
+              <>
+                {/* Name Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">மா *</label>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">பெயர் *</label>
                   <input
-                    type="number"
-                    value={d.acres}
-                    onChange={e => handleDetailChange(i, 'acres', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'}`}
-                    placeholder="மா எண்ணிக்கை"
-                    min="0"
-                    step="0.1"
+                    type="text"
+                    id="name"
+                    value={formData.name}
+                    onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
-                  {errors[`acres_${i}`] && <p className="text-red-500 text-sm mt-1">{errors[`acres_${i}`]}</p>}
+                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">வகை *</label>
+                {/* Old Balance Field */}
+                <div className="mt-4">
+                  <label htmlFor="old_balance" className="block text-sm font-medium text-gray-700 mb-2">பழைய பாக்கி *</label>
+                  <input
+                    type="text"
+                    id="old_balance"
+                    value={formData.old_balance || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-base"
+                    placeholder="பழைய பாக்கி"
+                    autoComplete="off"
+                  />
+                </div>
+                {/* Old Balance Status Dropdown */}
+                <div className="mt-4">
+                  <label htmlFor="old_balance_status" className="block text-sm font-medium text-gray-700 mb-2">நிலை *</label>
                   <select
-                    value={d.equipment_type}
-                    onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    id="old_balance_status"
+                    value={oldBalanceStatus}
+                    onChange={e => setOldBalanceStatus(e.target.value as 'paid' | 'pending')}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-base"
                   >
-                    <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                    <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                    <option value="Rotator">Rotator (₹{EQUIPMENT_RATES['Rotator']}/சால்)</option>
+                    <option value="pending">நிலுவையில்</option>
+                    <option value="paid">முழுமையாக பெறப்பட்டது</option>
                   </select>
                 </div>
-                <div className="col-span-2 mt-2 flex items-center gap-2">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">சால் *</label>
-                    <input
-                      type="number"
-                      value={d.rounds}
-                      onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'}`}
-                      placeholder="சால் எண்ணிக்கை"
-                      min="0"
-                      step="1"
-                    />
-                    {errors[`rounds_${i}`] && <p className="text-red-500 text-sm mt-1">{errors[`rounds_${i}`]}</p>}
-                  </div>
-                  {formData.details.length > 1 && (
-                    <button type="button" onClick={() => handleRemoveDetail(i)} className="ml-2 text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
-                  )}
-                  {i === formData.details.length - 1 && (
-                    <button type="button" onClick={handleAddDetail} className="ml-2 text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {/* Calculation Display */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center mb-3">
-                <Calculator className="w-5 h-5 text-blue-600 mr-2" />
-                <h3 className="text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              </>
+            ) : (
+              <>
+                {/* Customer Name */}
                 <div>
-                  <p className="text-gray-600">மொத்த தொகை:</p>
-                  <p className="font-semibold text-gray-900">{formatCurrency(totalAmount)}</p>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    பெயர் *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="வாடகை பெறுபவரின் பெயர்"
+                  />
+                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                 </div>
-              </div>
-              <div className="mt-3 pt-3 border-t border-blue-200">
-                <p className="text-lg font-bold text-blue-900">
-                  மொத்த தொகை: {formatCurrency(totalAmount)}
-                </p>
-              </div>
-            </div>
 
-            {/* Received Amount */}
-            <div className="mt-4">
-              <label htmlFor="received_amount" className="block text-sm font-medium text-gray-700 mb-2">
-                பெறப்பட்ட தொகை (₹) *
-              </label>
-              <input
-                type="number"
-                id="received_amount"
-                value={formData.received_amount}
-                onChange={e => setFormData(prev => ({ ...prev, received_amount: e.target.value }))}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.received_amount ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="பெறப்பட்ட தொகை"
-                min="0"
-                step="0.01"
-              />
-              {errors.received_amount && <p className="text-red-500 text-sm mt-1">{errors.received_amount}</p>}
-            </div>
+                {/* Details Sets */}
+                {formData.details.map((d, i) => (
+                  <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 items-end">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">மா *</label>
+                      <input
+                        type="number"
+                        value={d.acres}
+                        onChange={e => handleDetailChange(i, 'acres', e.target.value)}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'}`}
+                        placeholder="மா எண்ணிக்கை"
+                        min="0"
+                        step="0.1"
+                      />
+                      {errors[`acres_${i}`] && <p className="text-red-500 text-sm mt-1">{errors[`acres_${i}`]}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">வகை *</label>
+                      <select
+                        value={d.equipment_type}
+                        onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                        <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                        <option value="Rotator">Rotator (₹{EQUIPMENT_RATES['Rotator']}/சால்)</option>
+                        <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
+                      </select>
+                    </div>
+                    <div className="col-span-2 mt-2 flex items-center gap-2">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">சால் *</label>
+                        <input
+                          type="number"
+                          value={d.rounds}
+                          onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'}`}
+                          placeholder="சால் எண்ணிக்கை"
+                          min="0"
+                          step="1"
+                        />
+                        {errors[`rounds_${i}`] && <p className="text-red-500 text-sm mt-1">{errors[`rounds_${i}`]}</p>}
+                      </div>
+                      {formData.details.length > 1 && (
+                        <button type="button" onClick={() => handleRemoveDetail(i)} className="ml-2 text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
+                      )}
+                      {i === formData.details.length - 1 && (
+                        <button type="button" onClick={handleAddDetail} className="ml-2 text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
 
-            {/* Old Balance (பழைய பாக்கி) - after total amount, mobile friendly */}
-            <div className="mt-4">
-              <label htmlFor="old_balance" className="block text-sm font-medium text-gray-700 mb-2">
-                பழைய பாக்கி
-              </label>
-              <input
-                type="text"
-                id="old_balance"
-                value={formData.old_balance || ''}
-                onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-base"
-                placeholder="பழைய பாக்கி (விரும்பினால்)"
-                autoComplete="off"
-              />
-            </div>
+                {/* Calculation Display */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center mb-3">
+                    <Calculator className="w-5 h-5 text-blue-600 mr-2" />
+                    <h3 className="text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600">மொத்த தொகை:</p>
+                      <p className="font-semibold text-gray-900">{formatCurrency(totalAmount)}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-blue-200">
+                    <p className="text-lg font-bold text-blue-900">
+                      மொத்த தொகை: {formatCurrency(totalAmount)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Received Amount */}
+                <div className="mt-4">
+                  <label htmlFor="received_amount" className="block text-sm font-medium text-gray-700 mb-2">
+                    பெறப்பட்ட தொகை (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    id="received_amount"
+                    value={formData.received_amount}
+                    onChange={e => setFormData(prev => ({ ...prev, received_amount: e.target.value }))}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.received_amount ? 'border-red-500' : 'border-gray-300'}`}
+                    placeholder="பெறப்பட்ட தொகை"
+                    min="0"
+                    step="0.01"
+                  />
+                  {errors.received_amount && <p className="text-red-500 text-sm mt-1">{errors.received_amount}</p>}
+                </div>
+
+                {/* Old Balance (பழைய பாக்கி) - after total amount, mobile friendly */}
+                <div className="mt-4">
+                  <label htmlFor="old_balance" className="block text-sm font-medium text-gray-700 mb-2">
+                    பழைய பாக்கி
+                  </label>
+                  <input
+                    type="text"
+                    id="old_balance"
+                    value={formData.old_balance || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-base"
+                    placeholder="பழைய பாக்கி (விரும்பினால்)"
+                    autoComplete="off"
+                  />
+                </div>
+              </>
+            )}
 
             {/* Submit Error */}
             {errors.submit && (

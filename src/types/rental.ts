@@ -12,6 +12,7 @@ export interface RentalRecord {
   received_amount: number;
   created_at: string;
   old_balance?: string;
+  old_balance_status?: "paid" | "pending";
 }
 
 export interface User {
