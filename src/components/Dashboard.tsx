@@ -173,22 +173,22 @@ export function Dashboard() {
 
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-600">{filteredRecords.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{filteredRecords.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(totalAmount)}</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600 tracking-wide">{formatCurrency(totalAmount)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-600">{formatCurrency(totalReceived)}</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{formatCurrency(totalReceived)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
-            <p className="text-xl sm:text-2xl font-bold text-orange-500">{formatCurrency(pendingAmount)}</p>
+            <p className="text-xl sm:text-2xl font-bold text-orange-500 tracking-wide">{formatCurrency(pendingAmount)}</p>
           </div>
         </div>
 
@@ -205,20 +205,6 @@ export function Dashboard() {
                 <option value="Cage Wheel">Cage Wheel</option>
                 <option value="Rotator">Rotator</option>
               </select>
-
-              <input
-                type="date"
-                value={filter.dateFrom}
-                onChange={(e) => setFilter(prev => ({ ...prev, dateFrom: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-
-              <input
-                type="date"
-                value={filter.dateTo}
-                onChange={(e) => setFilter(prev => ({ ...prev, dateTo: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
 
               <input
                 type="text"

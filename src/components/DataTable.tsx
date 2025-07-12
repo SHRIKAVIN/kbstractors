@@ -31,14 +31,13 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <colgroup>
-            <col style={{ width: '16%' }} />
-            <col style={{ width: '20%' }} />
+            <col style={{ width: '18%' }} />
+            <col style={{ width: '22%' }} />
+            <col style={{ width: '13%' }} />
+            <col style={{ width: '13%' }} />
+            <col style={{ width: '13%' }} />
+            <col style={{ width: '11%' }} />
             <col style={{ width: '10%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '12%' }} />
           </colgroup>
           <thead className="bg-gray-50">
             <tr>
@@ -49,7 +48,6 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">நிலுவை</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">நிலை</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style={{ minWidth: '90px' }}>Actions</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">தேதி</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -93,12 +91,6 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       <button onClick={() => onDelete && onDelete(record)}>
                         <Trash2 className="w-5 h-5 text-red-600 hover:text-red-800" />
                       </button>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-gray-500">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {new Date(record.created_at).toLocaleDateString('ta-IN')}
                     </div>
                   </td>
                 </tr>
