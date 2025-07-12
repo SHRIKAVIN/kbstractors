@@ -1,0 +1,31 @@
+{
+  "name": "KBS TRACTORS",
+  "short_name": "KBS Tractors",
+  "description": "KBS Tractors Admin Panel",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a2e1a",
+  "theme_color": "#1a2e1a",
+  "icons": [
+    {
+      "src": "/icons/kbs-tractors-96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/kbs-tractors-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/kbs-tractors-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/kbs-tractors-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 
