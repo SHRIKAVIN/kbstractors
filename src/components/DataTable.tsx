@@ -82,11 +82,21 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       {(record.details && record.details.length > 0) ? (
                         record.details.map((d, idx) => (
                           <div key={idx} className="font-semibold text-base">
-                            <span>{d.acres} மா</span>
-                            <span className="mx-2">•</span>
-                            <span>{d.rounds} சால்</span>
-                            <span className="mx-2">•</span>
-                            <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type}</span>
+                            {d.equipment_type === 'Dipper' ? (
+                              <>
+                                <span>{d.nadai} நடை</span>
+                                <span className="mx-2">•</span>
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">Dipper</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>{d.acres} மா</span>
+                                <span className="mx-2">•</span>
+                                <span>{d.rounds} சால்</span>
+                                <span className="mx-2">•</span>
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type}</span>
+                              </>
+                            )}
                           </div>
                         ))
                       ) : (
