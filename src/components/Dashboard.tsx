@@ -134,20 +134,17 @@ export function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-16 gap-2 sm:gap-0">
-            <div className="flex items-center space-x-4">
-              <img src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-10 h-10 rounded-full shadow" />
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">KBS Tractors</h1>
-                <p className="text-xs sm:text-sm text-gray-600">நிர்வாக பேனல்</p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
+          <div className="flex flex-col items-center">
+            <img src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-14 h-14 rounded-full shadow mb-2" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 text-center">KBS Tractors</h1>
+            <p className="text-xs sm:text-sm text-gray-600 text-center mb-4">நிர்வாக பேனல்</p>
+            <div className="flex flex-row items-center justify-center gap-3 w-full max-w-xs bg-gray-50 rounded-xl shadow p-2">
               <button
                 onClick={loadRecords}
-                className="w-full sm:w-auto text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100"
+                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
                 disabled={loading}
+                aria-label="Refresh"
               >
                 {loading ? (
                   <span className="animate-spin inline-block"><RefreshCw className="w-5 h-5" /></span>
@@ -157,14 +154,15 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => setShowForm(true)}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 புதிய பதிவு
               </button>
               <button
                 onClick={handleLogout}
-                className="w-full sm:w-auto text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100"
+                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+                aria-label="Logout"
               >
                 <LogOut className="w-5 h-5" />
               </button>
