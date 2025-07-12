@@ -28,7 +28,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
         <h3 className="text-lg font-medium text-gray-900">வாடகை பதிவுகள்</h3>
         <p className="text-sm text-gray-600 mt-1">மொத்தம் {records.length} பதிவுகள்</p>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[60vh]">
         <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <colgroup>
             <col style={{ width: '18%' }} />
@@ -39,7 +39,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
             <col style={{ width: '11%' }} />
             <col style={{ width: '10%' }} />
           </colgroup>
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">பெயர்</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">விவரங்கள்</th>
