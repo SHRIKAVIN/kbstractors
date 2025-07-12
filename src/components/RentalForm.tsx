@@ -13,8 +13,9 @@ interface RentalFormProps {
 // Add this type for form state
 interface RentalDetailDraft {
   acres: string;
-  equipment_type: 'Cage Wheel' | 'Rotator';
+  equipment_type: 'Cage Wheel' | 'Rotator' | 'புழுதி' | 'Mini' | 'Dipper';
   rounds: string;
+  nadai: string; // input as string, parse as number for calculation
 }
 
 export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
@@ -22,11 +23,12 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     name: initialData?.name || '',
     details: initialData?.details?.length
       ? initialData.details.map(d => ({
-          acres: String(d.acres),
-          equipment_type: d.equipment_type,
-          rounds: String(d.rounds),
+          acres: d.equipment_type === 'Dipper' ? '' : String(d.acres ?? ''),
+          equipment_type: d.equipment_type as RentalDetailDraft['equipment_type'],
+          rounds: d.equipment_type === 'Dipper' ? '' : String(d.rounds ?? ''),
+          nadai: d.equipment_type === 'Dipper' ? d.nadai ?? '' : '',
         }))
-      : [{ acres: '', equipment_type: 'Cage Wheel', rounds: '' }],
+      : [{ acres: '', equipment_type: 'Cage Wheel', rounds: '', nadai: '' }],
     received_amount: initialData ? String(initialData.received_amount) : '',
     old_balance: initialData?.old_balance || '',
   });
@@ -38,11 +40,18 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
 
   // Calculate total for all sets
   const totalAmount = formData.details.reduce((sum, d) => {
+    if (d.equipment_type === 'Dipper') {
+      const n = parseInt(d.nadai, 10);
+      if (!isNaN(n) && n > 0) {
+        return sum + n * 500;
+      }
+      return sum;
+    }
     if (d.acres && d.rounds) {
       return sum + calculateTotalAmount(
         parseFloat(d.acres) || 0,
         parseFloat(d.rounds) || 0,
-        d.equipment_type as 'Cage Wheel' | 'Rotator'
+        d.equipment_type as any
       );
     }
     return sum;
@@ -59,11 +68,18 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
       }
     } else {
       formData.details.forEach((d, i) => {
-        if (!d.acres || parseFloat(d.acres) <= 0) {
-          newErrors[`acres_${i}`] = 'சரியான மா எண்ணை உள்ளிடவும்';
-        }
-        if (!d.rounds || parseFloat(d.rounds) <= 0) {
-          newErrors[`rounds_${i}`] = 'சரியான சால் எண்ணை உள்ளிடவும்';
+        if (d.equipment_type === 'Dipper') {
+          const n = parseInt(d.nadai, 10);
+          if (!d.nadai || isNaN(n) || n <= 0) {
+            newErrors[`nadai_${i}`] = 'சரியான நடை எண்ணை உள்ளிடவும்';
+          }
+        } else {
+          if (!d.acres || parseFloat(d.acres) <= 0) {
+            newErrors[`acres_${i}`] = 'சரியான மா எண்ணை உள்ளிடவும்';
+          }
+          if (!d.rounds || parseFloat(d.rounds) <= 0) {
+            newErrors[`rounds_${i}`] = 'சரியான சால் எண்ணை உள்ளிடவும்';
+          }
         }
       });
       if (!formData.received_amount || parseFloat(formData.received_amount) < 0) {
@@ -74,9 +90,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleDetailChange = (index: number, field: string, value: string) => {
+  const handleDetailChange = (index: number, field: keyof RentalDetailDraft, value: string) => {
     setFormData(prev => {
-      const details = prev.details.map((d, i) =>
+      const details = (prev.details as RentalDetailDraft[]).map((d, i) =>
         i === index ? { ...d, [field]: value } : d
       );
       return { ...prev, details };
@@ -89,14 +105,14 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   const handleAddDetail = () => {
     setFormData(prev => ({
       ...prev,
-      details: [...prev.details, { acres: '', equipment_type: 'Cage Wheel', rounds: '' }],
+      details: [...(prev.details as RentalDetailDraft[]), { acres: '', equipment_type: 'Cage Wheel', rounds: '', nadai: '' }],
     }));
   };
 
   const handleRemoveDetail = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      details: prev.details.filter((_, i) => i !== index),
+      details: (prev.details as RentalDetailDraft[]).filter((_, i) => i !== index),
     }));
   };
 
@@ -116,11 +132,20 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
           received_amount: 0,
         };
       } else {
-        const details: RentalDetail[] = formData.details.map(d => ({
-          acres: parseFloat(d.acres),
-          equipment_type: d.equipment_type as 'Cage Wheel' | 'Rotator',
-          rounds: parseFloat(d.rounds),
-        }));
+        const details: RentalDetail[] = formData.details.map(d => {
+          if (d.equipment_type === 'Dipper') {
+            return {
+              equipment_type: 'Dipper',
+              nadai: d.nadai ? String(parseInt(d.nadai, 10)) : '0',
+            };
+          } else {
+            return {
+              acres: parseFloat(d.acres),
+              equipment_type: d.equipment_type as any,
+              rounds: parseFloat(d.rounds),
+            };
+          }
+        });
         recordData = {
           name: formData.name.trim(),
           details,
@@ -238,63 +263,101 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 </div>
 
                 {/* Details Sets */}
-                {formData.details.map((d, i) => (
-                  <div
-                    key={i}
-                    className={
-                      'grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 mb-2 items-end' +
-                      (i !== formData.details.length - 1 ? ' border-b-2 border-gray-400 pb-4' : '')
-                    }
-                  >
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
-                      <input
-                        type="number"
-                        value={d.acres}
-                        onChange={e => handleDetailChange(i, 'acres', e.target.value)}
-                        className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                        placeholder="மா எண்ணிக்கை"
-                        min="0"
-                        step="0.1"
-                      />
-                      {errors[`acres_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
-                    </div>
-                    <div className="sm:border-l sm:border-gray-300 sm:pl-4">
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
-                      <select
-                        value={d.equipment_type}
-                        onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
-                        className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-base"
-                      >
-                        <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                        <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                        <option value="Rotator">Rotator (₹{EQUIPMENT_RATES['Rotator']}/சால்)</option>
-                        <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
-                      </select>
-                    </div>
-                    <div className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
-                      <div className="flex-1">
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
-                        <input
-                          type="number"
-                          value={d.rounds}
-                          onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
-                          className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                          placeholder="சால் எண்ணிக்கை"
-                          min="0"
-                          step="1"
-                        />
-                        {errors[`rounds_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
+                {formData.details.map((d, i) => {
+                  const isDipper = d.equipment_type === 'Dipper';
+                  return (
+                    <div
+                      key={i}
+                      className={
+                        'grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 mb-2 items-end' +
+                        (i !== formData.details.length - 1 ? ' border-b-2 border-gray-400 pb-4' : '')
+                      }
+                    >
+                      {/* Always show type dropdown */}
+                      <div className="sm:border-l sm:border-gray-300 sm:pl-4">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
+                        <select
+                          value={d.equipment_type}
+                          onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
+                          className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-base"
+                        >
+                          <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                          <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                          <option value="Rotator">Rotator (₹{EQUIPMENT_RATES['Rotator']}/சால்)</option>
+                          <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
+                          <option value="Dipper">Dipper (₹500)</option>
+                        </select>
                       </div>
-                      {formData.details.length > 1 && (
-                        <button type="button" onClick={() => handleRemoveDetail(i)} className="ml-2 text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
+                      {/* Type-specific fields */}
+                      {isDipper ? (
+                        <>
+                          <div className="sm:col-span-2">
+                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நடை *</label>
+                            <input
+                              type="number"
+                              value={d.nadai}
+                              onChange={e => handleDetailChange(i, 'nadai', e.target.value)}
+                              className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`nadai_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                              placeholder="நடை எண்ணிக்கை"
+                              min="1"
+                              step="1"
+                            />
+                            {errors[`nadai_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`nadai_${i}`]}</p>}
+                          </div>
+                          <div className="sm:col-span-2 mt-2">
+                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">தொகை</label>
+                            <input
+                              type="number"
+                              value={500}
+                              readOnly
+                              className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg bg-gray-100 text-xs sm:text-base"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
+                            <input
+                              type="number"
+                              value={d.acres}
+                              onChange={e => handleDetailChange(i, 'acres', e.target.value)}
+                              className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                              placeholder="மா எண்ணிக்கை"
+                              min="0"
+                              step="0.1"
+                            />
+                            {errors[`acres_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
+                          </div>
+                          <div className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
+                            <div className="flex-1">
+                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
+                              <input
+                                type="number"
+                                value={d.rounds}
+                                onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
+                                className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                                placeholder="சால் எண்ணிக்கை"
+                                min="0"
+                                step="1"
+                              />
+                              {errors[`rounds_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
+                            </div>
+                          </div>
+                        </>
                       )}
-                      {i === formData.details.length - 1 && (
-                        <button type="button" onClick={handleAddDetail} className="ml-2 text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
-                      )}
+                      {/* Add/Remove buttons always visible for every row */}
+                      <div className="flex gap-2 mt-2">
+                        {formData.details.length > 1 && (
+                          <button type="button" onClick={() => handleRemoveDetail(i)} className="text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
+                        )}
+                        {i === formData.details.length - 1 && (
+                          <button type="button" onClick={handleAddDetail} className="text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {/* Calculation Display */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 sm:p-4">
@@ -331,22 +394,6 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     step="0.01"
                   />
                   {errors.received_amount && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.received_amount}</p>}
-                </div>
-
-                {/* Old Balance (பழைய பாக்கி) - after total amount, mobile friendly */}
-                <div className="mt-2 sm:mt-4">
-                  <label htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                    பழைய பாக்கி
-                  </label>
-                  <input
-                    type="text"
-                    id="old_balance"
-                    value={formData.old_balance || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
-                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
-                    placeholder="பழைய பாக்கி (விரும்பினால்)"
-                    autoComplete="off"
-                  />
                 </div>
               </>
             )}
