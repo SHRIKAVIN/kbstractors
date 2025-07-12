@@ -1,5 +1,4 @@
-import React from 'react';
-import { Calendar, User, Settings, Pencil, Trash2 } from 'lucide-react';
+import { User, Settings, Pencil, Trash2 } from 'lucide-react';
 import type { RentalRecord } from '../types/rental';
 import { formatCurrency } from '../utils/calculations';
 
