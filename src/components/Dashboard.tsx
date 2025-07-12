@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Download, Filter, Calendar, Settings, LogOut, RefreshCw } from 'lucide-react';
+import{ useState, useEffect } from 'react';
+import { Plus, Download,LogOut, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
 import { RentalForm } from './RentalForm';

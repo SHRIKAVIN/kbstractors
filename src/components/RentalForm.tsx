@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Save, X, Calculator } from 'lucide-react';
 import { rentalService } from '../lib/supabase';
 import { calculateTotalAmount, formatCurrency, EQUIPMENT_RATES } from '../utils/calculations';
