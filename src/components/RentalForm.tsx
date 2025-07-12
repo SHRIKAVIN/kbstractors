@@ -145,15 +145,15 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-2 sm:px-4">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg">
           {/* Header */}
-          <div className="bg-blue-600 text-white p-6 rounded-t-lg">
+          <div className="bg-blue-600 text-white p-4 sm:p-6 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">புதிய வாடகை பதிவு</h2>
-                <p className="text-blue-100 mt-1">KBS Tractors</p>
+                <h2 className="text-lg sm:text-xl font-bold">புதிய வாடகை பதிவு</h2>
+                <p className="text-blue-100 mt-1 text-xs sm:text-sm">KBS Tractors</p>
               </div>
               <button
                 onClick={onClose}
@@ -164,9 +164,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-x-auto">
             {/* Old Balance Only Checkbox */}
-            <div className="mb-4 flex items-center">
+            <div className="mb-2 sm:mb-4 flex items-center">
               <input
                 type="checkbox"
                 id="oldBalanceOnly"
@@ -174,45 +174,45 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 onChange={e => setOldBalanceOnly(e.target.checked)}
                 className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="oldBalanceOnly" className="text-sm font-medium text-gray-700 select-none">பழைய பாக்கி மட்டும்</label>
+              <label htmlFor="oldBalanceOnly" className="text-xs sm:text-sm font-medium text-gray-700 select-none">பழைய பாக்கி மட்டும்</label>
             </div>
 
             {oldBalanceOnly ? (
               <>
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">பெயர் *</label>
+                  <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பெயர் *</label>
                   <input
                     type="text"
                     id="name"
                     value={formData.name}
                     onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
                     placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
-                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
                 </div>
                 {/* Old Balance Field */}
-                <div className="mt-4">
-                  <label htmlFor="old_balance" className="block text-sm font-medium text-gray-700 mb-2">பழைய பாக்கி *</label>
+                <div className="mt-2 sm:mt-4">
+                  <label htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
                   <input
                     type="text"
                     id="old_balance"
                     value={formData.old_balance || ''}
                     onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-base"
+                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
                     placeholder="பழைய பாக்கி"
                     autoComplete="off"
                   />
                 </div>
                 {/* Old Balance Status Dropdown */}
-                <div className="mt-4">
-                  <label htmlFor="old_balance_status" className="block text-sm font-medium text-gray-700 mb-2">நிலை *</label>
+                <div className="mt-2 sm:mt-4">
+                  <label htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
                   <select
                     id="old_balance_status"
                     value={oldBalanceStatus}
                     onChange={e => setOldBalanceStatus(e.target.value as 'paid' | 'pending')}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-base"
+                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
                   >
                     <option value="pending">நிலுவையில்</option>
                     <option value="paid">முழுமையாக பெறப்பட்டது</option>
@@ -223,7 +223,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
               <>
                 {/* Customer Name */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                     பெயர் *
                   </label>
                   <input
@@ -231,36 +231,34 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
                     placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
-                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 {/* Details Sets */}
                 {formData.details.map((d, i) => (
-                  <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 items-end">
+                  <div key={i} className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 mb-2 items-end">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">மா *</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
                       <input
                         type="number"
                         value={d.acres}
                         onChange={e => handleDetailChange(i, 'acres', e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'}`}
+                        className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
                         placeholder="மா எண்ணிக்கை"
                         min="0"
                         step="0.1"
                       />
-                      {errors[`acres_${i}`] && <p className="text-red-500 text-sm mt-1">{errors[`acres_${i}`]}</p>}
+                      {errors[`acres_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">வகை *</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
                       <select
                         value={d.equipment_type}
                         onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-base"
                       >
                         <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
                         <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
@@ -268,19 +266,19 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                         <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
                       </select>
                     </div>
-                    <div className="col-span-2 mt-2 flex items-center gap-2">
+                    <div className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">சால் *</label>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
                         <input
                           type="number"
                           value={d.rounds}
                           onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
                           placeholder="சால் எண்ணிக்கை"
                           min="0"
                           step="1"
                         />
-                        {errors[`rounds_${i}`] && <p className="text-red-500 text-sm mt-1">{errors[`rounds_${i}`]}</p>}
+                        {errors[`rounds_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
                       </div>
                       {formData.details.length > 1 && (
                         <button type="button" onClick={() => handleRemoveDetail(i)} className="ml-2 text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
@@ -293,27 +291,27 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 ))}
 
                 {/* Calculation Display */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center mb-3">
-                    <Calculator className="w-5 h-5 text-blue-600 mr-2" />
-                    <h3 className="text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 sm:p-4">
+                  <div className="flex items-center mb-2 sm:mb-3">
+                    <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
+                    <h3 className="text-xs sm:text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
                     <div>
                       <p className="text-gray-600">மொத்த தொகை:</p>
                       <p className="font-semibold text-gray-900">{formatCurrency(totalAmount)}</p>
                     </div>
                   </div>
-                  <div className="mt-3 pt-3 border-t border-blue-200">
-                    <p className="text-lg font-bold text-blue-900">
+                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-blue-200">
+                    <p className="text-base sm:text-lg font-bold text-blue-900">
                       மொத்த தொகை: {formatCurrency(totalAmount)}
                     </p>
                   </div>
                 </div>
 
                 {/* Received Amount */}
-                <div className="mt-4">
-                  <label htmlFor="received_amount" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="mt-2 sm:mt-4">
+                  <label htmlFor="received_amount" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                     பெறப்பட்ட தொகை (₹) *
                   </label>
                   <input
@@ -321,17 +319,17 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     id="received_amount"
                     value={formData.received_amount}
                     onChange={e => setFormData(prev => ({ ...prev, received_amount: e.target.value }))}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.received_amount ? 'border-red-500' : 'border-gray-300'}`}
+                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.received_amount ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
                     placeholder="பெறப்பட்ட தொகை"
                     min="0"
                     step="0.01"
                   />
-                  {errors.received_amount && <p className="text-red-500 text-sm mt-1">{errors.received_amount}</p>}
+                  {errors.received_amount && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.received_amount}</p>}
                 </div>
 
                 {/* Old Balance (பழைய பாக்கி) - after total amount, mobile friendly */}
-                <div className="mt-4">
-                  <label htmlFor="old_balance" className="block text-sm font-medium text-gray-700 mb-2">
+                <div className="mt-2 sm:mt-4">
+                  <label htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                     பழைய பாக்கி
                   </label>
                   <input
@@ -339,7 +337,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     id="old_balance"
                     value={formData.old_balance || ''}
                     onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
-                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-base"
+                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
                     placeholder="பழைய பாக்கி (விரும்பினால்)"
                     autoComplete="off"
                   />
