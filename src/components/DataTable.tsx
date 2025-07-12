@@ -51,7 +51,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
             </tr>
           </thead>
           <tbody className="bg-white">
-            {records.map((record) => {
+            {records.map((record, idx) => {
               let isPaid = false;
               let pendingAmount = record.total_amount - record.received_amount;
               let statusText = '';
@@ -66,7 +66,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                 statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
               }
               return (
-                <tr key={record.id} className="hover:bg-gray-50 divide-x divide-gray-300 border-b border-gray-300">
+                <tr key={record.id} className={`hover:bg-blue-50 divide-x divide-gray-300 border-b border-gray-300 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -109,10 +109,10 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-center">
                     <div className="flex justify-center gap-3">
-                      <button onClick={() => onEdit && onEdit(record)}>
+                      <button onClick={() => onEdit && onEdit(record)} title="Edit">
                         <Pencil className="w-5 h-5 text-orange-500 hover:text-orange-700" />
                       </button>
-                      <button onClick={() => onDelete && onDelete(record)}>
+                      <button onClick={() => onDelete && onDelete(record)} title="Delete">
                         <Trash2 className="w-5 h-5 text-red-600 hover:text-red-800" />
                       </button>
                     </div>
