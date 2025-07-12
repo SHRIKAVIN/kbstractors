@@ -93,7 +93,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                                 <span className="mx-2">•</span>
                                 <span>{d.rounds} சால்</span>
                                 <span className="mx-2">•</span>
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type}</span>
+                                <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type === 'Rotavator' ? 'Rotavator' : d.equipment_type}</span>
                               </>
                             )}
                           </div>

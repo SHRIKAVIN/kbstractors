@@ -1,6 +1,6 @@
 export interface RentalDetail {
   acres: number;
-  equipment_type: 'Cage Wheel' | 'Rotator' | 'Dipper';
+  equipment_type: 'Cage Wheel' | 'Rotavator' | 'Dipper';
   rounds: number;
   nadai?: number;
 }

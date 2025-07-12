@@ -48,7 +48,7 @@ export function Dashboard() {
     let filtered = records;
 
     if (filter.equipment) {
-      filtered = filtered.filter(record => record.details.some(d => d.equipment_type === filter.equipment) || record.details.some(d => filter.equipment === 'Others' && !['Cage Wheel', 'Rotator', 'புழுதி', 'Mini'].includes(d.equipment_type)));
+      filtered = filtered.filter(record => record.details.some(d => d.equipment_type === filter.equipment) || record.details.some(d => filter.equipment === 'Others' && !['Cage Wheel', 'Rotavator', 'புழுதி', 'Mini'].includes(d.equipment_type)));
     }
 
     if (filter.dateFrom) {
@@ -224,7 +224,7 @@ export function Dashboard() {
               >
                 <option value="">அனைத்து வகைகள்</option>
                 <option value="Cage Wheel">Cage Wheel</option>
-                <option value="Rotator">Rotator</option>
+                <option value="Rotavator">Rotavator</option>
                 <option value="புழுதி">புழுதி</option>
                 <option value="Mini">Mini</option>
               </select>

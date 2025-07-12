@@ -13,7 +13,7 @@ interface RentalFormProps {
 // Add this type for form state
 interface RentalDetailDraft {
   acres: string;
-  equipment_type: 'Cage Wheel' | 'Rotator' | 'புழுதி' | 'Mini' | 'Dipper';
+  equipment_type: 'Cage Wheel' | 'Rotavator' | 'புழுதி' | 'Mini' | 'Dipper';
   rounds: string;
   nadai: string; // input as string, parse as number for calculation
 }
@@ -41,7 +41,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   // Calculate total for all sets
   const totalAmount = formData.details.reduce((sum, d) => {
     if (d.equipment_type === 'Dipper') {
-      const n = parseInt(d.nadai, 10);
+      const n = parseInt(String(d.nadai), 10);
       if (!isNaN(n) && n > 0) {
         return sum + n * 500;
       }
@@ -69,7 +69,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     } else {
       formData.details.forEach((d, i) => {
         if (d.equipment_type === 'Dipper') {
-          const n = parseInt(d.nadai, 10);
+          const n = parseInt(String(d.nadai), 10);
           if (!d.nadai || isNaN(n) || n <= 0) {
             newErrors[`nadai_${i}`] = 'சரியான நடை எண்ணை உள்ளிடவும்';
           }
@@ -136,7 +136,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
           if (d.equipment_type === 'Dipper') {
             return {
               equipment_type: 'Dipper',
-              nadai: d.nadai ? String(parseInt(d.nadai, 10)) : '0',
+              nadai: d.nadai ? parseInt(String(d.nadai), 10) : 0,
+              acres: 0,
+              rounds: 0,
             };
           } else {
             return {
@@ -283,7 +285,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                         >
                           <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
                           <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                          <option value="Rotator">Rotator (₹{EQUIPMENT_RATES['Rotator']}/சால்)</option>
+                          <option value="Rotavator">Rotavator (₹{EQUIPMENT_RATES['Rotavator']}/சால்)</option>
                           <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
                           <option value="Dipper">Dipper (₹500)</option>
                         </select>
