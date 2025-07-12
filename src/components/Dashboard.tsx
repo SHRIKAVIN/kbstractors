@@ -134,19 +134,19 @@ export function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-16 gap-2 sm:gap-0">
             <div className="flex items-center space-x-4">
               <img src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-10 h-10 rounded-full shadow" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">KBS Tractors</h1>
-                <p className="text-sm text-gray-600">நிர்வாக பேனல்</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">KBS Tractors</h1>
+                <p className="text-xs sm:text-sm text-gray-600">நிர்வாக பேனல்</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
               <button
                 onClick={loadRecords}
-                className="text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100"
+                className="w-full sm:w-auto text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100"
                 disabled={loading}
               >
                 {loading ? (
@@ -157,14 +157,14 @@ export function Dashboard() {
               </button>
               <button
                 onClick={() => setShowForm(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 புதிய பதிவு
               </button>
               <button
                 onClick={handleLogout}
-                className="text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100"
+                className="w-full sm:w-auto text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100"
               >
                 <LogOut className="w-5 h-5" />
               </button>
@@ -173,35 +173,35 @@ export function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
-            <p className="text-2xl font-bold text-blue-600">{filteredRecords.length}</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-600">{filteredRecords.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
-            <p className="text-2xl font-bold text-green-600">{formatCurrency(totalAmount)}</p>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(totalAmount)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
-            <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalReceived)}</p>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-600">{formatCurrency(totalReceived)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
-            <p className="text-2xl font-bold text-orange-500">{formatCurrency(pendingAmount)}</p>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
+            <p className="text-xl sm:text-2xl font-bold text-orange-500">{formatCurrency(pendingAmount)}</p>
           </div>
         </div>
 
         {/* Filters and Export */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div className="flex flex-col sm:flex-row gap-4">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-4 w-full">
               <select
                 value={filter.equipment}
                 onChange={(e) => setFilter(prev => ({ ...prev, equipment: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">அனைத்து வகைகள்</option>
                 <option value="Cage Wheel">Cage Wheel</option>
@@ -212,14 +212,14 @@ export function Dashboard() {
                 type="date"
                 value={filter.dateFrom}
                 onChange={(e) => setFilter(prev => ({ ...prev, dateFrom: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
 
               <input
                 type="date"
                 value={filter.dateTo}
                 onChange={(e) => setFilter(prev => ({ ...prev, dateTo: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
 
               <input
@@ -227,26 +227,26 @@ export function Dashboard() {
                 value={filter.name || ''}
                 onChange={e => setFilter(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Search rental person..."
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <button
                 onClick={handleClearFilters}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg"
+                className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg"
               >
                 Clear Filters
               </button>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 onClick={() => exportToExcel(filteredRecords)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Excel
               </button>
               <button
                 onClick={() => exportToPDF(filteredRecords)}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center"
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
               >
                 <Download className="w-4 h-4 mr-2" />
                 PDF
