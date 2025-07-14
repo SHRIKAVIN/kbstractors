@@ -228,7 +228,46 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
             widths: [70, 35, 35, 80, 65, 65, 65, 80, 80, 60],
             body: [headers, ...body]
           },
+          layout: {
+            fillColor: (rowIndex: number) => rowIndex === 0 ? '#2563eb' : (rowIndex % 2 === 0 ? '#F3F4F6' : null),
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => '#222',
+            vLineColor: () => '#222',
+            paddingLeft: () => 4,
+            paddingRight: () => 4,
+            paddingTop: () => 6,
+            paddingBottom: () => 6
+          },
           alignment: 'center',
+          margin: [0, 0, 0, 0]
+        }
+      ],
+      images: {
+        logo: 'data:image/png;base64,' + kbsLogoBase64.trim()
+      },
+      defaultStyle: {
+        font: 'NotoSansTamil',
+        fontSize: 9
+      },
+      styles: {
+        tableHeader: {
+          bold: true,
+          color: 'white',
+          fillColor: '#2563eb',
+          font: 'NotoSansTamil',
+          fontSize: 9,
+          alignment: 'center',
+          margin: [0, 5, 0, 5]
+        }
+      }
+    };
+    
+    pdfMake.createPdf(docDefinition).download(filename);
+  } catch (err) {
+    alert('PDF export failed: ' + (err instanceof Error ? err.message : err));
+  }
+}
           layout: {
             fillColor: (rowIndex: number) => rowIndex === 0 ? '#2563eb' : (rowIndex % 2 === 0 ? '#F3F4F6' : null),
             hLineWidth: () => 1,
