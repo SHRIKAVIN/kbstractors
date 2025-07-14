@@ -136,16 +136,16 @@ export function exportToExcel(records: RentalRecord[], filename: string = 'kbs-t
 export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tractors-records.pdf') {
   try {
     const headers = [
-      { text: 'பெயர்', style: 'tableHeader', alignment: 'left' },
+      { text: 'பெயர்', style: 'tableHeader', alignment: 'center' },
       { text: 'மா', style: 'tableHeader', alignment: 'center' },
       { text: 'சால்', style: 'tableHeader', alignment: 'center' },
-      { text: 'வகை', style: 'tableHeader', alignment: 'left' },
-      { text: 'மொத்தம்', style: 'tableHeader', alignment: 'right' },
-      { text: 'பெறப்பட்டது', style: 'tableHeader', alignment: 'right' },
-      { text: 'நிலுவை', style: 'tableHeader', alignment: 'right' },
+      { text: 'வகை', style: 'tableHeader', alignment: 'center' },
+      { text: 'மொத்தம்', style: 'tableHeader', alignment: 'center' },
+      { text: 'பெறப்பட்டது', style: 'tableHeader', alignment: 'center' },
+      { text: 'நிலுவை', style: 'tableHeader', alignment: 'center' },
       { text: 'நிலை', style: 'tableHeader', alignment: 'center' },
-      { text: 'பழைய பாக்கி', style: 'tableHeader', alignment: 'right' },
-      { text: 'தேதி', style: 'tableHeader', alignment: 'left' }
+      { text: 'பழைய பாக்கி', style: 'tableHeader', alignment: 'center' },
+      { text: 'தேதி', style: 'tableHeader', alignment: 'center' }
     ];
     
     const body: any[] = [];
@@ -161,16 +161,16 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
       if ((!record.details || record.details.length === 0) && record.old_balance) {
         // Old balance only record
         body.push([
-          { text: record.name, alignment: 'left' },
+          { text: record.name, alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
-          { text: '', alignment: 'left' },
-          { text: '', alignment: 'right' },
-          { text: '', alignment: 'right' },
-          { text: '', alignment: 'right' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
           { text: status, alignment: 'center' },
-          { text: record.old_balance, alignment: 'right' },
-          { text: formattedDate, alignment: 'left' }
+          { text: record.old_balance, alignment: 'center' },
+          { text: formattedDate, alignment: 'center' }
         ]);
       } else if (record.details && record.details.length > 0) {
         const detailsCount = record.details.length;
@@ -179,16 +179,16 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
           if (idx === 0) {
             // First row with merged cells
             body.push([
-              { text: record.name, alignment: 'left', rowSpan: detailsCount },
+              { text: record.name, alignment: 'center', rowSpan: detailsCount },
               { text: detail.equipment_type === 'Dipper' ? '' : detail.acres, alignment: 'center' },
               { text: detail.equipment_type === 'Dipper' ? '' : detail.rounds, alignment: 'center' },
-              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'left' },
-              { text: formatCurrency(record.total_amount), alignment: 'right', rowSpan: detailsCount },
-              { text: formatCurrency(record.received_amount), alignment: 'right', rowSpan: detailsCount },
-              { text: formatCurrency(pendingAmount), alignment: 'right', rowSpan: detailsCount },
+              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'center' },
+              { text: formatCurrency(record.total_amount), alignment: 'center', rowSpan: detailsCount },
+              { text: formatCurrency(record.received_amount), alignment: 'center', rowSpan: detailsCount },
+              { text: formatCurrency(pendingAmount), alignment: 'center', rowSpan: detailsCount },
               { text: status, alignment: 'center', rowSpan: detailsCount },
-              { text: record.old_balance || '', alignment: 'right', rowSpan: detailsCount },
-              { text: formattedDate, alignment: 'left', rowSpan: detailsCount }
+              { text: record.old_balance || '', alignment: 'center', rowSpan: detailsCount },
+              { text: formattedDate, alignment: 'center', rowSpan: detailsCount }
             ]);
           } else {
             // Subsequent rows with empty cells for merged columns
@@ -196,7 +196,7 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
               '', // Name (merged)
               { text: detail.equipment_type === 'Dipper' ? '' : detail.acres, alignment: 'center' },
               { text: detail.equipment_type === 'Dipper' ? '' : detail.rounds, alignment: 'center' },
-              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'left' },
+              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'center' },
               '', // Total (merged)
               '', // Received (merged)
               '', // Balance (merged)
@@ -222,7 +222,7 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
         {
           table: {
             headerRows: 1,
-            widths: [65, 20, 20, 45, 38, 38, 38, 40, 45, 60],
+            widths: [80, 30, 30, 60, 50, 50, 50, 60, 60, 70],
             body: [headers, ...body]
           },
           alignment: 'center',
@@ -232,10 +232,10 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
             vLineWidth: () => 1,
             hLineColor: () => '#222',
             vLineColor: () => '#222',
-            paddingLeft: () => 3,
-            paddingRight: () => 3,
-            paddingTop: () => 2,
-            paddingBottom: () => 2
+            paddingLeft: () => 6,
+            paddingRight: () => 6,
+            paddingTop: () => 8,
+            paddingBottom: () => 8
           }
         }
       ],
@@ -244,7 +244,7 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
       },
       defaultStyle: {
         font: 'NotoSansTamil',
-        fontSize: 8
+        fontSize: 10
       },
       styles: {
         tableHeader: {
@@ -252,9 +252,9 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
           color: 'white',
           fillColor: '#2563eb',
           font: 'NotoSansTamil',
-          fontSize: 8,
+          fontSize: 10,
           alignment: 'center',
-          margin: [0, 3, 0, 3]
+          margin: [0, 5, 0, 5]
         }
       }
     };
