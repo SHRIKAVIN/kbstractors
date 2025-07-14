@@ -25,37 +25,111 @@ import kbsLogoBase64 from '../../public/icons/kbs-tractors-96.png.base64?raw';
 };
 
 export function exportToExcel(records: RentalRecord[], filename: string = 'kbs-tractors-records.xlsx') {
-  // Flatten records for Excel: one row per detail, or a single row for old balance only
-  const rows: any[] = [];
+  // Create workbook and worksheet
+  const workbook = XLSX.utils.book_new();
+  
+  // Create headers
+  const headers = ['பெயர்', 'மா', 'சால்', 'வகை', 'மொத்தம்', 'பெறப்பட்டது', 'நிலுவை', 'நிலை', 'பழைய பாக்கி', 'தேதி'];
+  
+  // Prepare data with merged cells logic
+  const rows: any[][] = [headers];
+  const merges: any[] = [];
+  let currentRow = 1; // Start from row 1 (0-indexed, after header)
+  
   records.forEach(record => {
-    if (record.details && record.details.length > 0) {
-      record.details.forEach(d => {
-        rows.push({
-          'பெயர்': record.name,
-          'மா': d.acres,
-          'வகை': d.equipment_type,
-          'சால்': d.rounds,
-          'மொத்த தொகை': record.total_amount,
-          'பெறப்பட்ட தொகை': record.received_amount,
-          'தேதி': new Date(record.created_at).toLocaleDateString('ta-IN')
-        });
-      });
-    } else {
+    const status = record.old_balance_status
+      ? (record.old_balance_status === 'paid' ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்')
+      : (record.received_amount >= record.total_amount ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்');
+    
+    const pendingAmount = record.total_amount - record.received_amount;
+    const formattedDate = new Date(record.created_at).toLocaleDateString('ta-IN');
+    
+    if ((!record.details || record.details.length === 0) && record.old_balance) {
       // Old balance only record
-      rows.push({
-        'பெயர்': record.name,
-        'மா': '',
-        'வகை': '',
-        'சால்': '',
-        'மொத்த தொகை': '',
-        'பெறப்பட்ட தொகை': '',
-        'தேதி': new Date(record.created_at).toLocaleDateString('ta-IN')
+      rows.push([
+        record.name,
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        status,
+        record.old_balance,
+        formattedDate
+      ]);
+      currentRow++;
+    } else if (record.details && record.details.length > 0) {
+      const detailsCount = record.details.length;
+      const startRow = currentRow;
+      
+      // Add rows for each detail
+      record.details.forEach((detail, idx) => {
+        if (idx === 0) {
+          // First row contains all data
+          rows.push([
+            record.name,
+            detail.equipment_type === 'Dipper' ? '' : detail.acres,
+            detail.equipment_type === 'Dipper' ? '' : detail.rounds,
+            detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type,
+            formatCurrency(record.total_amount),
+            formatCurrency(record.received_amount),
+            formatCurrency(pendingAmount),
+            status,
+            record.old_balance || '',
+            formattedDate
+          ]);
+        } else {
+          // Subsequent rows only have detail data
+          rows.push([
+            '', // Name will be merged
+            detail.equipment_type === 'Dipper' ? '' : detail.acres,
+            detail.equipment_type === 'Dipper' ? '' : detail.rounds,
+            detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type,
+            '', // Total will be merged
+            '', // Received will be merged
+            '', // Balance will be merged
+            '', // Status will be merged
+            '', // Old balance will be merged
+            '' // Date will be merged
+          ]);
+        }
+        currentRow++;
       });
+      
+      // Add merge ranges for cells that should span multiple rows
+      if (detailsCount > 1) {
+        const endRow = startRow + detailsCount - 1;
+        // Merge name (column A)
+        merges.push({ s: { r: startRow, c: 0 }, e: { r: endRow, c: 0 } });
+        // Merge total (column E)
+        merges.push({ s: { r: startRow, c: 4 }, e: { r: endRow, c: 4 } });
+        // Merge received (column F)
+        merges.push({ s: { r: startRow, c: 5 }, e: { r: endRow, c: 5 } });
+        // Merge balance (column G)
+        merges.push({ s: { r: startRow, c: 6 }, e: { r: endRow, c: 6 } });
+        // Merge status (column H)
+        merges.push({ s: { r: startRow, c: 7 }, e: { r: endRow, c: 7 } });
+        // Merge old balance (column I)
+        merges.push({ s: { r: startRow, c: 8 }, e: { r: endRow, c: 8 } });
+        // Merge date (column J)
+        merges.push({ s: { r: startRow, c: 9 }, e: { r: endRow, c: 9 } });
+      }
     }
   });
-  const worksheet = XLSX.utils.json_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
+  
+  // Create worksheet from data
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+  
+  // Apply merges
+  if (merges.length > 0) {
+    worksheet['!merges'] = merges;
+  }
+  
+  // Add worksheet to workbook
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Rental Records');
+  
+  // Save file
   XLSX.writeFile(workbook, filename);
 }
 
@@ -73,47 +147,68 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
       { text: 'பழைய பாக்கி', style: 'tableHeader', alignment: 'right' },
       { text: 'தேதி', style: 'tableHeader', alignment: 'left' }
     ];
+    
     const body: any[] = [];
+    
     records.forEach(record => {
+      const status = record.old_balance_status
+        ? (record.old_balance_status === 'paid' ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்')
+        : (record.received_amount >= record.total_amount ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்');
+      
+      const pendingAmount = record.total_amount - record.received_amount;
+      const formattedDate = new Date(record.created_at).toLocaleDateString('ta-IN');
+      
       if ((!record.details || record.details.length === 0) && record.old_balance) {
-        const status = record.old_balance_status === 'paid' ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
+        // Old balance only record
         body.push([
           { text: record.name, alignment: 'left' },
-          '', '', '', '', '', '',
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'center' },
+          { text: '', alignment: 'left' },
+          { text: '', alignment: 'right' },
+          { text: '', alignment: 'right' },
+          { text: '', alignment: 'right' },
           { text: status, alignment: 'center' },
           { text: record.old_balance, alignment: 'right' },
-          { text: new Date(record.created_at).toLocaleDateString('ta-IN'), alignment: 'left' }
+          { text: formattedDate, alignment: 'left' }
         ]);
       } else if (record.details && record.details.length > 0) {
-        record.details.forEach((d, idx) => {
-          const status = record.old_balance_status
-            ? (record.old_balance_status === 'paid' ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்')
-            : (record.received_amount >= record.total_amount ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்');
+        const detailsCount = record.details.length;
+        
+        record.details.forEach((detail, idx) => {
           if (idx === 0) {
+            // First row with merged cells
             body.push([
-              { text: record.name, alignment: 'left' },
-              { text: d.acres, alignment: 'center' },
-              { text: d.rounds, alignment: 'center' },
-              { text: d.equipment_type, alignment: 'left' },
-              { text: formatCurrency(record.total_amount), alignment: 'right' },
-              { text: formatCurrency(record.received_amount), alignment: 'right' },
-              { text: formatCurrency(record.total_amount - record.received_amount), alignment: 'right' },
-              { text: status, alignment: 'center' },
-              { text: record.old_balance || '', alignment: 'right' },
-              { text: new Date(record.created_at).toLocaleDateString('ta-IN'), alignment: 'left' }
+              { text: record.name, alignment: 'left', rowSpan: detailsCount },
+              { text: detail.equipment_type === 'Dipper' ? '' : detail.acres, alignment: 'center' },
+              { text: detail.equipment_type === 'Dipper' ? '' : detail.rounds, alignment: 'center' },
+              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'left' },
+              { text: formatCurrency(record.total_amount), alignment: 'right', rowSpan: detailsCount },
+              { text: formatCurrency(record.received_amount), alignment: 'right', rowSpan: detailsCount },
+              { text: formatCurrency(pendingAmount), alignment: 'right', rowSpan: detailsCount },
+              { text: status, alignment: 'center', rowSpan: detailsCount },
+              { text: record.old_balance || '', alignment: 'right', rowSpan: detailsCount },
+              { text: formattedDate, alignment: 'left', rowSpan: detailsCount }
             ]);
           } else {
+            // Subsequent rows with empty cells for merged columns
             body.push([
-              '',
-              { text: d.acres, alignment: 'center' },
-              { text: d.rounds, alignment: 'center' },
-              { text: d.equipment_type, alignment: 'left' },
-              { text: '', colSpan: 6 }, '', '', '', '', ''
+              '', // Name (merged)
+              { text: detail.equipment_type === 'Dipper' ? '' : detail.acres, alignment: 'center' },
+              { text: detail.equipment_type === 'Dipper' ? '' : detail.rounds, alignment: 'center' },
+              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'left' },
+              '', // Total (merged)
+              '', // Received (merged)
+              '', // Balance (merged)
+              '', // Status (merged)
+              '', // Old balance (merged)
+              '' // Date (merged)
             ]);
           }
         });
       }
     });
+    
     const docDefinition = {
       content: [
         {
@@ -163,6 +258,7 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
         }
       }
     };
+    
     pdfMake.createPdf(docDefinition).download(filename);
   } catch (err) {
     alert('PDF export failed: ' + (err instanceof Error ? err.message : err));
