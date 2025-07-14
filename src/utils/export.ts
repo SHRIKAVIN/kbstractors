@@ -210,19 +210,22 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
     });
     
     const docDefinition = {
+      pageSize: 'A4',
+      pageOrientation: 'landscape',
+      pageMargins: [20, 40, 20, 40],
       content: [
         {
           image: 'logo',
-          width: 70,
+          width: 60,
           alignment: 'center',
           margin: [0, 0, 0, 10]
         },
-        { text: 'KBS TRACTORS - RENTAL RECORDS', fontSize: 22, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
-        { text: `Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, fontSize: 11, alignment: 'center', margin: [0, 0, 0, 12] },
+        { text: 'KBS TRACTORS - RENTAL RECORDS', fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
+        { text: `Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, fontSize: 10, alignment: 'center', margin: [0, 0, 0, 15] },
         {
           table: {
             headerRows: 1,
-            widths: [80, 30, 30, 60, 50, 50, 50, 60, 60, 70],
+            widths: [70, 35, 35, 80, 65, 65, 65, 80, 80, 60],
             body: [headers, ...body]
           },
           alignment: 'center',
@@ -232,10 +235,10 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
             vLineWidth: () => 1,
             hLineColor: () => '#222',
             vLineColor: () => '#222',
-            paddingLeft: () => 6,
-            paddingRight: () => 6,
-            paddingTop: () => 8,
-            paddingBottom: () => 8
+            paddingLeft: () => 4,
+            paddingRight: () => 4,
+            paddingTop: () => 6,
+            paddingBottom: () => 6
           }
         }
       ],
@@ -244,7 +247,7 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
       },
       defaultStyle: {
         font: 'NotoSansTamil',
-        fontSize: 10
+        fontSize: 9
       },
       styles: {
         tableHeader: {
@@ -252,9 +255,9 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
           color: 'white',
           fillColor: '#2563eb',
           font: 'NotoSansTamil',
-          fontSize: 10,
+          fontSize: 9,
           alignment: 'center',
-          margin: [0, 5, 0, 5]
+          margin: [0, 3, 0, 3]
         }
       }
     };
