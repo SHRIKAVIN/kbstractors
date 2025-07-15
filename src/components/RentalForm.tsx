@@ -179,7 +179,12 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
           <div className="bg-blue-600 text-white p-4 sm:p-6 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg sm:text-xl font-bold">புதிய வாடகை பதிவு</h2>
+                <h2 className="text-lg sm:text-xl font-bold">
+                  {initialData ? 
+                    (isOldBalanceOnly ? 'பழைய பாக்கி திருத்தம்' : 'வாடகை பதிவு திருத்தம்') : 
+                    'புதிய வாடகை பதிவு'
+                  }
+                </h2>
                 <p className="text-blue-100 mt-1 text-xs sm:text-sm">KBS Tractors</p>
               </div>
               <button
