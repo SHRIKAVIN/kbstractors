@@ -29,7 +29,7 @@ export function exportToExcel(records: RentalRecord[], filename: string = 'kbs-t
   const workbook = XLSX.utils.book_new();
   
   // Create headers
-  const headers = ['பெயர்', 'மா', 'சால்', 'வகை', 'மொத்தம்', 'பெறப்பட்டது', 'நிலுவை', 'நிலை', 'பழைய பாக்கி', 'தேதி'];
+  const headers = ['பெயர்', 'விவரங்கள்', 'மொத்தம்', 'பெறப்பட்டது', 'நிலுவை', 'நிலை', 'தேதி'];
   
   // Prepare data with merged cells logic
   const rows: any[][] = [headers];
@@ -48,72 +48,84 @@ export function exportToExcel(records: RentalRecord[], filename: string = 'kbs-t
       // Old balance only record
       rows.push([
         record.name,
-        '',
-        '',
-        '',
+        `பழைய பாக்கி ${record.old_balance}`,
         '',
         '',
         '',
         status,
-        record.old_balance,
         formattedDate
       ]);
       currentRow++;
     } else if (record.details && record.details.length > 0) {
       const detailsCount = record.details.length;
+      const hasOldBalance = record.old_balance ? 1 : 0;
+      const totalRows = detailsCount + hasOldBalance;
       const startRow = currentRow;
       
       // Add rows for each detail
       record.details.forEach((detail, idx) => {
+        let detailText;
+        if (detail.equipment_type === 'Dipper') {
+          detailText = `${detail.nadai} நடை - Dipper`;
+        } else {
+          detailText = `${detail.acres} மா•${detail.rounds} சால்•${detail.equipment_type}`;
+        }
+        
         if (idx === 0) {
           // First row contains all data
           rows.push([
             record.name,
-            detail.equipment_type === 'Dipper' ? '' : detail.acres,
-            detail.equipment_type === 'Dipper' ? '' : detail.rounds,
-            detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type,
+            detailText,
             formatCurrency(record.total_amount),
             formatCurrency(record.received_amount),
             formatCurrency(pendingAmount),
             status,
-            record.old_balance || '',
             formattedDate
           ]);
         } else {
           // Subsequent rows only have detail data
           rows.push([
             '', // Name will be merged
-            detail.equipment_type === 'Dipper' ? '' : detail.acres,
-            detail.equipment_type === 'Dipper' ? '' : detail.rounds,
-            detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type,
+            detailText,
             '', // Total will be merged
             '', // Received will be merged
             '', // Balance will be merged
             '', // Status will be merged
-            '', // Old balance will be merged
             '' // Date will be merged
           ]);
         }
         currentRow++;
       });
       
+      // Add old balance row if exists
+      if (record.old_balance) {
+        rows.push([
+          '', // Name will be merged
+          `பழைய பாக்கி ${record.old_balance}`,
+          '', // Total will be merged
+          '', // Received will be merged
+          '', // Balance will be merged
+          '', // Status will be merged
+          '' // Date will be merged
+        ]);
+        currentRow++;
+      }
+      
       // Add merge ranges for cells that should span multiple rows
-      if (detailsCount > 1) {
-        const endRow = startRow + detailsCount - 1;
+      if (totalRows > 1) {
+        const endRow = startRow + totalRows - 1;
         // Merge name (column A)
         merges.push({ s: { r: startRow, c: 0 }, e: { r: endRow, c: 0 } });
-        // Merge total (column E)
+        // Merge total (column C)
+        merges.push({ s: { r: startRow, c: 2 }, e: { r: endRow, c: 2 } });
+        // Merge received (column D)
+        merges.push({ s: { r: startRow, c: 3 }, e: { r: endRow, c: 3 } });
+        // Merge balance (column E)
         merges.push({ s: { r: startRow, c: 4 }, e: { r: endRow, c: 4 } });
-        // Merge received (column F)
+        // Merge status (column F)
         merges.push({ s: { r: startRow, c: 5 }, e: { r: endRow, c: 5 } });
-        // Merge balance (column G)
+        // Merge date (column G)
         merges.push({ s: { r: startRow, c: 6 }, e: { r: endRow, c: 6 } });
-        // Merge status (column H)
-        merges.push({ s: { r: startRow, c: 7 }, e: { r: endRow, c: 7 } });
-        // Merge old balance (column I)
-        merges.push({ s: { r: startRow, c: 8 }, e: { r: endRow, c: 8 } });
-        // Merge date (column J)
-        merges.push({ s: { r: startRow, c: 9 }, e: { r: endRow, c: 9 } });
       }
     }
   });
@@ -137,14 +149,11 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
   try {
     const headers = [
       { text: 'பெயர்', style: 'tableHeader', alignment: 'center' },
-      { text: 'மா', style: 'tableHeader', alignment: 'center' },
-      { text: 'சால்', style: 'tableHeader', alignment: 'center' },
-      { text: 'வகை', style: 'tableHeader', alignment: 'center' },
+      { text: 'விவரங்கள்', style: 'tableHeader', alignment: 'center' },
       { text: 'மொத்தம்', style: 'tableHeader', alignment: 'center' },
       { text: 'பெறப்பட்டது', style: 'tableHeader', alignment: 'center' },
       { text: 'நிலுவை', style: 'tableHeader', alignment: 'center' },
       { text: 'நிலை', style: 'tableHeader', alignment: 'center' },
-      { text: 'பழைய பாக்கி', style: 'tableHeader', alignment: 'center' },
       { text: 'தேதி', style: 'tableHeader', alignment: 'center' }
     ];
     
@@ -162,50 +171,63 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
         // Old balance only record
         body.push([
           { text: record.name, alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
-          { text: '', alignment: 'center' },
+          { text: `பழைய பாக்கி ${record.old_balance}`, alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: '', alignment: 'center' },
           { text: status, alignment: 'center' },
-          { text: record.old_balance, alignment: 'center' },
           { text: formattedDate, alignment: 'center' }
         ]);
       } else if (record.details && record.details.length > 0) {
         const detailsCount = record.details.length;
+        const hasOldBalance = record.old_balance ? 1 : 0;
+        const totalRows = detailsCount + hasOldBalance;
         
         record.details.forEach((detail, idx) => {
+          let detailText;
+          if (detail.equipment_type === 'Dipper') {
+            detailText = `${detail.nadai} நடை - Dipper`;
+          } else {
+            detailText = `${detail.acres} மா•${detail.rounds} சால்•${detail.equipment_type}`;
+          }
+          
           if (idx === 0) {
             // First row with merged cells
             body.push([
-              { text: record.name, alignment: 'center', rowSpan: detailsCount },
-              { text: detail.equipment_type === 'Dipper' ? '' : detail.acres, alignment: 'center' },
-              { text: detail.equipment_type === 'Dipper' ? '' : detail.rounds, alignment: 'center' },
-              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'center' },
-              { text: formatCurrency(record.total_amount), alignment: 'center', rowSpan: detailsCount },
-              { text: formatCurrency(record.received_amount), alignment: 'center', rowSpan: detailsCount },
-              { text: formatCurrency(pendingAmount), alignment: 'center', rowSpan: detailsCount },
-              { text: status, alignment: 'center', rowSpan: detailsCount },
-              { text: record.old_balance || '', alignment: 'center', rowSpan: detailsCount },
-              { text: formattedDate, alignment: 'center', rowSpan: detailsCount }
+              { text: record.name, alignment: 'center', rowSpan: totalRows },
+              { text: detailText, alignment: 'center' },
+              { text: formatCurrency(record.total_amount), alignment: 'center', rowSpan: totalRows },
+              { text: formatCurrency(record.received_amount), alignment: 'center', rowSpan: totalRows },
+              { text: formatCurrency(pendingAmount), alignment: 'center', rowSpan: totalRows },
+              { text: status, alignment: 'center', rowSpan: totalRows },
+              { text: formattedDate, alignment: 'center', rowSpan: totalRows }
             ]);
           } else {
             // Subsequent rows with empty cells for merged columns
             body.push([
               '', // Name (merged)
-              { text: detail.equipment_type === 'Dipper' ? '' : detail.acres, alignment: 'center' },
-              { text: detail.equipment_type === 'Dipper' ? '' : detail.rounds, alignment: 'center' },
-              { text: detail.equipment_type === 'Dipper' ? `${detail.nadai} நடை - Dipper` : detail.equipment_type, alignment: 'center' },
+              { text: detailText, alignment: 'center' },
               '', // Total (merged)
               '', // Received (merged)
               '', // Balance (merged)
               '', // Status (merged)
-              '', // Old balance (merged)
               '' // Date (merged)
             ]);
           }
         });
+        
+        // Add old balance row if exists
+        if (record.old_balance) {
+          body.push([
+            '', // Name (merged)
+            { text: `பழைய பாக்கி ${record.old_balance}`, alignment: 'center' },
+            '', // Total (merged)
+            '', // Received (merged)
+            '', // Balance (merged)
+            '', // Status (merged)
+            '' // Date (merged)
+          ]);
+        }
       }
     });
     
@@ -225,7 +247,7 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
         {
           table: {
             headerRows: 1,
-            widths: [70, 35, 35, 80, 65, 65, 65, 80, 80, 60],
+            widths: [80, 120, 70, 70, 70, 80, 70],
             body: [headers, ...body]
           },
           alignment: 'center',
