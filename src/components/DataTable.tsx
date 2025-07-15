@@ -1,6 +1,6 @@
 import { User, Settings, Pencil, Trash2 } from 'lucide-react';
 import type { RentalRecord } from '../types/rental';
-import { formatCurrency } from '../utils/calculations';
+import { formatCurrency, calculateTotalAmount, EQUIPMENT_RATES } from '../utils/calculations';
 
 interface DataTableProps {
   records: RentalRecord[];
@@ -78,30 +78,47 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                   <td className="px-3 py-2 whitespace-nowrap align-top">
                     <div className="text-sm text-gray-900 flex flex-col gap-1">
                       {(record.details && record.details.length > 0) ? (
-                        record.details.map((d, idx) => (
-                          <div key={idx} className="font-semibold text-base">
-                            {d.equipment_type === 'Dipper' ? (
-                              <>
-                                <span>{d.nadai} நடை</span>
-                                <span className="mx-2">•</span>
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">Dipper</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>{d.acres} மா</span>
-                                <span className="mx-2">•</span>
-                                <span>{d.rounds} சால்</span>
-                                <span className="mx-2">•</span>
-                                <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type === 'Rotavator' ? 'Rotavator' : d.equipment_type}</span>
-                              </>
-                            )}
-                          </div>
-                        ))
+                        record.details.map((d, idx) => {
+                          let amount = 0;
+                          if (d.equipment_type === 'Dipper') {
+                            amount = 500 * (parseInt(d.nadai) || 0);
+                          } else {
+                            amount = calculateTotalAmount(
+                              parseFloat(d.acres) || 0,
+                              parseFloat(d.rounds) || 0,
+                              d.equipment_type
+                            );
+                          }
+                          return (
+                            <div key={idx} className="font-semibold text-base">
+                              {d.equipment_type === 'Dipper' ? (
+                                <>
+                                  <span>{d.nadai} நடை</span>
+                                  <span className="mx-2">•</span>
+                                  <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">Dipper</span>
+                                  <span className="ml-2 text-xs text-gray-500">( {formatCurrency(amount)} )</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>{d.acres} மா</span>
+                                  <span className="mx-2">•</span>
+                                  <span>{d.rounds} சால்</span>
+                                  <span className="mx-2">•</span>
+                                  <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type === 'Rotavator' ? 'Rotavator' : d.equipment_type}</span>
+                                  <span className="ml-2 text-xs text-gray-500">( {formatCurrency(amount)} )</span>
+                                </>
+                              )}
+                            </div>
+                          );
+                        })
                       ) : null}
                       {record.old_balance && (
                         <div className="font-semibold text-base text-gray-700 mt-1">
                           <span className={record.old_balance_status === 'paid' ? 'text-green-600' : 'text-red-600'}>
                             பழைய பாக்கி {record.old_balance}
+                            {record.old_balance_reason && (
+                              <span className="text-xs text-gray-500"> ( {record.old_balance_reason} )</span>
+                            )}
                           </span>
                         </div>
                       )}

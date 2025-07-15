@@ -31,6 +31,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
       : [{ acres: '', equipment_type: 'Cage Wheel', rounds: '', nadai: '' }],
     received_amount: initialData ? String(initialData.received_amount) : '',
     old_balance: initialData?.old_balance || '',
+    old_balance_reason: initialData?.old_balance_reason || '',
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -40,6 +41,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   );
   const [oldBalanceStatus, setOldBalanceStatus] = useState<'paid' | 'pending'>(
     (initialData && initialData.old_balance_status) ? initialData.old_balance_status : 'pending'
+  );
+  // Add state to control showing old balance section in full form
+  const [showOldBalanceSection, setShowOldBalanceSection] = useState(
+    !!(initialData && initialData.old_balance && !oldBalanceOnly)
   );
 
   // Calculate total for all sets
@@ -59,7 +64,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
       );
     }
     return sum;
-  }, 0);
+  }, 0) + (!oldBalanceOnly && showOldBalanceSection && formData.old_balance && oldBalanceStatus === 'pending' ? parseFloat(formData.old_balance) || 0 : 0);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -127,13 +132,15 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     try {
       let recordData;
       if (oldBalanceOnly) {
+        const oldBalanceValue = parseFloat(formData.old_balance) || 0;
         recordData = {
           name: formData.name.trim(),
           old_balance: formData.old_balance || undefined,
           old_balance_status: oldBalanceStatus,
+          old_balance_reason: formData.old_balance_reason || undefined,
           details: [],
-          total_amount: 0,
-          received_amount: 0,
+          total_amount: oldBalanceValue,
+          received_amount: oldBalanceStatus === 'paid' ? oldBalanceValue : 0,
         };
       } else {
         const details: RentalDetail[] = formData.details.map(d => {
@@ -157,7 +164,18 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
           details,
           total_amount: totalAmount,
           received_amount: parseFloat(formData.received_amount),
-          old_balance: formData.old_balance || undefined,
+          ...(showOldBalanceSection && formData.old_balance
+            ? {
+                old_balance: formData.old_balance,
+                old_balance_status: oldBalanceStatus,
+                old_balance_reason: formData.old_balance_reason || undefined
+              }
+            : {
+                old_balance: undefined,
+                old_balance_status: undefined,
+                old_balance_reason: undefined
+              }
+          )
         };
       }
       let newRecord;
@@ -254,6 +272,19 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     <option value="pending">நிலுவையில்</option>
                     <option value="paid">முழுமையாக பெறப்பட்டது</option>
                   </select>
+                </div>
+                {/* Old Balance Reason Field */}
+                <div className="mt-2 sm:mt-4">
+                  <label htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
+                  <input
+                    type="text"
+                    id="old_balance_reason"
+                    value={formData.old_balance_reason || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, old_balance_reason: e.target.value }))}
+                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
+                    placeholder="காரணம்"
+                    autoComplete="off"
+                  />
                 </div>
               </>
             ) : (
@@ -407,7 +438,78 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   />
                   {errors.received_amount && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.received_amount}</p>}
                 </div>
+                {!oldBalanceOnly && (
+                  <div className="flex items-center mt-2">
+                    {!showOldBalanceSection ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowOldBalanceSection(true)}
+                        className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        <span className="text-lg font-bold mr-1">+</span>
+                        பழைய பாக்கி இருந்தால்
+                      </button>
+                    ) : null}
+                  </div>
+                )}
               </>
+            )}
+
+            {/* Show old balance fields in full form if showOldBalanceSection is true */}
+            {!oldBalanceOnly && showOldBalanceSection && (
+              <div className="mt-2 sm:mt-4 border p-3 rounded-lg bg-gray-50 relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowOldBalanceSection(false);
+                    setFormData(prev => ({ ...prev, old_balance: '', old_balance_status: '', old_balance_reason: '' }));
+                  }}
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full"
+                  title="பழைய பாக்கி நீக்கு"
+                >
+                  ×
+                </button>
+                <label htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
+                <input
+                  type="text"
+                  id="old_balance"
+                  value={formData.old_balance || ''}
+                  onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
+                  className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
+                  placeholder="பழைய பாக்கி"
+                  autoComplete="off"
+                />
+                <div className="mt-2">
+                  <label htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
+                  <select
+                    id="old_balance_status"
+                    value={oldBalanceStatus}
+                    onChange={e => setOldBalanceStatus(e.target.value as 'paid' | 'pending')}
+                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
+                  >
+                    <option value="pending">நிலுவையில்</option>
+                    <option value="paid">முழுமையாக பெறப்பட்டது</option>
+                  </select>
+                </div>
+                {/* Old Balance Reason Field */}
+                <div className="mt-2 sm:mt-4">
+                  <label htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
+                  <input
+                    type="text"
+                    id="old_balance_reason"
+                    value={formData.old_balance_reason || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, old_balance_reason: e.target.value }))}
+                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
+                    placeholder="காரணம்"
+                    autoComplete="off"
+                  />
+                </div>
+                {formData.old_balance && (
+                  <div className="mt-2 text-sm font-bold" style={{ color: oldBalanceStatus === 'paid' ? 'green' : 'red' }}>
+                    பழைய பாக்கி: ₹{formData.old_balance}
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Submit Error */}
