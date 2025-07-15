@@ -306,104 +306,103 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 </div>
 
                 {/* Details Sets */}
-                {formData.details.map((d, i) => {
-                  const isDipper = d.equipment_type === 'Dipper';
-                  return (
-                    <div
-                      key={i}
-                      className={
-                        'grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 mb-2 items-end' +
-                        (i !== formData.details.length - 1 ? ' border-b-2 border-gray-400 pb-4' : '')
-                      }
-                    >
-                      {/* Always show type dropdown */}
-                      <div className="sm:border-l sm:border-gray-300 sm:pl-4">
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
-                        <select
-                          value={d.equipment_type}
-                          onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
-                          className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-base"
-                        >
-                          <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                          <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                          <option value="Rotavator">Rotavator (₹{EQUIPMENT_RATES['Rotavator']}/சால்)</option>
-                          <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
-                          <option value="Dipper">Dipper (₹500)</option>
-                        </select>
-                      </div>
-                      {/* Type-specific fields */}
-                      {isDipper ? (
-                        <>
-                          <div className="sm:col-span-2">
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நடை *</label>
-                            <input
-                              type="number"
-                              value={d.nadai}
-                              onChange={e => handleDetailChange(i, 'nadai', e.target.value)}
-                              className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`nadai_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                              placeholder="நடை எண்ணிக்கை"
-                              min="1"
-                              step="1"
-                            />
-                            {errors[`nadai_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`nadai_${i}`]}</p>}
-                          </div>
-                          <div className="sm:col-span-2 mt-2">
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">தொகை</label>
-                            <input
-                              type="number"
-                              value={500}
-                              readOnly
-                              className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg bg-gray-100 text-xs sm:text-base"
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
-                            <input
-                              type="number"
-                              value={d.acres}
-                              onChange={e => handleDetailChange(i, 'acres', e.target.value)}
-                              className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                              placeholder="மா எண்ணிக்கை"
-                              min="0"
-                              step="0.1"
-                            />
-                            {errors[`acres_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
-                          </div>
-                          <div className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
-                            <div className="flex-1">
-                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {formData.details.map((d, i) => {
+                    const isDipper = d.equipment_type === 'Dipper';
+                    return (
+                      <div key={i} className="relative border-2 border-blue-200 bg-blue-50 rounded-xl p-4 mb-2 shadow-md hover:shadow-lg transition-shadow">
+                        {formData.details.length > 1 && (
+                          <span className="absolute -top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">{i + 1}</span>
+                        )}
+                        {/* Always show type dropdown */}
+                        <div className="sm:border-l sm:border-gray-300 sm:pl-4">
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
+                          <select
+                            value={d.equipment_type}
+                            onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
+                            className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-base"
+                          >
+                            <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                            <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
+                            <option value="Rotavator">Rotavator (₹{EQUIPMENT_RATES['Rotavator']}/சால்)</option>
+                            <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
+                            <option value="Dipper">Dipper (₹500)</option>
+                          </select>
+                        </div>
+                        {/* Type-specific fields */}
+                        {isDipper ? (
+                          <>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நடை *</label>
                               <input
                                 type="number"
-                                value={d.rounds}
-                                onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
-                                className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                                placeholder="சால் எண்ணிக்கை"
-                                min="0"
+                                value={d.nadai}
+                                onChange={e => handleDetailChange(i, 'nadai', e.target.value)}
+                                className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`nadai_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                                placeholder="நடை எண்ணிக்கை"
+                                min="1"
                                 step="1"
                               />
-                              {errors[`rounds_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
+                              {errors[`nadai_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`nadai_${i}`]}</p>}
                             </div>
-                          </div>
-                        </>
-                      )}
-                      {/* Add/Remove buttons always visible for every row */}
-                      <div className="flex gap-2 mt-2">
-                        {formData.details.length > 1 && (
-                          <button type="button" onClick={() => handleRemoveDetail(i)} className="text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
+                            <div className="sm:col-span-2 mt-2">
+                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">தொகை</label>
+                              <input
+                                type="number"
+                                value={500}
+                                readOnly
+                                className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg bg-gray-100 text-xs sm:text-base"
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
+                              <input
+                                type="number"
+                                value={d.acres}
+                                onChange={e => handleDetailChange(i, 'acres', e.target.value)}
+                                className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                                placeholder="மா எண்ணிக்கை"
+                                min="0"
+                                step="0.1"
+                              />
+                              {errors[`acres_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
+                            </div>
+                            <div className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
+                              <div className="flex-1">
+                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
+                                <input
+                                  type="number"
+                                  value={d.rounds}
+                                  onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
+                                  className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                                  placeholder="சால் எண்ணிக்கை"
+                                  min="0"
+                                  step="1"
+                                />
+                                {errors[`rounds_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
+                              </div>
+                            </div>
+                          </>
                         )}
-                        {i === formData.details.length - 1 && (
-                          <button type="button" onClick={handleAddDetail} className="text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
-                        )}
+                        {/* Add/Remove buttons always visible for every row */}
+                        <div className="flex gap-2 mt-2">
+                          {formData.details.length > 1 && (
+                            <button type="button" onClick={() => handleRemoveDetail(i)} className="text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
+                          )}
+                          {i === formData.details.length - 1 && (
+                            <button type="button" onClick={handleAddDetail} className="text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
 
                 {/* Calculation Display */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 sm:p-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-4">
                   <div className="flex items-center mb-2 sm:mb-3">
                     <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
                     <h3 className="text-xs sm:text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
@@ -478,14 +477,14 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
 
             {/* Show old balance fields in full form if showOldBalanceSection is true */}
             {!oldBalanceOnly && showOldBalanceSection && (
-              <div className="mt-2 sm:mt-4 border p-3 rounded-lg bg-gray-50 relative">
+              <div className="mt-2 sm:mt-4 border p-3 pt-7 rounded-lg bg-gray-50 relative">
                 <button
                   type="button"
                   onClick={() => {
                     setShowOldBalanceSection(false);
                     setFormData(prev => ({ ...prev, old_balance: '', old_balance_status: '', old_balance_reason: '' }));
                   }}
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full"
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl font-bold px-2 py-1 rounded-full z-10"
                   title="பழைய பாக்கி நீக்கு"
                 >
                   ×
