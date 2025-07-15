@@ -35,8 +35,12 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   // Add state for oldBalanceOnly
-  const [oldBalanceOnly, setOldBalanceOnly] = useState(false);
-  const [oldBalanceStatus, setOldBalanceStatus] = useState<'paid' | 'pending'>('pending');
+  const [oldBalanceOnly, setOldBalanceOnly] = useState(
+    initialData && (!initialData.details || initialData.details.length === 0) && initialData.old_balance ? true : false
+  );
+  const [oldBalanceStatus, setOldBalanceStatus] = useState<'paid' | 'pending'>(
+    (initialData && initialData.old_balance_status) ? initialData.old_balance_status : 'pending'
+  );
 
   // Calculate total for all sets
   const totalAmount = formData.details.reduce((sum, d) => {
@@ -181,7 +185,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
               <div>
                 <h2 className="text-lg sm:text-xl font-bold">
                   {initialData ? 
-                    (isOldBalanceOnly ? 'பழைய பாக்கி திருத்தம்' : 'வாடகை பதிவு திருத்தம்') : 
+                    (oldBalanceOnly ? 'பழைய பாக்கி திருத்தம்' : 'வாடகை பதிவு திருத்தம்') : 
                     'புதிய வாடகை பதிவு'
                   }
                 </h2>
@@ -204,6 +208,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 id="oldBalanceOnly"
                 checked={oldBalanceOnly}
                 onChange={e => setOldBalanceOnly(e.target.checked)}
+                disabled={!!initialData && oldBalanceOnly} // Disable if editing old balance only
                 className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <label htmlFor="oldBalanceOnly" className="text-xs sm:text-sm font-medium text-gray-700 select-none">பழைய பாக்கி மட்டும்</label>
