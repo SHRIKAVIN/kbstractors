@@ -60,7 +60,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
       return sum + calculateTotalAmount(
         parseFloat(d.acres) || 0,
         parseFloat(d.rounds) || 0,
-        d.equipment_type as any
+        d.equipment_type as 'Cage Wheel' | 'Rotavator' | 'புழுதி' | 'Mini'
       );
     }
     return sum;
@@ -409,10 +409,31 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     <h3 className="text-xs sm:text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
-                    <div>
-                      <p className="text-gray-600">மொத்த தொகை:</p>
-                      <p className="font-semibold text-gray-900">{formatCurrency(totalAmount)}</p>
-                    </div>
+                    {formData.details.map((d, i) => {
+                      let amount = 0;
+                      let summary = '';
+                      if (d.equipment_type === 'Dipper') {
+                        amount = 500 * (parseInt(String(d.nadai)) || 0);
+                        summary = `${String(d.nadai)} நடை . Dipper`;
+                      } else {
+                        amount = calculateTotalAmount(
+                          parseFloat(d.acres) || 0,
+                          parseFloat(d.rounds) || 0,
+                          d.equipment_type as 'Cage Wheel' | 'Rotavator' | 'புழுதி' | 'Mini'
+                        );
+                        summary = `${d.acres} மா . ${d.rounds} சால் . ${d.equipment_type}`;
+                      }
+                      return (
+                        <div key={i} className="flex items-center gap-2 text-xs sm:text-sm">
+                          <span>{summary} - ₹{amount}</span>
+                        </div>
+                      );
+                    })}
+                    {!oldBalanceOnly && showOldBalanceSection && formData.old_balance && (
+                      <div className="flex items-center gap-2 text-xs sm:text-sm">
+                        <span>பழைய பாக்கி - ₹{formData.old_balance}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-blue-200">
                     <p className="text-base sm:text-lg font-bold text-blue-900">
