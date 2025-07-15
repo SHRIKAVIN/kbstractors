@@ -102,7 +102,9 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       )}
                       {record.old_balance && (
                         <div className="font-semibold text-base text-gray-700 mt-1">
-                          பழைய பாக்கி {record.old_balance}
+                          <span className={record.old_balance_status === 'paid' ? 'text-green-600' : 'text-red-600'}>
+                            பழைய பாக்கி {record.old_balance}
+                          </span>
                         </div>
                       )}
                     </div>
