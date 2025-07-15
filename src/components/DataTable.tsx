@@ -31,11 +31,10 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
         <table className="min-w-full border border-gray-300 table-fixed">
           <colgroup>
             <col style={{ width: '18%' }} />
-            <col style={{ width: '22%' }} />
+            <col style={{ width: '35%' }} />
             <col style={{ width: '13%' }} />
             <col style={{ width: '13%' }} />
-            <col style={{ width: '13%' }} />
-            <col style={{ width: '11%' }} />
+            <col style={{ width: '10%' }} />
             <col style={{ width: '10%' }} />
           </colgroup>
           <thead className="bg-gray-50 sticky top-0 z-10">
@@ -101,6 +100,11 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
+                      {record.old_balance && (
+                        <div className="font-semibold text-base text-gray-700 mt-1">
+                          பழைய பாக்கி {record.old_balance}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap font-semibold text-gray-900">{formatCurrency(record.total_amount)}</td>
@@ -110,11 +114,6 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
                       {statusText}
                     </span>
-                    {record.old_balance && (
-                      <div className="mt-2 inline-block bg-gray-100 rounded px-3 py-1 text-xs text-gray-700 font-medium">
-                        பழைய பாக்கி: {record.old_balance}
-                      </div>
-                    )}
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap text-center">
                     <div className="flex justify-center gap-3">
