@@ -3,7 +3,7 @@ import { LogIn, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 export function LoginForm() {
-  const [password, setPassword] = useState('kbs2025');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
