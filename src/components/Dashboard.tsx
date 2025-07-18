@@ -160,7 +160,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm border-b">
+      <header className="bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
           <div className="flex flex-col items-center">
             <img src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-14 h-14 rounded-full shadow mb-2" />
