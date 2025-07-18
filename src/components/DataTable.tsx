@@ -25,7 +25,6 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
         <h3 className="text-lg font-medium text-gray-900">வாடகை பதிவுகள்</h3>
-        <p className="text-sm text-gray-600 mt-1">மொத்தம் {records.length} பதிவுகள்</p>
       </div>
       <div className="overflow-x-auto max-h-[60vh]">
         <table className="min-w-full border border-gray-300 table-fixed">
