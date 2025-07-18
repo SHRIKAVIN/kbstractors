@@ -50,19 +50,17 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
           </thead>
           <tbody className="bg-white">
             {records.map((record, idx) => {
+              // Fix the status calculation:
               let isPaid = false;
               let pendingAmount = record.total_amount - record.received_amount;
               let statusText = '';
               let statusClass = '';
-              if (record.old_balance_status) {
-                isPaid = record.old_balance_status === 'paid';
-                statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
-                statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
-              } else {
-                isPaid = record.received_amount >= record.total_amount;
-                statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
-                statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
-              }
+              
+              // Status should be "paid" only if there is no pending amount
+              isPaid = pendingAmount <= 0;
+              statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
+              statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
+              
               return (
                 <tr key={record.id} className={`hover:bg-blue-50 divide-x divide-gray-300 border-b border-gray-300 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                   <td className="px-3 py-2 whitespace-nowrap">
@@ -80,12 +78,13 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       {(record.details && record.details.length > 0) ? (
                         record.details.map((d, idx) => {
                           let amount = 0;
+                          // Fix the machinery details display:
                           if (d.equipment_type === 'Dipper') {
-                            amount = 500 * (parseInt(d.nadai) || 0);
+                            amount = 500 * (parseInt(String(d.nadai || '0')) || 0);
                           } else {
                             amount = calculateTotalAmount(
-                              parseFloat(d.acres) || 0,
-                              parseFloat(d.rounds) || 0,
+                              parseFloat(String(d.acres || '0')) || 0,
+                              parseFloat(String(d.rounds || '0')) || 0,
                               d.equipment_type
                             );
                           }
@@ -93,16 +92,16 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                             <div key={idx} className="font-semibold text-base">
                               {d.equipment_type === 'Dipper' ? (
                                 <>
-                                  <span>{d.nadai} நடை</span>
+                                  <span>{String(d.nadai || '')} நடை</span>
                                   <span className="mx-2">•</span>
                                   <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">Dipper</span>
                                   <span className="ml-2 text-xs text-gray-500">( {formatCurrency(amount)} )</span>
                                 </>
                               ) : (
                                 <>
-                                  <span>{d.acres} மா</span>
+                                  <span>{String(d.acres || '')} மா</span>
                                   <span className="mx-2">•</span>
-                                  <span>{d.rounds} சால்</span>
+                                  <span>{String(d.rounds || '')} சால்</span>
                                   <span className="mx-2">•</span>
                                   <span className="text-xs bg-gray-100 px-2 py-1 rounded font-medium align-middle">{d.equipment_type === 'Rotavator' ? 'Rotavator' : d.equipment_type}</span>
                                   <span className="ml-2 text-xs text-gray-500">( {formatCurrency(amount)} )</span>
