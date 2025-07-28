@@ -234,34 +234,38 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
     const docDefinition = {
       pageSize: 'A4',
       pageOrientation: 'landscape',
-      pageMargins: [20, 40, 20, 40],
+      pageMargins: [30, 50, 30, 50],
       content: [
         {
-          image: 'logo',
-          width: 60,
-          alignment: 'center',
-          margin: [0, 0, 0, 10]
-        },
-        { text: 'KBS TRACTORS - RENTAL RECORDS', fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
-        { text: `Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, fontSize: 10, alignment: 'center', margin: [0, 0, 0, 15] },
-        {
-          table: {
-            headerRows: 1,
-            widths: [80, 120, 70, 70, 70, 80, 70],
-            body: [headers, ...body]
-          },
-          alignment: 'center',
-          layout: {
-            fillColor: (rowIndex: number) => rowIndex === 0 ? '#2563eb' : (rowIndex % 2 === 0 ? '#F3F4F6' : null),
-            hLineWidth: () => 1,
-            vLineWidth: () => 1,
-            hLineColor: () => '#222',
-            vLineColor: () => '#222',
-            paddingLeft: () => 4,
-            paddingRight: () => 4,
-            paddingTop: () => 6,
-            paddingBottom: () => 6
-          }
+          stack: [
+            {
+              image: 'logo',
+              width: 60,
+              alignment: 'center',
+              margin: [0, 0, 0, 10]
+            },
+            { text: 'KBS TRACTORS - RENTAL RECORDS', fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
+            { text: `Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, fontSize: 10, alignment: 'center', margin: [0, 0, 0, 15] },
+            {
+              table: {
+                headerRows: 1,
+                widths: [80, 120, 70, 70, 70, 80, 70],
+                body: [headers, ...body]
+              },
+              layout: {
+                fillColor: (rowIndex: number) => rowIndex === 0 ? '#2563eb' : (rowIndex % 2 === 0 ? '#F3F4F6' : null),
+                hLineWidth: () => 1,
+                vLineWidth: () => 1,
+                hLineColor: () => '#222',
+                vLineColor: () => '#222',
+                paddingLeft: () => 4,
+                paddingRight: () => 4,
+                paddingTop: () => 6,
+                paddingBottom: () => 6
+              }
+            }
+          ],
+          alignment: 'center'
         }
       ],
       images: {
