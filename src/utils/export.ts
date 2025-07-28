@@ -3,7 +3,6 @@ import type { RentalRecord } from '../types/rental';
 import { formatCurrency } from './calculations';
 // PDFMake import and font setup
 import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
 // Import the base64-encoded Tamil font using Vite's ?raw import
 import notoSansTamilBase64 from '../assets/fonts/Noto_Sans_Tamil/NotoSansTamil-Regular.ttf.base64?raw';
 // Import the base64-encoded logo
@@ -237,16 +236,18 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
       pageMargins: [30, 50, 30, 50],
       content: [
         {
-          stack: [
+          image: 'logo',
+          width: 60,
+          alignment: 'center',
+          margin: [0, 0, 0, 10]
+        },
+        { text: 'KBS TRACTORS - RENTAL RECORDS', fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
+        { text: `Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, fontSize: 10, alignment: 'center', margin: [0, 0, 0, 15] },
+        {
+          columns: [
+            { width: '*', text: '' },
             {
-              image: 'logo',
-              width: 60,
-              alignment: 'center',
-              margin: [0, 0, 0, 10]
-            },
-            { text: 'KBS TRACTORS - RENTAL RECORDS', fontSize: 18, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
-            { text: `Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, fontSize: 10, alignment: 'center', margin: [0, 0, 0, 15] },
-            {
+              width: 'auto',
               table: {
                 headerRows: 1,
                 widths: [80, 120, 70, 70, 70, 80, 70],
@@ -263,9 +264,9 @@ export function exportToPDF(records: RentalRecord[], filename: string = 'kbs-tra
                 paddingTop: () => 6,
                 paddingBottom: () => 6
               }
-            }
-          ],
-          alignment: 'center'
+            },
+            { width: '*', text: '' }
+          ]
         }
       ],
       images: {
