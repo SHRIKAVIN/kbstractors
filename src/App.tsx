@@ -14,10 +14,10 @@ function App() {
           title="Loading - KBS Tractors"
           description="Loading KBS Tractors management system..."
         />
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">பதிவுகளை ஏற்றுகிறது...</p>
+      <div data-testid="loading-screen" className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div data-testid="loading-content" className="text-center">
+          <div data-testid="loading-spinner" className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p data-testid="loading-text" className="text-gray-600">பதிவுகளை ஏற்றுகிறது...</p>
         </div>
       </div>
       </>

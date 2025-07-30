@@ -31,19 +31,20 @@ export function LoginForm() {
         keywords="KBS Tractors login, tractor management login, rental system access, business administration login"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <img src="/icons/kbs-tractors-192.png" alt="KBS Tractors Logo" className="mx-auto mb-4 w-20 h-20 rounded-full shadow" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">KBS Tractors</h1>
-          <p className="text-gray-600">நிர்வாக பேனல்</p>
+    <div data-testid="login-container" className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div data-testid="login-card" className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        <div data-testid="login-header" className="text-center mb-8">
+          <img data-testid="login-logo" src="/icons/kbs-tractors-192.png" alt="KBS Tractors Logo" className="mx-auto mb-4 w-20 h-20 rounded-full shadow" />
+          <h1 data-testid="login-title" className="text-2xl font-bold text-gray-900 mb-2">KBS Tractors</h1>
+          <p data-testid="login-subtitle" className="text-gray-600">நிர்வாக பேனல்</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+        <form data-testid="login-form" onSubmit={handleSubmit} className="space-y-6">
+          <div data-testid="username-field-container">
+            <label data-testid="username-label" htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
               பயனர் பெயர்
             </label>
             <input
+              data-testid="username-input"
               id="username"
               type="text"
               value="Bhaskaran"
@@ -51,11 +52,12 @@ export function LoginForm() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          <div data-testid="password-field-container">
+            <label data-testid="password-label" htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               கடவுச்சொல்
             </label>
             <input
+              data-testid="password-input"
               id="password"
               type="password"
               value={password}
@@ -66,24 +68,25 @@ export function LoginForm() {
             />
           </div>
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-700 text-sm">{error}</p>
+            <div data-testid="login-error" className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p data-testid="error-message" className="text-red-700 text-sm">{error}</p>
             </div>
           )}
           <button
+            data-testid="login-submit-button"
             type="submit"
             disabled={isLoading}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                உள்நுழைகிறது...
+                <Loader2 data-testid="login-loading-icon" className="w-4 h-4 mr-2 animate-spin" />
+                <span data-testid="login-loading-text">உள்நுழைகிறது...</span>
               </>
             ) : (
               <>
-                <LogIn className="w-4 h-4 mr-2" />
-                உள்நுழைய
+                <LogIn data-testid="login-icon" className="w-4 h-4 mr-2" />
+                <span data-testid="login-button-text">உள்நுழைய</span>
               </>
             )}
           </button>

@@ -137,10 +137,10 @@ export function Dashboard() {
           title="Loading Dashboard - KBS Tractors"
           description="Loading KBS Tractors management dashboard..."
         />
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">தகவல்களை ஏற்றுகிறது...</p>
+      <div data-testid="dashboard-loading-screen" className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div data-testid="dashboard-loading-content" className="text-center">
+          <div data-testid="dashboard-loading-spinner" className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p data-testid="dashboard-loading-text" className="text-gray-600">தகவல்களை ஏற்றுகிறது...</p>
         </div>
       </div>
       </>
@@ -172,72 +172,76 @@ export function Dashboard() {
         keywords="tractor dashboard, rental management, equipment tracking, business administration, KBS Tractors dashboard"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div className="min-h-screen bg-gray-50">
+    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
-          <div className="flex flex-col items-center">
-            <img src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-14 h-14 rounded-full shadow mb-2" />
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 text-center">KBS Tractors</h1>
-            <p className="text-xs sm:text-sm text-gray-600 text-center mb-4">நிர்வாக பேனல்</p>
-            <div className="flex flex-row items-center justify-center gap-3 w-full max-w-xs bg-gray-50 rounded-xl shadow p-2">
+      <header data-testid="dashboard-header" className="bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b">
+        <div data-testid="header-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
+          <div data-testid="header-main" className="flex flex-col items-center">
+            <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-14 h-14 rounded-full shadow mb-2" />
+            <h1 data-testid="header-title" className="text-xl sm:text-2xl font-bold text-gray-900 text-center">KBS Tractors</h1>
+            <p data-testid="header-subtitle" className="text-xs sm:text-sm text-gray-600 text-center mb-4">நிர்வாக பேனல்</p>
+            <div data-testid="header-actions" className="flex flex-row items-center justify-center gap-3 w-full max-w-xs bg-gray-50 rounded-xl shadow p-2">
               <button
+                data-testid="refresh-button"
                 onClick={loadRecords}
                 className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
                 disabled={loading}
                 aria-label="Refresh"
               >
                 {loading ? (
-                  <span className="animate-spin inline-block"><RefreshCw className="w-5 h-5" /></span>
+                  <span data-testid="refresh-loading-icon" className="animate-spin inline-block"><RefreshCw className="w-5 h-5" /></span>
                 ) : (
-                  <RefreshCw className="w-5 h-5" />
+                  <RefreshCw data-testid="refresh-icon" className="w-5 h-5" />
                 )}
               </button>
               <button
+                data-testid="add-record-button"
                 onClick={() => setShowForm(true)}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                புதிய பதிவு
+                <Plus data-testid="add-icon" className="w-4 h-4 mr-2" />
+                <span data-testid="add-button-text">புதிய பதிவு</span>
               </button>
               <button
+                data-testid="logout-button"
                 onClick={handleLogout}
                 className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
                 aria-label="Logout"
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut data-testid="logout-icon" className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{filteredRecords.length}</p>
+        <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
+          <div data-testid="total-records-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
+            <p data-testid="total-records-value" className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{filteredRecords.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-600 tracking-wide">{formatCurrency(totalAmount)}</p>
+          <div data-testid="total-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
+            <p data-testid="total-amount-value" className="text-xl sm:text-2xl font-bold text-green-600 tracking-wide">{formatCurrency(totalAmount)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{formatCurrency(totalReceived)}</p>
+          <div data-testid="total-received-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
+            <p data-testid="total-received-value" className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{formatCurrency(totalReceived)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
-            <p className="text-xl sm:text-2xl font-bold text-orange-500 tracking-wide">{formatCurrency(pendingAmount)}</p>
+          <div data-testid="pending-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
+            <p data-testid="pending-amount-value" className="text-xl sm:text-2xl font-bold text-orange-500 tracking-wide">{formatCurrency(pendingAmount)}</p>
           </div>
         </div>
 
         {/* Filters and Export */}
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
-          <div className="flex flex-wrap gap-3 items-center justify-between">
-            <div className="flex flex-wrap gap-3 w-full">
+        <div data-testid="filters-section" className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
+          <div data-testid="filters-content" className="flex flex-wrap gap-3 items-center justify-between">
+            <div data-testid="filters-row" className="flex flex-wrap gap-3 w-full">
               <select
+                data-testid="equipment-filter"
                 value={filter.equipment}
                 onChange={(e) => setFilter(prev => ({ ...prev, equipment: e.target.value }))}
                 className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
@@ -252,6 +256,7 @@ export function Dashboard() {
 
               {/* Status Filter */}
               <select
+                data-testid="status-filter"
                 value={filter.status}
                 onChange={e => setFilter(prev => ({ ...prev, status: e.target.value }))}
                 className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
@@ -263,6 +268,7 @@ export function Dashboard() {
 
               {/* Old Balance Status Filter */}
               <select
+                data-testid="old-balance-status-filter"
                 value={filter.oldBalanceStatus}
                 onChange={e => setFilter(prev => ({ ...prev, oldBalanceStatus: e.target.value }))}
                 className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px]"
@@ -273,6 +279,7 @@ export function Dashboard() {
               </select>
 
               <input
+                data-testid="name-search-input"
                 type="text"
                 value={filter.name || ''}
                 onChange={e => setFilter(prev => ({ ...prev, name: e.target.value }))}
@@ -280,26 +287,29 @@ export function Dashboard() {
                 className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
               />
               <button
+                data-testid="clear-filters-button"
                 onClick={handleClearFilters}
                 className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg min-w-[100px]"
               >
                 Clear Filters
               </button>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <div data-testid="export-buttons" className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
+                data-testid="export-excel-button"
                 onClick={() => exportToExcel(filteredRecords)}
                 className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Excel
+                <Download data-testid="excel-icon" className="w-4 h-4 mr-2" />
+                <span data-testid="excel-button-text">Excel</span>
               </button>
               <button
+                data-testid="export-pdf-button"
                 onClick={() => exportToPDF(filteredRecords)}
                 className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
               >
-                <Download className="w-4 h-4 mr-2" />
-                PDF
+                <Download data-testid="pdf-icon" className="w-4 h-4 mr-2" />
+                <span data-testid="pdf-button-text">PDF</span>
               </button>
             </div>
           </div>

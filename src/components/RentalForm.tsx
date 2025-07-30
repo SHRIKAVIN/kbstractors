@@ -194,34 +194,36 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-2 sm:px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg">
+    <div data-testid="rental-form-container" className="min-h-screen bg-gray-50 py-8 px-2 sm:px-4">
+      <div data-testid="rental-form-wrapper" className="max-w-2xl mx-auto">
+        <div data-testid="rental-form-card" className="bg-white rounded-lg shadow-lg">
           {/* Header */}
-          <div className="bg-blue-600 text-white p-4 sm:p-6 rounded-t-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold">
+          <div data-testid="rental-form-header" className="bg-blue-600 text-white p-4 sm:p-6 rounded-t-lg">
+            <div data-testid="header-content" className="flex items-center justify-between">
+              <div data-testid="header-text">
+                <h2 data-testid="form-title" className="text-lg sm:text-xl font-bold">
                   {initialData ? 
                     (oldBalanceOnly ? 'பழைய பாக்கி திருத்தம்' : 'வாடகை பதிவு திருத்தம்') : 
                     'புதிய வாடகை பதிவு'
                   }
                 </h2>
-                <p className="text-blue-100 mt-1 text-xs sm:text-sm">KBS Tractors</p>
+                <p data-testid="form-subtitle" className="text-blue-100 mt-1 text-xs sm:text-sm">KBS Tractors</p>
               </div>
               <button
+                data-testid="close-button"
                 onClick={onClose}
                 className="text-white hover:bg-blue-700 p-2 rounded-lg transition-colors"
               >
-                <X className="w-6 h-6" />
+                <X data-testid="close-icon" className="w-6 h-6" />
               </button>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-x-auto">
+          <form data-testid="rental-form" onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-x-auto">
             {/* Old Balance Only Checkbox */}
-            <div className="mb-2 sm:mb-4 flex items-center">
+            <div data-testid="old-balance-only-container" className="mb-2 sm:mb-4 flex items-center">
               <input
+                data-testid="old-balance-only-checkbox"
                 type="checkbox"
                 id="oldBalanceOnly"
                 checked={oldBalanceOnly}
@@ -229,15 +231,16 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 disabled={!!initialData && oldBalanceOnly} // Disable if editing old balance only
                 className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="oldBalanceOnly" className="text-xs sm:text-sm font-medium text-gray-700 select-none">பழைய பாக்கி மட்டும்</label>
+              <label data-testid="old-balance-only-label" htmlFor="oldBalanceOnly" className="text-xs sm:text-sm font-medium text-gray-700 select-none">பழைய பாக்கி மட்டும்</label>
             </div>
 
             {oldBalanceOnly ? (
               <>
                 {/* Name Field */}
-                <div>
-                  <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பெயர் *</label>
+                <div data-testid="name-field-container">
+                  <label data-testid="name-label" htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பெயர் *</label>
                   <input
+                    data-testid="name-input"
                     type="text"
                     id="name"
                     value={formData.name}
@@ -245,12 +248,13 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
                     placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
-                  {errors.name && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p data-testid="name-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
                 </div>
                 {/* Old Balance Field */}
-                <div className="mt-2 sm:mt-4">
-                  <label htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
+                <div data-testid="old-balance-field-container" className="mt-2 sm:mt-4">
+                  <label data-testid="old-balance-label" htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
                   <input
+                    data-testid="old-balance-input"
                     type="text"
                     id="old_balance"
                     value={formData.old_balance || ''}
@@ -261,9 +265,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   />
                 </div>
                 {/* Old Balance Status Dropdown */}
-                <div className="mt-2 sm:mt-4">
-                  <label htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
+                <div data-testid="old-balance-status-container" className="mt-2 sm:mt-4">
+                  <label data-testid="old-balance-status-label" htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
                   <select
+                    data-testid="old-balance-status-select"
                     id="old_balance_status"
                     value={oldBalanceStatus}
                     onChange={e => setOldBalanceStatus(e.target.value as 'paid' | 'pending')}
@@ -274,9 +279,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   </select>
                 </div>
                 {/* Old Balance Reason Field */}
-                <div className="mt-2 sm:mt-4">
-                  <label htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
+                <div data-testid="old-balance-reason-container" className="mt-2 sm:mt-4">
+                  <label data-testid="old-balance-reason-label" htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
                   <input
+                    data-testid="old-balance-reason-input"
                     type="text"
                     id="old_balance_reason"
                     value={formData.old_balance_reason || ''}
@@ -290,11 +296,12 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
             ) : (
               <>
                 {/* Customer Name */}
-                <div>
-                  <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                <div data-testid="customer-name-container">
+                  <label data-testid="customer-name-label" htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                     பெயர் *
                   </label>
                   <input
+                    data-testid="customer-name-input"
                     type="text"
                     id="name"
                     value={formData.name}
@@ -302,22 +309,23 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
                     placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
-                  {errors.name && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p data-testid="customer-name-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 {/* Details Sets */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div data-testid="details-sets-container" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {formData.details.map((d, i) => {
                     const isDipper = d.equipment_type === 'Dipper';
                     return (
-                      <div key={i} className="relative border-2 border-blue-200 bg-blue-50 rounded-xl p-4 mb-2 shadow-md hover:shadow-lg transition-shadow">
+                      <div key={i} data-testid={`detail-set-${i}`} className="relative border-2 border-blue-200 bg-blue-50 rounded-xl p-4 mb-2 shadow-md hover:shadow-lg transition-shadow">
                         {formData.details.length > 1 && (
-                          <span className="absolute -top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">{i + 1}</span>
+                          <span data-testid={`detail-set-number-${i}`} className="absolute -top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">{i + 1}</span>
                         )}
                         {/* Always show type dropdown */}
-                        <div className="sm:border-l sm:border-gray-300 sm:pl-4">
-                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
+                        <div data-testid={`equipment-type-container-${i}`} className="sm:border-l sm:border-gray-300 sm:pl-4">
+                          <label data-testid={`equipment-type-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
                           <select
+                            data-testid={`equipment-type-select-${i}`}
                             value={d.equipment_type}
                             onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
                             className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-base"
@@ -332,9 +340,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                         {/* Type-specific fields */}
                         {isDipper ? (
                           <>
-                            <div className="sm:col-span-2">
-                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நடை *</label>
+                            <div data-testid={`dipper-fields-${i}`} className="sm:col-span-2">
+                              <label data-testid={`nadai-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நடை *</label>
                               <input
+                                data-testid={`nadai-input-${i}`}
                                 type="number"
                                 value={d.nadai}
                                 onChange={e => handleDetailChange(i, 'nadai', e.target.value)}
@@ -343,11 +352,12 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                                 min="1"
                                 step="1"
                               />
-                              {errors[`nadai_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`nadai_${i}`]}</p>}
+                              {errors[`nadai_${i}`] && <p data-testid={`nadai-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`nadai_${i}`]}</p>}
                             </div>
-                            <div className="sm:col-span-2 mt-2">
-                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">தொகை</label>
+                            <div data-testid={`dipper-amount-${i}`} className="sm:col-span-2 mt-2">
+                              <label data-testid={`dipper-amount-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">தொகை</label>
                               <input
+                                data-testid={`dipper-amount-input-${i}`}
                                 type="number"
                                 value={500}
                                 readOnly
@@ -357,9 +367,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                           </>
                         ) : (
                           <>
-                            <div>
-                              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
+                            <div data-testid={`acres-container-${i}`}>
+                              <label data-testid={`acres-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
                               <input
+                                data-testid={`acres-input-${i}`}
                                 type="number"
                                 value={d.acres}
                                 onChange={e => handleDetailChange(i, 'acres', e.target.value)}
@@ -368,12 +379,13 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                                 min="0"
                                 step="0.1"
                               />
-                              {errors[`acres_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
+                              {errors[`acres_${i}`] && <p data-testid={`acres-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
                             </div>
-                            <div className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
-                              <div className="flex-1">
-                                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
+                            <div data-testid={`rounds-container-${i}`} className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
+                              <div data-testid={`rounds-field-${i}`} className="flex-1">
+                                <label data-testid={`rounds-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
                                 <input
+                                  data-testid={`rounds-input-${i}`}
                                   type="number"
                                   value={d.rounds}
                                   onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
@@ -382,18 +394,18 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                                   min="0"
                                   step="1"
                                 />
-                                {errors[`rounds_${i}`] && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
+                                {errors[`rounds_${i}`] && <p data-testid={`rounds-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
                               </div>
                             </div>
                           </>
                         )}
                         {/* Add/Remove buttons always visible for every row */}
-                        <div className="flex gap-2 mt-2">
+                        <div data-testid={`detail-actions-${i}`} className="flex gap-2 mt-2">
                           {formData.details.length > 1 && (
-                            <button type="button" onClick={() => handleRemoveDetail(i)} className="text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
+                            <button data-testid={`remove-detail-button-${i}`} type="button" onClick={() => handleRemoveDetail(i)} className="text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
                           )}
                           {i === formData.details.length - 1 && (
-                            <button type="button" onClick={handleAddDetail} className="text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
+                            <button data-testid={`add-detail-button-${i}`} type="button" onClick={handleAddDetail} className="text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
                           )}
                         </div>
                       </div>
@@ -402,12 +414,12 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 </div>
 
                 {/* Calculation Display */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-4">
-                  <div className="flex items-center mb-2 sm:mb-3">
-                    <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
-                    <h3 className="text-xs sm:text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
+                <div data-testid="calculation-display" className="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-4">
+                  <div data-testid="calculation-header" className="flex items-center mb-2 sm:mb-3">
+                    <Calculator data-testid="calculator-icon" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
+                    <h3 data-testid="calculation-title" className="text-xs sm:text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
+                  <div data-testid="calculation-items" className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
                     {formData.details.map((d, i) => {
                       let amount = 0;
                       let summary = '';
@@ -423,30 +435,31 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                         summary = `${d.acres} மா . ${d.rounds} சால் . ${d.equipment_type}`;
                       }
                       return (
-                        <div key={i} className="flex items-center gap-2 text-xs sm:text-sm">
-                          <span>{summary} - ₹{amount}</span>
+                        <div key={i} data-testid={`calculation-item-${i}`} className="flex items-center gap-2 text-xs sm:text-sm">
+                          <span data-testid={`calculation-summary-${i}`}>{summary} - ₹{amount}</span>
                         </div>
                       );
                     })}
                     {!oldBalanceOnly && showOldBalanceSection && formData.old_balance && (
-                      <div className="flex items-center gap-2 text-xs sm:text-sm">
-                        <span>பழைய பாக்கி - ₹{formData.old_balance}</span>
+                      <div data-testid="old-balance-calculation" className="flex items-center gap-2 text-xs sm:text-sm">
+                        <span data-testid="old-balance-calculation-text">பழைய பாக்கி - ₹{formData.old_balance}</span>
                       </div>
                     )}
                   </div>
-                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-blue-200">
-                    <p className="text-base sm:text-lg font-bold text-blue-900">
+                  <div data-testid="total-calculation" className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-blue-200">
+                    <p data-testid="total-amount-display" className="text-base sm:text-lg font-bold text-blue-900">
                       மொத்த தொகை: {formatCurrency(totalAmount)}
                     </p>
                   </div>
                 </div>
 
                 {/* Received Amount */}
-                <div className="mt-2 sm:mt-4">
-                  <label htmlFor="received_amount" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                <div data-testid="received-amount-container" className="mt-2 sm:mt-4">
+                  <label data-testid="received-amount-label" htmlFor="received_amount" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                     பெறப்பட்ட தொகை (₹) *
                   </label>
                   <input
+                    data-testid="received-amount-input"
                     type="number"
                     id="received_amount"
                     value={formData.received_amount}
@@ -456,18 +469,19 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     min="0"
                     step="0.01"
                   />
-                  {errors.received_amount && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.received_amount}</p>}
+                  {errors.received_amount && <p data-testid="received-amount-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.received_amount}</p>}
                 </div>
                 {!oldBalanceOnly && (
-                  <div className="flex items-center mt-2">
+                  <div data-testid="old-balance-toggle-container" className="flex items-center mt-2">
                     {!showOldBalanceSection ? (
                       <button
+                        data-testid="add-old-balance-button"
                         type="button"
                         onClick={() => setShowOldBalanceSection(true)}
                         className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
                       >
-                        <span className="text-lg font-bold mr-1">+</span>
-                        பழைய பாக்கி இருந்தால்
+                        <span data-testid="add-old-balance-icon" className="text-lg font-bold mr-1">+</span>
+                        <span data-testid="add-old-balance-text">பழைய பாக்கி இருந்தால்</span>
                       </button>
                     ) : null}
                   </div>
@@ -477,8 +491,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
 
             {/* Show old balance fields in full form if showOldBalanceSection is true */}
             {!oldBalanceOnly && showOldBalanceSection && (
-              <div className="mt-2 sm:mt-4 border p-3 pt-7 rounded-lg bg-gray-50 relative">
+              <div data-testid="old-balance-section" className="mt-2 sm:mt-4 border p-3 pt-7 rounded-lg bg-gray-50 relative">
                 <button
+                  data-testid="remove-old-balance-button"
                   type="button"
                   onClick={() => {
                     setShowOldBalanceSection(false);
@@ -489,8 +504,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 >
                   ×
                 </button>
-                <label htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
+                <label data-testid="full-form-old-balance-label" htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
                 <input
+                  data-testid="full-form-old-balance-input"
                   type="text"
                   id="old_balance"
                   value={formData.old_balance || ''}
@@ -499,9 +515,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   placeholder="பழைய பாக்கி"
                   autoComplete="off"
                 />
-                <div className="mt-2">
-                  <label htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
+                <div data-testid="full-form-old-balance-status-container" className="mt-2">
+                  <label data-testid="full-form-old-balance-status-label" htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
                   <select
+                    data-testid="full-form-old-balance-status-select"
                     id="old_balance_status"
                     value={oldBalanceStatus}
                     onChange={e => setOldBalanceStatus(e.target.value as 'paid' | 'pending')}
@@ -512,9 +529,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   </select>
                 </div>
                 {/* Old Balance Reason Field */}
-                <div className="mt-2 sm:mt-4">
-                  <label htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
+                <div data-testid="full-form-old-balance-reason-container" className="mt-2 sm:mt-4">
+                  <label data-testid="full-form-old-balance-reason-label" htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
                   <input
+                    data-testid="full-form-old-balance-reason-input"
                     type="text"
                     id="old_balance_reason"
                     value={formData.old_balance_reason || ''}
@@ -525,8 +543,8 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   />
                 </div>
                 {formData.old_balance && (
-                  <div className="mt-2 text-sm font-bold" style={{ color: oldBalanceStatus === 'paid' ? 'green' : 'red' }}>
-                    பழைய பாக்கி: ₹{formData.old_balance}
+                  <div data-testid="old-balance-display" className="mt-2 text-sm font-bold" style={{ color: oldBalanceStatus === 'paid' ? 'green' : 'red' }}>
+                    <span data-testid="old-balance-display-text">பழைய பாக்கி: ₹{formData.old_balance}</span>
                   </div>
                 )}
               </div>
@@ -534,34 +552,36 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
 
             {/* Submit Error */}
             {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-red-600 text-sm">{errors.submit}</p>
+              <div data-testid="submit-error" className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p data-testid="submit-error-message" className="text-red-600 text-sm">{errors.submit}</p>
               </div>
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-6">
+            <div data-testid="action-buttons" className="flex flex-col sm:flex-row gap-3 pt-6">
               <button
+                data-testid="save-button"
                 type="submit"
                 disabled={loading}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
               >
                 {loading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div data-testid="save-loading-spinner" className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
-                    <Save className="w-5 h-5 mr-2" />
-                    சேமிக்கவும்
+                    <Save data-testid="save-icon" className="w-5 h-5 mr-2" />
+                    <span data-testid="save-button-text">சேமிக்கவும்</span>
                   </>
                 )}
               </button>
               <button
+                data-testid="cancel-button"
                 type="button"
                 onClick={onClose}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
               >
-                <X className="w-5 h-5 mr-2" />
-                ரத்து செய்
+                <X data-testid="cancel-icon" className="w-5 h-5 mr-2" />
+                <span data-testid="cancel-button-text">ரத்து செய்</span>
               </button>
             </div>
           </form>

@@ -24,33 +24,33 @@ export const SEO: React.FC<SEOProps> = ({
   const fullImageUrl = image.startsWith('http') ? image : `${url}${image}`;
 
   return (
-    <Helmet>
+    <Helmet data-testid="seo-helmet">
       {/* Basic Meta Tags */}
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
-      {canonical && <link rel="canonical" href={canonical} />}
+      <title data-testid="seo-title">{title}</title>
+      <meta data-testid="seo-description" name="description" content={description} />
+      <meta data-testid="seo-keywords" name="keywords" content={keywords} />
+      {canonical && <link data-testid="seo-canonical" rel="canonical" href={canonical} />}
 
       {/* Open Graph Meta Tags */}
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={fullUrl} />
-      <meta property="og:image" content={fullImageUrl} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="KBS Tractors" />
-      <meta property="og:locale" content="en_US" />
+      <meta data-testid="og-title" property="og:title" content={title} />
+      <meta data-testid="og-description" property="og:description" content={description} />
+      <meta data-testid="og-type" property="og:type" content={type} />
+      <meta data-testid="og-url" property="og:url" content={fullUrl} />
+      <meta data-testid="og-image" property="og:image" content={fullImageUrl} />
+      <meta data-testid="og-image-width" property="og:image:width" content="1200" />
+      <meta data-testid="og-image-height" property="og:image:height" content="630" />
+      <meta data-testid="og-site-name" property="og:site_name" content="KBS Tractors" />
+      <meta data-testid="og-locale" property="og:locale" content="en_US" />
 
       {/* Twitter Card Meta Tags */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={fullImageUrl} />
+      <meta data-testid="twitter-card" name="twitter:card" content="summary_large_image" />
+      <meta data-testid="twitter-title" name="twitter:title" content={title} />
+      <meta data-testid="twitter-description" name="twitter:description" content={description} />
+      <meta data-testid="twitter-image" name="twitter:image" content={fullImageUrl} />
 
       {/* Additional SEO Meta Tags */}
-      <meta name="robots" content="index, follow" />
-      <meta name="googlebot" content="index, follow" />
+      <meta data-testid="robots" name="robots" content="index, follow" />
+      <meta data-testid="googlebot" name="googlebot" content="index, follow" />
     </Helmet>
   );
 }; 
