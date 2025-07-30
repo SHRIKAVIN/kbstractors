@@ -328,9 +328,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 **Made with ❤️ for the agricultural community**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/kbstractors?style=social)](https://github.com/yourusername/kbstractors)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/kbstractors?style=social)](https://github.com/yourusername/kbstractors)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/kbstractors)](https://github.com/yourusername/kbstractors/issues)
-[![GitHub license](https://img.shields.io/github/license/yourusername/kbstractors)](https://github.com/yourusername/kbstractors/blob/main/LICENSE)
 
 </div>
