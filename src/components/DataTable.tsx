@@ -1,6 +1,6 @@
 import { User, Settings, Pencil, Trash2 } from 'lucide-react';
 import type { RentalRecord } from '../types/rental';
-import { formatCurrency, calculateTotalAmount, EQUIPMENT_RATES } from '../utils/calculations';
+import { formatCurrency, calculateTotalAmount} from '../utils/calculations';
 
 interface DataTableProps {
   records: RentalRecord[];
