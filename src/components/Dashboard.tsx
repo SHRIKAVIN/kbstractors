@@ -137,7 +137,7 @@ export function Dashboard() {
           title="Loading Dashboard - KBS Tractors"
           description="Loading KBS Tractors management dashboard..."
         />
-      <div data-testid="dashboard-loading-screen" className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div data-testid="dashboard-loading-screen" className="min-h-screen bg-white flex items-center justify-center">
         <div data-testid="dashboard-loading-content" className="text-center transform hover:scale-105 transition-transform duration-300">
           <div data-testid="dashboard-loading-spinner" className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4 shadow-2xl"></div>
           <p data-testid="dashboard-loading-text" className="text-gray-600 font-medium">தகவல்களை ஏற்றுகிறது...</p>
@@ -172,7 +172,7 @@ export function Dashboard() {
         keywords="tractor dashboard, rental management, equipment tracking, business administration, KBS Tractors dashboard"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div data-testid="dashboard-container" className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+    <div data-testid="dashboard-container" className="min-h-screen bg-white">
       {/* Header with 3D Effects */}
       <header data-testid="dashboard-header" className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-2xl transform-gpu">
         <div data-testid="header-content" className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-16 pb-4">
