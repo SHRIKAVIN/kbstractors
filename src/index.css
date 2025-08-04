@@ -123,6 +123,16 @@
   .mobile-header [data-testid="header-main"] {
     gap: 0.125rem !important;
   }
+  
+  /* Reduce stats cards spacing in PWA */
+  .mobile-content [data-testid="stats-cards"] {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Reduce filters section spacing in PWA */
+  .mobile-content [data-testid="filters-section"] {
+    margin-bottom: 0.5rem !important;
+  }
 }
 
 /* Ensure proper viewport handling for mobile */
