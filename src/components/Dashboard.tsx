@@ -175,28 +175,28 @@ export function Dashboard() {
     <div data-testid="dashboard-container" className="min-h-screen bg-white">
       {/* Header with 3D Effects */}
       <header data-testid="dashboard-header" className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-2xl transform-gpu">
-        <div data-testid="header-content" className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-16 pb-4">
+        <div data-testid="header-content" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6">
           <div data-testid="header-main" className="flex flex-col items-center">
             {/* Logo with 3D Effect */}
             <div className="relative transform hover:scale-110 transition-all duration-300 hover:rotate-3">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-xl opacity-60 transform scale-110"></div>
-              <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="relative w-16 h-16 rounded-full shadow-2xl border-4 border-white/20 backdrop-blur-sm" />
+              <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-2xl border-4 border-white/20 backdrop-blur-sm" />
             </div>
             
             {/* Title with 3D Text Effect */}
             <div className="mt-3 text-center">
-              <h1 data-testid="header-title" className="text-2xl sm:text-3xl font-bold text-white drop-shadow-2xl transform hover:scale-105 transition-transform duration-300">
+              <h1 data-testid="header-title" className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-2xl transform hover:scale-105 transition-transform duration-300">
                 <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">KBS Tractors</span>
               </h1>
-              <p data-testid="header-subtitle" className="text-sm sm:text-base text-blue-100 mt-1 font-medium drop-shadow-lg">நிர்வாக பேனல்</p>
+              <p data-testid="header-subtitle" className="text-xs sm:text-sm lg:text-base text-blue-100 mt-1 font-medium drop-shadow-lg">நிர்வாக பேனல்</p>
             </div>
             
             {/* Action Buttons with 3D Card Effect */}
-            <div data-testid="header-actions" className="mt-4 flex flex-row items-center justify-center gap-3 w-full max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-3 transform hover:scale-105 transition-all duration-300">
+            <div data-testid="header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}
-                className="flex-1 text-white hover:text-blue-100 p-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
+                className="flex-1 text-white hover:text-blue-100 p-2 sm:p-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 disabled={loading}
                 aria-label="Refresh"
               >
@@ -209,7 +209,7 @@ export function Dashboard() {
               <button
                 data-testid="add-record-button"
                 onClick={() => setShowForm(true)}
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-3 rounded-xl flex items-center justify-center font-medium text-base shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-green-400/30"
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl flex items-center justify-center font-medium text-sm sm:text-base shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-green-400/30"
               >
                 <Plus data-testid="add-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="add-button-text">புதிய பதிவு</span>
@@ -217,7 +217,7 @@ export function Dashboard() {
               <button
                 data-testid="logout-button"
                 onClick={handleLogout}
-                className="flex-1 text-white hover:text-red-100 p-3 rounded-xl hover:bg-red-500/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
+                className="flex-1 text-white hover:text-red-100 p-2 sm:p-3 rounded-xl hover:bg-red-500/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 aria-label="Logout"
               >
                 <LogOut data-testid="logout-icon" className="w-5 h-5" />
@@ -227,42 +227,42 @@ export function Dashboard() {
         </div>
       </header>
 
-      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-10">
+      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10">
         {/* Stats Cards with 3D Effects */}
-        <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-8">
-          <div data-testid="total-records-card" className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
+        <div data-testid="stats-cards" className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 mb-6 sm:mb-8">
+          <div data-testid="total-records-card" className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
-              <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">மொத்த பதிவுகள்</p>
-              <p data-testid="total-records-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{filteredRecords.length}</p>
+              <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">மொத்த பதிவுகள்</p>
+              <p data-testid="total-records-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{filteredRecords.length}</p>
             </div>
           </div>
           
-          <div data-testid="total-amount-card" className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center border border-green-100/50 backdrop-blur-sm relative overflow-hidden">
+          <div data-testid="total-amount-card" className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-green-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
-              <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">மொத்த தொகை</p>
-              <p data-testid="total-amount-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalAmount)}</p>
+              <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">மொத்த தொகை</p>
+              <p data-testid="total-amount-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalAmount)}</p>
             </div>
           </div>
           
-          <div data-testid="total-received-card" className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
+          <div data-testid="total-received-card" className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
-              <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">பெறப்பட்ட தொகை</p>
-              <p data-testid="total-received-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalReceived)}</p>
+              <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">பெறப்பட்ட தொகை</p>
+              <p data-testid="total-received-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalReceived)}</p>
             </div>
           </div>
           
-          <div data-testid="pending-amount-card" className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center border border-orange-100/50 backdrop-blur-sm relative overflow-hidden">
+          <div data-testid="pending-amount-card" className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-orange-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
-              <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">நிலுவைத் தொகை</p>
-              <p data-testid="pending-amount-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(pendingAmount)}</p>
+              <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">நிலுவைத் தொகை</p>
+              <p data-testid="pending-amount-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(pendingAmount)}</p>
             </div>
           </div>
         </div>
 
         {/* Filters and Export with 3D Effects */}
-        <div data-testid="filters-section" className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-4 sm:p-6 mb-8 border border-gray-200/50 backdrop-blur-sm relative overflow-hidden">
+        <div data-testid="filters-section" className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8 border border-gray-200/50 backdrop-blur-sm relative overflow-hidden">
           <div data-testid="filters-content" className="relative flex flex-wrap gap-3 items-center justify-between">
-            <div data-testid="filters-row" className="flex flex-wrap gap-3 w-full">
+            <div data-testid="filters-row" className="flex flex-wrap gap-2 sm:gap-3 w-full">
               <select
                 data-testid="equipment-filter"
                 value={filter.equipment}
