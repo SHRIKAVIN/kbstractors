@@ -301,10 +301,10 @@ export function Dashboard() {
 
       <div 
         data-testid="dashboard-main-content" 
-        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 md:pt-4 md:py-8 mobile-content"
+        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-4 md:pt-2 md:py-4 mobile-content"
       >
         {/* Stats Cards */}
-        <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
+        <div data-testid="stats-cards" className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 mb-4">
           <div data-testid="total-records-card" className="dashboard-card">
             <div data-testid="total-records-content" className="dashboard-card-content">
               <p data-testid="total-records-label" className="dashboard-card-label">மொத்த பதிவுகள்</p>
