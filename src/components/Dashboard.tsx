@@ -179,7 +179,7 @@ export function Dashboard() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-indigo-500/20 transform rotate-3 scale-110"></div>
         <div className="absolute inset-0 bg-gradient-to-l from-blue-300/10 to-purple-400/10 transform -rotate-2 scale-105"></div>
         
-        <div data-testid="header-content" className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-12 pb-4">
+        <div data-testid="header-content" className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-16 pb-4">
           <div data-testid="header-main" className="flex flex-col items-center">
             {/* Logo with 3D Effect */}
             <div className="relative transform hover:scale-110 transition-all duration-300 hover:rotate-3">
