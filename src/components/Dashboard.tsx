@@ -206,7 +206,7 @@ export function Dashboard() {
         keywords="tractor dashboard, rental management, equipment tracking, business administration, KBS Tractors dashboard"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50">
+    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Static Header with iOS-like animations - Mobile Only */}
       <header 
         ref={headerRef}
@@ -285,8 +285,11 @@ export function Dashboard() {
 
       <div 
         data-testid="dashboard-main-content" 
-        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 md:pt-4 md:py-8"
-        style={{ paddingTop: window.innerWidth < 768 ? `${headerHeight + 16}px` : undefined }}
+        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 md:pt-4 md:py-8 pb-20"
+        style={{ 
+          paddingTop: window.innerWidth < 768 ? `${headerHeight + 24}px` : undefined,
+          minHeight: window.innerWidth < 768 ? `calc(100vh - ${headerHeight}px - 24px)` : undefined
+        }}
       >
         {/* Stats Cards */}
         <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
