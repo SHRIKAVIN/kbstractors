@@ -133,6 +133,17 @@
   .mobile-content [data-testid="filters-section"] {
     margin-bottom: 0.5rem !important;
   }
+  
+  /* Reduce table spacing in PWA */
+  .mobile-content [data-testid="data-table"] {
+    margin-bottom: 0.25rem !important;
+  }
+  
+  /* Reduce any bottom padding in PWA */
+  .mobile-content > *:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
 }
 
 /* Ensure proper viewport handling for mobile */
