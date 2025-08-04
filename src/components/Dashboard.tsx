@@ -14,7 +14,7 @@ export function Dashboard() {
   const [filteredRecords, setFilteredRecords] = useState<RentalRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
   const headerRef = useRef<HTMLElement>(null);
   const [filter, setFilter] = useState({
@@ -36,7 +36,7 @@ export function Dashboard() {
     applyFilters();
   }, [records, filter]);
 
-  // Scroll detection for header animations (mobile only) - Optimized for performance
+  // Smooth scroll detection for header animations (mobile only)
   useEffect(() => {
     let ticking = false;
     
@@ -46,9 +46,11 @@ export function Dashboard() {
           // Only apply scroll effects on mobile devices
           if (window.innerWidth < 768) {
             const scrollTop = window.scrollY;
-            setIsScrolled(scrollTop > 10);
+            // Calculate smooth scroll progress (0 to 1) over 100px scroll distance
+            const progress = Math.min(Math.max(scrollTop / 100, 0), 1);
+            setScrollProgress(progress);
           } else {
-            setIsScrolled(false);
+            setScrollProgress(0);
           }
           ticking = false;
         });
@@ -214,13 +216,13 @@ export function Dashboard() {
       <header 
         ref={headerRef}
         data-testid="dashboard-header" 
-        className={`mobile-header md:relative md:static ${
-          isScrolled 
-            ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
-            : 'bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b'
-        }`}
+        className="mobile-header md:relative md:static"
         style={{
-          paddingTop: window.innerWidth < 768 ? 'env(safe-area-inset-top)' : undefined
+          paddingTop: window.innerWidth < 768 ? 'env(safe-area-inset-top)' : undefined,
+          backgroundColor: `rgba(255, 255, 255, ${0.95 * scrollProgress})`,
+          backdropFilter: `blur(${8 * scrollProgress}px)`,
+          boxShadow: `0 ${4 * scrollProgress}px ${6 * scrollProgress}px -1px rgba(0, 0, 0, ${0.1 * scrollProgress})`,
+          borderBottom: `1px solid rgba(229, 231, 235, ${scrollProgress})`
         }}
       >
         <div data-testid="header-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
@@ -229,31 +231,39 @@ export function Dashboard() {
               data-testid="header-logo" 
               src="/icons/kbs-tractors-96.png" 
               alt="KBS Tractors Logo" 
-              className={`rounded-full shadow mb-2 ${
-                isScrolled ? 'w-10 h-10' : 'w-14 h-14'
-              }`} 
+              className="rounded-full shadow mb-2 transition-all duration-300 ease-out"
+              style={{
+                width: `${56 - (16 * scrollProgress)}px`,
+                height: `${56 - (16 * scrollProgress)}px`
+              }}
             />
             <h1 
               data-testid="header-title" 
-              className={`font-bold text-gray-900 text-center ${
-                isScrolled ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
-              }`}
+              className="font-bold text-gray-900 text-center transition-all duration-300 ease-out"
+              style={{
+                fontSize: `${1.5 - (0.25 * scrollProgress)}rem`,
+                lineHeight: `${2 - (0.25 * scrollProgress)}rem`
+              }}
             >
               KBS Tractors
             </h1>
             <p 
               data-testid="header-subtitle" 
-              className={`text-gray-600 text-center mb-4 ${
-                isScrolled ? 'text-xs opacity-75' : 'text-xs sm:text-sm'
-              }`}
+              className="text-gray-600 text-center mb-4 transition-all duration-300 ease-out"
+              style={{
+                fontSize: `${0.875 - (0.125 * scrollProgress)}rem`,
+                opacity: 1 - (0.25 * scrollProgress)
+              }}
             >
               நிர்வாக பேனல்
             </p>
             <div 
               data-testid="header-actions" 
-              className={`flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 ${
-                isScrolled ? 'bg-gray-100/80 backdrop-blur-sm' : 'bg-gray-50'
-              }`}
+              className="flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 transition-all duration-300 ease-out"
+              style={{
+                backgroundColor: `rgba(249, 250, 251, ${0.5 + (0.3 * scrollProgress)})`,
+                backdropFilter: `blur(${4 * scrollProgress}px)`
+              }}
             >
               <button
                 data-testid="refresh-button"
