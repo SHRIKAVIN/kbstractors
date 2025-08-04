@@ -25,6 +25,71 @@
     left: 0;
     right: 0;
     z-index: 50;
+    /* Hardware acceleration for smoother animations */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform, opacity, background-color, box-shadow;
+  }
+
+  /* Optimized mobile header animations */
+  .mobile-header * {
+    /* Enable hardware acceleration for all child elements */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    will-change: transform, opacity, width, height;
+  }
+
+  /* Smooth logo transitions */
+  .mobile-header img {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, width, height;
+  }
+
+  /* Smooth text transitions */
+  .mobile-header h1,
+  .mobile-header p {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, font-size, opacity;
+  }
+
+  /* Smooth background transitions */
+  .mobile-header {
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Optimize scroll performance */
+  .mobile-content {
+    /* Prevent layout thrashing during scroll */
+    contain: layout style paint;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+  }
+
+  /* Smooth button animations in header */
+  .mobile-header button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, background-color, color;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .mobile-header button:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .mobile-header button:active {
+    transform: translate3d(0, 0, 0) scale(0.98);
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-header,
+    .mobile-header * {
+      transition: none !important;
+      animation: none !important;
+    }
   }
 }
 
