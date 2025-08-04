@@ -137,10 +137,10 @@ export function Dashboard() {
           title="Loading Dashboard - KBS Tractors"
           description="Loading KBS Tractors management dashboard..."
         />
-      <div data-testid="dashboard-loading-screen" className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div data-testid="dashboard-loading-content" className="text-center">
-          <div data-testid="dashboard-loading-spinner" className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p data-testid="dashboard-loading-text" className="text-gray-600">தகவல்களை ஏற்றுகிறது...</p>
+      <div data-testid="dashboard-loading-screen" className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div data-testid="dashboard-loading-content" className="text-center transform hover:scale-105 transition-transform duration-300">
+          <div data-testid="dashboard-loading-spinner" className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4 shadow-2xl"></div>
+          <p data-testid="dashboard-loading-text" className="text-gray-600 font-medium">தகவல்களை ஏற்றுகிறது...</p>
         </div>
       </div>
       </>
@@ -172,19 +172,35 @@ export function Dashboard() {
         keywords="tractor dashboard, rental management, equipment tracking, business administration, KBS Tractors dashboard"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header data-testid="dashboard-header" className="bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b">
-        <div data-testid="header-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
+    <div data-testid="dashboard-container" className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
+      {/* Header with 3D Effects */}
+      <header data-testid="dashboard-header" className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-2xl transform-gpu">
+        {/* 3D Background Elements */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-indigo-500/20 transform rotate-3 scale-110"></div>
+        <div className="absolute inset-0 bg-gradient-to-l from-blue-300/10 to-purple-400/10 transform -rotate-2 scale-105"></div>
+        
+        <div data-testid="header-content" className="relative max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-12 pb-4">
           <div data-testid="header-main" className="flex flex-col items-center">
-            <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-14 h-14 rounded-full shadow mb-2" />
-            <h1 data-testid="header-title" className="text-xl sm:text-2xl font-bold text-gray-900 text-center">KBS Tractors</h1>
-            <p data-testid="header-subtitle" className="text-xs sm:text-sm text-gray-600 text-center mb-4">நிர்வாக பேனல்</p>
-            <div data-testid="header-actions" className="flex flex-row items-center justify-center gap-3 w-full max-w-xs bg-gray-50 rounded-xl shadow p-2">
+            {/* Logo with 3D Effect */}
+            <div className="relative transform hover:scale-110 transition-all duration-300 hover:rotate-3">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-xl opacity-60 transform scale-110"></div>
+              <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="relative w-16 h-16 rounded-full shadow-2xl border-4 border-white/20 backdrop-blur-sm" />
+            </div>
+            
+            {/* Title with 3D Text Effect */}
+            <div className="mt-3 text-center">
+              <h1 data-testid="header-title" className="text-2xl sm:text-3xl font-bold text-white drop-shadow-2xl transform hover:scale-105 transition-transform duration-300">
+                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">KBS Tractors</span>
+              </h1>
+              <p data-testid="header-subtitle" className="text-sm sm:text-base text-blue-100 mt-1 font-medium drop-shadow-lg">நிர்வாக பேனல்</p>
+            </div>
+            
+            {/* Action Buttons with 3D Card Effect */}
+            <div data-testid="header-actions" className="mt-4 flex flex-row items-center justify-center gap-3 w-full max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-3 transform hover:scale-105 transition-all duration-300">
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}
-                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+                className="flex-1 text-white hover:text-blue-100 p-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 disabled={loading}
                 aria-label="Refresh"
               >
@@ -197,7 +213,7 @@ export function Dashboard() {
               <button
                 data-testid="add-record-button"
                 onClick={() => setShowForm(true)}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow"
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-3 rounded-xl flex items-center justify-center font-medium text-base shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-green-400/30"
               >
                 <Plus data-testid="add-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="add-button-text">புதிய பதிவு</span>
@@ -205,7 +221,7 @@ export function Dashboard() {
               <button
                 data-testid="logout-button"
                 onClick={handleLogout}
-                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+                className="flex-1 text-white hover:text-red-100 p-3 rounded-xl hover:bg-red-500/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 aria-label="Logout"
               >
                 <LogOut data-testid="logout-icon" className="w-5 h-5" />
@@ -215,36 +231,52 @@ export function Dashboard() {
         </div>
       </header>
 
-      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-        {/* Stats Cards */}
-        <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
-          <div data-testid="total-records-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
-            <p data-testid="total-records-value" className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{filteredRecords.length}</p>
+      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-6 sm:py-10">
+        {/* Stats Cards with 3D Effects */}
+        <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-8">
+          <div data-testid="total-records-card" className="group bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">மொத்த பதிவுகள்</p>
+              <p data-testid="total-records-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{filteredRecords.length}</p>
+            </div>
           </div>
-          <div data-testid="total-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
-            <p data-testid="total-amount-value" className="text-xl sm:text-2xl font-bold text-green-600 tracking-wide">{formatCurrency(totalAmount)}</p>
+          
+          <div data-testid="total-amount-card" className="group bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 border border-green-100/50 backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">மொத்த தொகை</p>
+              <p data-testid="total-amount-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalAmount)}</p>
+            </div>
           </div>
-          <div data-testid="total-received-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
-            <p data-testid="total-received-value" className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{formatCurrency(totalReceived)}</p>
+          
+          <div data-testid="total-received-card" className="group bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">பெறப்பட்ட தொகை</p>
+              <p data-testid="total-received-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalReceived)}</p>
+            </div>
           </div>
-          <div data-testid="pending-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
-            <p data-testid="pending-amount-value" className="text-xl sm:text-2xl font-bold text-orange-500 tracking-wide">{formatCurrency(pendingAmount)}</p>
+          
+          <div data-testid="pending-amount-card" className="group bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col items-center justify-center text-center transform hover:scale-105 hover:-translate-y-2 transition-all duration-300 border border-orange-100/50 backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-2">நிலுவைத் தொகை</p>
+              <p data-testid="pending-amount-value" className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(pendingAmount)}</p>
+            </div>
           </div>
         </div>
 
-        {/* Filters and Export */}
-        <div data-testid="filters-section" className="bg-white rounded-lg shadow p-4 sm:p-6 mb-6">
-          <div data-testid="filters-content" className="flex flex-wrap gap-3 items-center justify-between">
+        {/* Filters and Export with 3D Effects */}
+        <div data-testid="filters-section" className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-4 sm:p-6 mb-8 transform hover:scale-[1.02] transition-all duration-300 border border-gray-200/50 backdrop-blur-sm relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-indigo-500/5 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+          <div data-testid="filters-content" className="relative flex flex-wrap gap-3 items-center justify-between">
             <div data-testid="filters-row" className="flex flex-wrap gap-3 w-full">
               <select
                 data-testid="equipment-filter"
                 value={filter.equipment}
                 onChange={(e) => setFilter(prev => ({ ...prev, equipment: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px] bg-white/80 backdrop-blur-sm shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 <option value="">அனைத்து வகைகள்</option>
                 <option value="Cage Wheel">Cage Wheel</option>
@@ -259,7 +291,7 @@ export function Dashboard() {
                 data-testid="status-filter"
                 value={filter.status}
                 onChange={e => setFilter(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px] bg-white/80 backdrop-blur-sm shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 <option value="">அனைத்து நிலைகள்</option>
                 <option value="paid">முழுமையாக பெறப்பட்டது</option>
@@ -271,7 +303,7 @@ export function Dashboard() {
                 data-testid="old-balance-status-filter"
                 value={filter.oldBalanceStatus}
                 onChange={e => setFilter(prev => ({ ...prev, oldBalanceStatus: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px]"
+                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px] bg-white/80 backdrop-blur-sm shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 <option value="">பழைய பாக்கி நிலை</option>
                 <option value="paid">பழைய பாக்கி - முழுமையாக பெறப்பட்டது</option>
@@ -284,21 +316,21 @@ export function Dashboard() {
                 value={filter.name || ''}
                 onChange={e => setFilter(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Search rental person..."
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
+                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px] bg-white/80 backdrop-blur-sm shadow-lg transform hover:scale-105 transition-all duration-200"
               />
               <button
                 data-testid="clear-filters-button"
                 onClick={handleClearFilters}
-                className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg min-w-[100px]"
+                className="w-full sm:w-auto bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 px-4 py-3 rounded-xl min-w-[100px] shadow-lg transform hover:scale-105 transition-all duration-200 border border-gray-300/50"
               >
                 Clear Filters
               </button>
             </div>
-            <div data-testid="export-buttons" className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <div data-testid="export-buttons" className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 sm:mt-0">
               <button
                 data-testid="export-excel-button"
                 onClick={() => exportToExcel(filteredRecords)}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl flex items-center justify-center shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-green-400/30"
               >
                 <Download data-testid="excel-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="excel-button-text">Excel</span>
@@ -306,7 +338,7 @@ export function Dashboard() {
               <button
                 data-testid="export-pdf-button"
                 onClick={() => exportToPDF(filteredRecords)}
-                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+                className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 py-3 rounded-xl flex items-center justify-center shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-red-400/30"
               >
                 <Download data-testid="pdf-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="pdf-button-text">PDF</span>
