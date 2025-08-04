@@ -46,8 +46,8 @@ export function Dashboard() {
           // Only apply scroll effects on mobile devices
           if (window.innerWidth < 768) {
             const scrollTop = window.scrollY;
-            // Calculate smooth scroll progress (0 to 1) over 100px scroll distance
-            const progress = Math.min(Math.max(scrollTop / 100, 0), 1);
+            // Calculate smooth scroll progress (0 to 1) over 200px scroll distance for smoother transitions
+            const progress = Math.min(Math.max(scrollTop / 200, 0), 1);
             setScrollProgress(progress);
           } else {
             setScrollProgress(0);
@@ -231,38 +231,38 @@ export function Dashboard() {
               data-testid="header-logo" 
               src="/icons/kbs-tractors-96.png" 
               alt="KBS Tractors Logo" 
-              className="rounded-full shadow mb-2 transition-all duration-300 ease-out"
+              className="rounded-full shadow mb-2 w-14 h-14 transition-all duration-300 ease-out"
               style={{
-                width: `${56 - (16 * scrollProgress)}px`,
-                height: `${56 - (16 * scrollProgress)}px`
+                opacity: 1 - (0.1 * scrollProgress),
+                transform: `scale(${1 - (0.05 * scrollProgress)})`
               }}
             />
             <h1 
               data-testid="header-title" 
-              className="font-bold text-gray-900 text-center transition-all duration-300 ease-out"
+              className="font-bold text-gray-900 text-center text-xl sm:text-2xl transition-all duration-300 ease-out"
               style={{
-                fontSize: `${1.5 - (0.25 * scrollProgress)}rem`,
-                lineHeight: `${2 - (0.25 * scrollProgress)}rem`
+                opacity: 1 - (0.1 * scrollProgress),
+                transform: `scale(${1 - (0.02 * scrollProgress)})`
               }}
             >
               KBS Tractors
             </h1>
             <p 
               data-testid="header-subtitle" 
-              className="text-gray-600 text-center mb-4 transition-all duration-300 ease-out"
+              className="text-gray-600 text-center mb-4 text-xs sm:text-sm transition-all duration-300 ease-out"
               style={{
-                fontSize: `${0.875 - (0.125 * scrollProgress)}rem`,
-                opacity: 1 - (0.25 * scrollProgress)
+                opacity: 1 - (0.3 * scrollProgress)
               }}
             >
               நிர்வாக பேனல்
             </p>
             <div 
               data-testid="header-actions" 
-              className="flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 transition-all duration-300 ease-out"
+              className="flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 bg-gray-50 transition-all duration-300 ease-out"
               style={{
                 backgroundColor: `rgba(249, 250, 251, ${0.5 + (0.3 * scrollProgress)})`,
-                backdropFilter: `blur(${4 * scrollProgress}px)`
+                backdropFilter: `blur(${4 * scrollProgress}px)`,
+                opacity: 1 - (0.1 * scrollProgress)
               }}
             >
               <button
