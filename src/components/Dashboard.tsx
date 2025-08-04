@@ -231,7 +231,7 @@ export function Dashboard() {
               data-testid="header-logo" 
               src="/icons/kbs-tractors-96.png" 
               alt="KBS Tractors Logo" 
-              className="rounded-full shadow mb-2 w-14 h-14 transition-all duration-300 ease-out"
+              className="header-logo-3d rounded-full shadow mb-2 w-14 h-14 transition-all duration-300 ease-out"
               style={{
                 opacity: 1 - (0.1 * scrollProgress),
                 transform: `scale(${1 - (0.05 * scrollProgress)})`
@@ -239,7 +239,7 @@ export function Dashboard() {
             />
             <h1 
               data-testid="header-title" 
-              className="font-bold text-gray-900 text-center text-xl sm:text-2xl transition-all duration-300 ease-out"
+              className="header-title-3d font-bold text-gray-900 text-center text-xl sm:text-2xl transition-all duration-300 ease-out"
               style={{
                 opacity: 1 - (0.1 * scrollProgress),
                 transform: `scale(${1 - (0.02 * scrollProgress)})`
@@ -249,7 +249,7 @@ export function Dashboard() {
             </h1>
             <p 
               data-testid="header-subtitle" 
-              className="text-gray-600 text-center mb-4 text-xs sm:text-sm transition-all duration-300 ease-out"
+              className="header-subtitle-3d text-gray-600 text-center mb-4 text-xs sm:text-sm transition-all duration-300 ease-out"
               style={{
                 opacity: 1 - (0.3 * scrollProgress)
               }}
@@ -258,7 +258,7 @@ export function Dashboard() {
             </p>
             <div 
               data-testid="header-actions" 
-              className="flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 bg-gray-50 transition-all duration-300 ease-out"
+              className="header-actions-3d flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 bg-gray-50 transition-all duration-300 ease-out"
               style={{
                 backgroundColor: `rgba(249, 250, 251, ${0.5 + (0.3 * scrollProgress)})`,
                 backdropFilter: `blur(${4 * scrollProgress}px)`,
@@ -268,7 +268,7 @@ export function Dashboard() {
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}
-                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
+                className="header-button-3d flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
                 disabled={loading}
                 aria-label="Refresh"
               >
@@ -281,7 +281,7 @@ export function Dashboard() {
               <button
                 data-testid="add-record-button"
                 onClick={() => setShowForm(true)}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow transition-all duration-200 hover:scale-105 active:scale-95"
+                className="header-button-primary-3d flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <Plus data-testid="add-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="add-button-text">புதிய பதிவு</span>
@@ -289,7 +289,7 @@ export function Dashboard() {
               <button
                 data-testid="logout-button"
                 onClick={handleLogout}
-                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
+                className="header-button-3d flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
                 aria-label="Logout"
               >
                 <LogOut data-testid="logout-icon" className="w-5 h-5" />

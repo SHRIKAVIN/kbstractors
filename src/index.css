@@ -238,3 +238,246 @@
     padding: 1rem;
   }
 }
+
+/* 3D Header Elements */
+.header-logo-3d {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transform: perspective(1000px) rotateX(2deg) translateZ(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-logo-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  border-radius: 50%;
+}
+
+.header-logo-3d:hover {
+  transform: perspective(1000px) rotateX(0deg) translateY(-2px) translateZ(5px);
+  box-shadow: 
+    0 12px 20px -5px rgba(0, 0, 0, 0.15),
+    0 6px 10px -5px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.header-title-3d {
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+  transform: perspective(1000px) rotateX(1deg) translateZ(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.025em;
+}
+
+.header-title-3d:hover {
+  transform: perspective(1000px) rotateX(0deg) translateY(-1px) translateZ(2px);
+  text-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-subtitle-3d {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transform: perspective(800px) rotateX(0.5deg) translateZ(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-subtitle-3d:hover {
+  transform: perspective(800px) rotateX(0deg) translateY(-0.5px) translateZ(1px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.header-actions-3d {
+  background: linear-gradient(145deg, #f9fafb, #f3f4f6);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transform: perspective(1000px) rotateX(1deg) translateZ(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-actions-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  border-radius: 12px 12px 0 0;
+}
+
+.header-actions-3d:hover {
+  transform: perspective(1000px) rotateX(0deg) translateY(-2px) translateZ(3px);
+  box-shadow: 
+    0 12px 20px -5px rgba(0, 0, 0, 0.15),
+    0 6px 10px -5px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.header-button-3d {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 
+    0 2px 4px -1px rgba(0, 0, 0, 0.08),
+    0 1px 2px -1px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transform: perspective(800px) rotateX(1deg) translateZ(0);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-button-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  border-radius: 8px 8px 0 0;
+}
+
+.header-button-3d:hover {
+  transform: perspective(800px) rotateX(0deg) translateY(-1px) translateZ(2px);
+  box-shadow: 
+    0 6px 12px -2px rgba(0, 0, 0, 0.12),
+    0 3px 6px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.header-button-3d:active {
+  transform: perspective(800px) rotateX(0.5deg) translateY(0px) translateZ(1px);
+  box-shadow: 
+    0 3px 6px -1px rgba(0, 0, 0, 0.1),
+    0 1px 3px -1px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Special styling for the primary action button */
+.header-button-primary-3d {
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
+  border: 1px solid #1e40af;
+  color: white;
+  box-shadow: 
+    0 4px 6px -1px rgba(37, 99, 235, 0.2),
+    0 2px 4px -1px rgba(37, 99, 235, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: perspective(800px) rotateX(1deg) translateZ(0);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-button-primary-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 8px 8px 0 0;
+}
+
+.header-button-primary-3d:hover {
+  background: linear-gradient(145deg, #1d4ed8, #1e40af);
+  transform: perspective(800px) rotateX(0deg) translateY(-1px) translateZ(2px);
+  box-shadow: 
+    0 8px 16px -2px rgba(37, 99, 235, 0.25),
+    0 4px 8px -1px rgba(37, 99, 235, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.header-button-primary-3d:active {
+  background: linear-gradient(145deg, #1e40af, #1e3a8a);
+  transform: perspective(800px) rotateX(0.5deg) translateY(0px) translateZ(1px);
+  box-shadow: 
+    0 4px 8px -1px rgba(37, 99, 235, 0.2),
+    0 2px 4px -1px rgba(37, 99, 235, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile-specific 3D header adjustments */
+@media (max-width: 767px) {
+  .header-logo-3d {
+    transform: perspective(800px) rotateX(1deg) translateZ(0);
+  }
+  
+  .header-logo-3d:hover {
+    transform: perspective(800px) rotateX(0deg) translateY(-1px) translateZ(3px);
+  }
+  
+  .header-title-3d {
+    transform: perspective(800px) rotateX(0.5deg) translateZ(0);
+  }
+  
+  .header-title-3d:hover {
+    transform: perspective(800px) rotateX(0deg) translateY(-0.5px) translateZ(1px);
+  }
+  
+  .header-subtitle-3d {
+    transform: perspective(600px) rotateX(0.25deg) translateZ(0);
+  }
+  
+  .header-subtitle-3d:hover {
+    transform: perspective(600px) rotateX(0deg) translateY(-0.25px) translateZ(0.5px);
+  }
+  
+  .header-actions-3d {
+    transform: perspective(800px) rotateX(0.5deg) translateZ(0);
+  }
+  
+  .header-actions-3d:hover {
+    transform: perspective(800px) rotateX(0deg) translateY(-1px) translateZ(2px);
+  }
+  
+  .header-button-3d {
+    transform: perspective(600px) rotateX(0.5deg) translateZ(0);
+  }
+  
+  .header-button-3d:hover {
+    transform: perspective(600px) rotateX(0deg) translateY(-0.5px) translateZ(1px);
+  }
+  
+  .header-button-primary-3d {
+    transform: perspective(600px) rotateX(0.5deg) translateZ(0);
+  }
+  
+  .header-button-primary-3d:hover {
+    transform: perspective(600px) rotateX(0deg) translateY(-0.5px) translateZ(1px);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .header-logo-3d,
+  .header-title-3d,
+  .header-subtitle-3d,
+  .header-actions-3d,
+  .header-button-3d,
+  .header-button-primary-3d {
+    transform: none !important;
+    transition: none !important;
+  }
+}
