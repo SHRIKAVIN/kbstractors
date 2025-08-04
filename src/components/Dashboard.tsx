@@ -1,4 +1,4 @@
-import{ useState, useEffect } from 'react';
+import{ useState, useEffect, useRef } from 'react';
 import { Plus, Download,LogOut, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
@@ -14,6 +14,9 @@ export function Dashboard() {
   const [filteredRecords, setFilteredRecords] = useState<RentalRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const headerRef = useRef<HTMLElement>(null);
   const [filter, setFilter] = useState({
     equipment: '',
     dateFrom: '',
@@ -32,6 +35,30 @@ export function Dashboard() {
   useEffect(() => {
     applyFilters();
   }, [records, filter]);
+
+  // Scroll detection for header animations
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Calculate header height for proper spacing
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
 
   const loadRecords = async () => {
     setLoading(true);
@@ -173,18 +200,52 @@ export function Dashboard() {
         canonical="https://kbstractors.vercel.app/"
       />
     <div data-testid="dashboard-container" className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header data-testid="dashboard-header" className="bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b">
+      {/* Static Header with iOS-like animations */}
+      <header 
+        ref={headerRef}
+        data-testid="dashboard-header" 
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out ${
+          isScrolled 
+            ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
+            : 'bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b'
+        }`}
+      >
         <div data-testid="header-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
           <div data-testid="header-main" className="flex flex-col items-center">
-            <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-14 h-14 rounded-full shadow mb-2" />
-            <h1 data-testid="header-title" className="text-xl sm:text-2xl font-bold text-gray-900 text-center">KBS Tractors</h1>
-            <p data-testid="header-subtitle" className="text-xs sm:text-sm text-gray-600 text-center mb-4">நிர்வாக பேனல்</p>
-            <div data-testid="header-actions" className="flex flex-row items-center justify-center gap-3 w-full max-w-xs bg-gray-50 rounded-xl shadow p-2">
+            <img 
+              data-testid="header-logo" 
+              src="/icons/kbs-tractors-96.png" 
+              alt="KBS Tractors Logo" 
+              className={`rounded-full shadow mb-2 transition-all duration-300 ease-out ${
+                isScrolled ? 'w-10 h-10' : 'w-14 h-14'
+              }`} 
+            />
+            <h1 
+              data-testid="header-title" 
+              className={`font-bold text-gray-900 text-center transition-all duration-300 ease-out ${
+                isScrolled ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
+              }`}
+            >
+              KBS Tractors
+            </h1>
+            <p 
+              data-testid="header-subtitle" 
+              className={`text-gray-600 text-center mb-4 transition-all duration-300 ease-out ${
+                isScrolled ? 'text-xs opacity-75' : 'text-xs sm:text-sm'
+              }`}
+            >
+              நிர்வாக பேனல்
+            </p>
+            <div 
+              data-testid="header-actions" 
+              className={`flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 transition-all duration-300 ease-out ${
+                isScrolled ? 'bg-gray-100/80 backdrop-blur-sm' : 'bg-gray-50'
+              }`}
+            >
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}
-                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
                 disabled={loading}
                 aria-label="Refresh"
               >
@@ -197,7 +258,7 @@ export function Dashboard() {
               <button
                 data-testid="add-record-button"
                 onClick={() => setShowForm(true)}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 <Plus data-testid="add-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="add-button-text">புதிய பதிவு</span>
@@ -205,7 +266,7 @@ export function Dashboard() {
               <button
                 data-testid="logout-button"
                 onClick={handleLogout}
-                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
                 aria-label="Logout"
               >
                 <LogOut data-testid="logout-icon" className="w-5 h-5" />
@@ -215,7 +276,11 @@ export function Dashboard() {
         </div>
       </header>
 
-      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+      <div 
+        data-testid="dashboard-main-content" 
+        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8"
+        style={{ paddingTop: `${headerHeight + 16}px` }}
+      >
         {/* Stats Cards */}
         <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
           <div data-testid="total-records-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
