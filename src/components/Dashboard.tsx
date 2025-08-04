@@ -295,21 +295,29 @@ export function Dashboard() {
       >
         {/* Stats Cards */}
         <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
-          <div data-testid="total-records-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
-            <p data-testid="total-records-value" className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{filteredRecords.length}</p>
+          <div data-testid="total-records-card" className="dashboard-card">
+            <div data-testid="total-records-content" className="dashboard-card-content">
+              <p data-testid="total-records-label" className="dashboard-card-label">மொத்த பதிவுகள்</p>
+              <p data-testid="total-records-value" className="dashboard-card-value blue">{filteredRecords.length}</p>
+            </div>
           </div>
-          <div data-testid="total-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
-            <p data-testid="total-amount-value" className="text-xl sm:text-2xl font-bold text-orange-500 tracking-wide">{formatCurrency(totalAmount)}</p>
+          <div data-testid="total-amount-card" className="dashboard-card">
+            <div data-testid="total-amount-content" className="dashboard-card-content">
+              <p data-testid="total-amount-label" className="dashboard-card-label">மொத்த தொகை</p>
+              <p data-testid="total-amount-value" className="dashboard-card-value orange">{formatCurrency(totalAmount)}</p>
+            </div>
           </div>
-          <div data-testid="total-received-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
-            <p data-testid="total-received-value" className="text-xl sm:text-2xl font-bold text-green-600 tracking-wide">{formatCurrency(totalReceived)}</p>
+          <div data-testid="total-received-card" className="dashboard-card">
+            <div data-testid="total-received-content" className="dashboard-card-content">
+              <p data-testid="total-received-label" className="dashboard-card-label">பெறப்பட்ட தொகை</p>
+              <p data-testid="total-received-value" className="dashboard-card-value green">{formatCurrency(totalReceived)}</p>
+            </div>
           </div>
-          <div data-testid="pending-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
-            <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
-            <p data-testid="pending-amount-value" className="text-xl sm:text-2xl font-bold text-red-600 tracking-wide">{formatCurrency(pendingAmount)}</p>
+          <div data-testid="pending-amount-card" className="dashboard-card">
+            <div data-testid="pending-amount-content" className="dashboard-card-content">
+              <p data-testid="pending-amount-label" className="dashboard-card-label">நிலுவைத் தொகை</p>
+              <p data-testid="pending-amount-value" className="dashboard-card-value red">{formatCurrency(pendingAmount)}</p>
+            </div>
           </div>
         </div>
 
