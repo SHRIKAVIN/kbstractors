@@ -22,9 +22,10 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
   }
 
   return (
-    <div data-testid="data-table-container" className="bg-white rounded-lg shadow overflow-hidden">
-      <div data-testid="table-header" className="px-6 py-4 border-b border-gray-200">
-        <h3 data-testid="table-title" className="text-lg font-medium text-gray-900 text-center">வாடகை பதிவுகள்</h3>
+    <div data-testid="data-table-container" className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200/50 backdrop-blur-sm">
+      <div data-testid="table-header" className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-60"></div>
+        <h3 data-testid="table-title" className="text-lg font-bold text-gray-900 text-center relative bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">வாடகை பதிவுகள்</h3>
       </div>
       <div data-testid="table-scroll-container" className="overflow-x-auto max-h-[60vh]">
         <table data-testid="rental-table" className="min-w-full border border-gray-300 table-fixed">
@@ -36,15 +37,15 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
             <col style={{ width: '10%' }} />
             <col style={{ width: '10%' }} />
           </colgroup>
-          <thead data-testid="table-head" className="bg-gray-50 sticky top-0 z-10">
+          <thead data-testid="table-head" className="bg-gradient-to-r from-gray-100 to-blue-100 sticky top-0 z-10 shadow-sm">
             <tr data-testid="table-head-row" className="divide-x divide-gray-300">
-              <th data-testid="name-header" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">பெயர்</th>
-              <th data-testid="details-header" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">விவரங்கள்</th>
-              <th data-testid="total-header" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">மொத்தம்</th>
-              <th data-testid="received-header" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">பெறப்பட்டது</th>
-              <th data-testid="pending-header" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">நிலுவை</th>
-              <th data-testid="status-header" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300">நிலை</th>
-              <th data-testid="actions-header" className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-300" style={{ minWidth: '90px' }}>Actions</th>
+              <th data-testid="name-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெயர்</th>
+              <th data-testid="details-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">விவரங்கள்</th>
+              <th data-testid="total-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொத்தம்</th>
+              <th data-testid="received-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெறப்பட்டது</th>
+              <th data-testid="pending-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலுவை</th>
+              <th data-testid="status-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலை</th>
+              <th data-testid="actions-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm" style={{ minWidth: '90px' }}>Actions</th>
             </tr>
           </thead>
           <tbody data-testid="table-body" className="bg-white">
