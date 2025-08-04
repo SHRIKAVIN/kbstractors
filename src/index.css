@@ -6,6 +6,8 @@
 :root {
   --mobile-header-height: 240px;
   --mobile-bottom-padding: 80px;
+  --pwa-header-height: 260px;
+  --pwa-bottom-padding: 60px;
 }
 
 /* Mobile-specific styles */
@@ -29,8 +31,8 @@
 /* PWA-specific styles */
 @media (display-mode: standalone) {
   .mobile-content {
-    padding-top: var(--mobile-header-height);
-    padding-bottom: 40px;
+    padding-top: var(--pwa-header-height);
+    padding-bottom: var(--pwa-bottom-padding);
     min-height: auto;
   }
   
@@ -51,6 +53,14 @@
 /* Additional PWA optimizations */
 @media (display-mode: standalone) and (max-width: 767px) {
   .mobile-content {
-    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+    padding-top: calc(var(--pwa-header-height) + env(safe-area-inset-top));
+    padding-bottom: calc(var(--pwa-bottom-padding) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Extra PWA safety margin */
+@media (display-mode: standalone) {
+  .mobile-content {
+    margin-bottom: 20px;
   }
 }
