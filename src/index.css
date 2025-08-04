@@ -13,17 +13,13 @@
 /* Mobile-specific styles */
 @media (max-width: 767px) {
   .mobile-content {
-    padding-top: var(--mobile-header-height);
     padding-bottom: var(--mobile-bottom-padding);
     min-height: auto;
     overflow-y: visible;
   }
   
   .mobile-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    position: relative;
     z-index: 50;
     /* Hardware acceleration for smoother animations */
     transform: translate3d(0, 0, 0);

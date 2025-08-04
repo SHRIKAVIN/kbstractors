@@ -216,7 +216,7 @@ export function Dashboard() {
       <header 
         ref={headerRef}
         data-testid="dashboard-header" 
-        className="mobile-header md:relative md:static"
+        className="mobile-header md:relative"
         style={{
           paddingTop: window.innerWidth < 768 ? 'env(safe-area-inset-top)' : undefined,
           backgroundColor: `rgba(255, 255, 255, ${0.95 * scrollProgress})`,
