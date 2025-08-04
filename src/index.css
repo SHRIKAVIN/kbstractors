@@ -104,14 +104,24 @@
 /* PWA-specific styles */
 @media (display-mode: standalone) {
   .mobile-content {
-    padding-top: 0.25rem;
+    padding-top: 0;
     padding-bottom: var(--pwa-bottom-padding);
     min-height: auto;
   }
   
   .mobile-header {
     padding-top: env(safe-area-inset-top);
-    margin-bottom: 0.125rem;
+    margin-bottom: 0;
+  }
+  
+  /* PWA-specific tight spacing */
+  .mobile-header [data-testid="header-content"] {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .mobile-header [data-testid="header-main"] {
+    gap: 0 !important;
   }
 }
 
@@ -127,7 +137,7 @@
 /* Additional PWA optimizations */
 @media (display-mode: standalone) and (max-width: 767px) {
   .mobile-content {
-    padding-top: calc(0.25rem + env(safe-area-inset-top));
+    padding-top: calc(0 + env(safe-area-inset-top));
     padding-bottom: calc(var(--pwa-bottom-padding) + env(safe-area-inset-bottom));
   }
 }
