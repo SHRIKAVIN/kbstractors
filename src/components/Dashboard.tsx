@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import{ useState, useEffect } from 'react';
 import { Plus, Download,LogOut, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
@@ -14,9 +14,6 @@ export function Dashboard() {
   const [filteredRecords, setFilteredRecords] = useState<RentalRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [headerHeight, setHeaderHeight] = useState(0);
-  const headerRef = useRef<HTMLElement>(null);
   const [filter, setFilter] = useState({
     equipment: '',
     dateFrom: '',
@@ -35,42 +32,6 @@ export function Dashboard() {
   useEffect(() => {
     applyFilters();
   }, [records, filter]);
-
-  // Smooth scroll detection for header animations (mobile only)
-  useEffect(() => {
-    let ticking = false;
-    
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          // Only apply scroll effects on mobile devices
-          if (window.innerWidth < 768) {
-            const scrollTop = window.scrollY;
-            // Calculate smooth scroll progress (0 to 1) over 200px scroll distance for smoother transitions
-            const progress = Math.min(Math.max(scrollTop / 200, 0), 1);
-            setScrollProgress(progress);
-          } else {
-            setScrollProgress(0);
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Simple mobile detection for header behavior
-  useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      setHeaderHeight(180); // Fixed height for mobile header
-    } else {
-      setHeaderHeight(0);
-    }
-  }, []);
 
   const loadRecords = async () => {
     setLoading(true);
@@ -211,64 +172,19 @@ export function Dashboard() {
         keywords="tractor dashboard, rental management, equipment tracking, business administration, KBS Tractors dashboard"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50 overflow-x-hidden relative">
-      {/* Static Header with iOS-like animations - Mobile Only */}
-      <header 
-        ref={headerRef}
-        data-testid="dashboard-header" 
-        className="mobile-header md:relative"
-        style={{
-          paddingTop: window.innerWidth < 768 ? 'env(safe-area-inset-top)' : undefined,
-          backgroundColor: `rgba(255, 255, 255, ${0.95 * scrollProgress})`,
-          backdropFilter: `blur(${8 * scrollProgress}px)`,
-          boxShadow: `0 ${4 * scrollProgress}px ${6 * scrollProgress}px -1px rgba(0, 0, 0, ${0.1 * scrollProgress})`,
-          borderBottom: `1px solid rgba(229, 231, 235, ${scrollProgress})`
-        }}
-      >
+    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header data-testid="dashboard-header" className="bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b">
         <div data-testid="header-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
           <div data-testid="header-main" className="flex flex-col items-center">
-            <img 
-              data-testid="header-logo" 
-              src="/icons/kbs-tractors-96.png" 
-              alt="KBS Tractors Logo" 
-              className="header-logo-3d rounded-full shadow mb-2 w-14 h-14 transition-all duration-300 ease-out"
-              style={{
-                opacity: 1 - (0.1 * scrollProgress),
-                transform: `scale(${1 - (0.05 * scrollProgress)})`
-              }}
-            />
-            <h1 
-              data-testid="header-title" 
-              className="header-title-3d font-bold text-gray-900 text-center text-xl sm:text-2xl transition-all duration-300 ease-out"
-              style={{
-                opacity: 1 - (0.1 * scrollProgress),
-                transform: `scale(${1 - (0.02 * scrollProgress)})`
-              }}
-            >
-              KBS Tractors
-            </h1>
-            <p 
-              data-testid="header-subtitle" 
-              className="header-subtitle-3d text-gray-600 text-center mb-4 text-xs sm:text-sm transition-all duration-300 ease-out"
-              style={{
-                opacity: 1 - (0.3 * scrollProgress)
-              }}
-            >
-              நிர்வாக பேனல்
-            </p>
-            <div 
-              data-testid="header-actions" 
-              className="header-actions-3d flex flex-row items-center justify-center gap-3 w-full max-w-xs rounded-xl shadow p-2 bg-gray-50 transition-all duration-300 ease-out"
-              style={{
-                backgroundColor: `rgba(249, 250, 251, ${0.5 + (0.3 * scrollProgress)})`,
-                backdropFilter: `blur(${4 * scrollProgress}px)`,
-                opacity: 1 - (0.1 * scrollProgress)
-              }}
-            >
+            <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="w-14 h-14 rounded-full shadow mb-2" />
+            <h1 data-testid="header-title" className="text-xl sm:text-2xl font-bold text-gray-900 text-center">KBS Tractors</h1>
+            <p data-testid="header-subtitle" className="text-xs sm:text-sm text-gray-600 text-center mb-4">நிர்வாக பேனல்</p>
+            <div data-testid="header-actions" className="flex flex-row items-center justify-center gap-3 w-full max-w-xs bg-gray-50 rounded-xl shadow p-2">
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}
-                className="header-button-3d flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
+                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
                 disabled={loading}
                 aria-label="Refresh"
               >
@@ -281,7 +197,7 @@ export function Dashboard() {
               <button
                 data-testid="add-record-button"
                 onClick={() => setShowForm(true)}
-                className="header-button-primary-3d flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow transition-all duration-200 hover:scale-105 active:scale-95"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center font-medium text-base shadow"
               >
                 <Plus data-testid="add-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="add-button-text">புதிய பதிவு</span>
@@ -289,7 +205,7 @@ export function Dashboard() {
               <button
                 data-testid="logout-button"
                 onClick={handleLogout}
-                className="header-button-3d flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors duration-200"
+                className="flex-1 text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center"
                 aria-label="Logout"
               >
                 <LogOut data-testid="logout-icon" className="w-5 h-5" />
@@ -299,35 +215,24 @@ export function Dashboard() {
         </div>
       </header>
 
-      <div 
-        data-testid="dashboard-main-content" 
-        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-4 md:pt-2 md:py-4 mobile-content"
-      >
+      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div data-testid="stats-cards" className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 mb-4">
-          <div data-testid="total-records-card" className="dashboard-card">
-            <div data-testid="total-records-content" className="dashboard-card-content">
-              <p data-testid="total-records-label" className="dashboard-card-label">மொத்த பதிவுகள்</p>
-              <p data-testid="total-records-value" className="dashboard-card-value blue">{filteredRecords.length}</p>
-            </div>
+        <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
+          <div data-testid="total-records-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த பதிவுகள்</p>
+            <p data-testid="total-records-value" className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{filteredRecords.length}</p>
           </div>
-          <div data-testid="total-amount-card" className="dashboard-card">
-            <div data-testid="total-amount-content" className="dashboard-card-content">
-              <p data-testid="total-amount-label" className="dashboard-card-label">மொத்த தொகை</p>
-              <p data-testid="total-amount-value" className="dashboard-card-value orange">{formatCurrency(totalAmount)}</p>
-            </div>
+          <div data-testid="total-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
+            <p data-testid="total-amount-value" className="text-xl sm:text-2xl font-bold text-green-600 tracking-wide">{formatCurrency(totalAmount)}</p>
           </div>
-          <div data-testid="total-received-card" className="dashboard-card">
-            <div data-testid="total-received-content" className="dashboard-card-content">
-              <p data-testid="total-received-label" className="dashboard-card-label">பெறப்பட்ட தொகை</p>
-              <p data-testid="total-received-value" className="dashboard-card-value green">{formatCurrency(totalReceived)}</p>
-            </div>
+          <div data-testid="total-received-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
+            <p data-testid="total-received-value" className="text-xl sm:text-2xl font-bold text-blue-600 tracking-wide">{formatCurrency(totalReceived)}</p>
           </div>
-          <div data-testid="pending-amount-card" className="dashboard-card">
-            <div data-testid="pending-amount-content" className="dashboard-card-content">
-              <p data-testid="pending-amount-label" className="dashboard-card-label">நிலுவைத் தொகை</p>
-              <p data-testid="pending-amount-value" className="dashboard-card-value red">{formatCurrency(pendingAmount)}</p>
-            </div>
+          <div data-testid="pending-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
+            <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
+            <p data-testid="pending-amount-value" className="text-xl sm:text-2xl font-bold text-orange-500 tracking-wide">{formatCurrency(pendingAmount)}</p>
           </div>
         </div>
 
