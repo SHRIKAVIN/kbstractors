@@ -259,15 +259,15 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Filters and Export with 3D Effects */}
-        <div data-testid="filters-section" className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8 border border-gray-200/50 backdrop-blur-sm relative overflow-hidden">
-          <div data-testid="filters-content" className="relative flex flex-wrap gap-3 items-center justify-between">
+        {/* Filters and Export */}
+        <div data-testid="filters-section" className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8">
+                      <div data-testid="filters-content" className="flex flex-wrap gap-3 items-center justify-between">
             <div data-testid="filters-row" className="flex flex-wrap gap-2 sm:gap-3 w-full">
               <select
                 data-testid="equipment-filter"
                 value={filter.equipment}
                 onChange={(e) => setFilter(prev => ({ ...prev, equipment: e.target.value }))}
-                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px] bg-white/80 backdrop-blur-sm shadow-lg"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
               >
                 <option value="">அனைத்து வகைகள்</option>
                 <option value="Cage Wheel">Cage Wheel</option>
@@ -282,7 +282,7 @@ export function Dashboard() {
                 data-testid="status-filter"
                 value={filter.status}
                 onChange={e => setFilter(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px] bg-white/80 backdrop-blur-sm shadow-lg"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
               >
                 <option value="">அனைத்து நிலைகள்</option>
                 <option value="paid">முழுமையாக பெறப்பட்டது</option>
@@ -294,7 +294,7 @@ export function Dashboard() {
                 data-testid="old-balance-status-filter"
                 value={filter.oldBalanceStatus}
                 onChange={e => setFilter(prev => ({ ...prev, oldBalanceStatus: e.target.value }))}
-                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px] bg-white/80 backdrop-blur-sm shadow-lg"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px]"
               >
                 <option value="">பழைய பாக்கி நிலை</option>
                 <option value="paid">பழைய பாக்கி - முழுமையாக பெறப்பட்டது</option>
@@ -307,12 +307,12 @@ export function Dashboard() {
                 value={filter.name || ''}
                 onChange={e => setFilter(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Search rental person..."
-                className="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px] bg-white/80 backdrop-blur-sm shadow-lg"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
               />
               <button
                 data-testid="clear-filters-button"
                 onClick={handleClearFilters}
-                className="w-full sm:w-auto bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 px-4 py-3 rounded-xl min-w-[100px] shadow-lg border border-gray-300/50"
+                className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg min-w-[100px]"
               >
                 Clear Filters
               </button>
@@ -321,7 +321,7 @@ export function Dashboard() {
               <button
                 data-testid="export-excel-button"
                 onClick={() => exportToExcel(filteredRecords)}
-                className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl flex items-center justify-center shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-green-400/30"
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
               >
                 <Download data-testid="excel-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="excel-button-text">Excel</span>
@@ -329,7 +329,7 @@ export function Dashboard() {
               <button
                 data-testid="export-pdf-button"
                 onClick={() => exportToPDF(filteredRecords)}
-                className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 py-3 rounded-xl flex items-center justify-center shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-red-400/30"
+                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
               >
                 <Download data-testid="pdf-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="pdf-button-text">PDF</span>
