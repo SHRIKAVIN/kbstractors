@@ -23,6 +23,7 @@ export function Dashboard() {
     oldBalanceStatus: '',
   });
   const [editRecord, setEditRecord] = useState<RentalRecord | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
   const { signOut } = useAuth();
 
   useEffect(() => {
@@ -259,8 +260,32 @@ export function Dashboard() {
           </div>
         </div>
 
+        {/* Filter Toggle Button - Mobile Only */}
+        <div className="mb-4 flex justify-center md:hidden">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
+          >
+            {showFilters ? (
+              <>
+                <span>Hide Filters</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </>
+            ) : (
+              <>
+                <span>Show Filters</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* Filters and Export */}
-        <div data-testid="filters-section" className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8">
+        <div data-testid="filters-section" className={`bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8 ${showFilters ? 'block' : 'hidden md:block'}`}>
                       <div data-testid="filters-content" className="flex flex-wrap gap-3 items-center justify-between">
             <div data-testid="filters-row" className="flex flex-wrap gap-2 sm:gap-3 w-full">
               <select
