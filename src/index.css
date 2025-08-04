@@ -14,7 +14,7 @@
 @media (max-width: 767px) {
   .mobile-content {
     padding-bottom: var(--mobile-bottom-padding);
-    padding-top: 1rem;
+    padding-top: 0.5rem;
     min-height: auto;
     overflow-y: visible;
   }
@@ -22,11 +22,22 @@
   .mobile-header {
     position: relative;
     z-index: 50;
+    margin-bottom: 0.25rem;
     /* Hardware acceleration for smoother animations */
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     perspective: 1000px;
     will-change: transform, opacity, background-color, box-shadow;
+  }
+  
+  /* Reduce header content spacing */
+  .mobile-header [data-testid="header-content"] {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+  
+  .mobile-header [data-testid="header-main"] {
+    gap: 0.25rem !important;
   }
 
   /* Optimized mobile header animations */
@@ -93,13 +104,14 @@
 /* PWA-specific styles */
 @media (display-mode: standalone) {
   .mobile-content {
-    padding-top: var(--pwa-header-height);
+    padding-top: 0.5rem;
     padding-bottom: var(--pwa-bottom-padding);
     min-height: auto;
   }
   
   .mobile-header {
     padding-top: env(safe-area-inset-top);
+    margin-bottom: 0.25rem;
   }
 }
 
@@ -115,7 +127,7 @@
 /* Additional PWA optimizations */
 @media (display-mode: standalone) and (max-width: 767px) {
   .mobile-content {
-    padding-top: calc(var(--pwa-header-height) + env(safe-area-inset-top));
+    padding-top: calc(0.5rem + env(safe-area-inset-top));
     padding-bottom: calc(var(--pwa-bottom-padding) + env(safe-area-inset-bottom));
   }
 }
