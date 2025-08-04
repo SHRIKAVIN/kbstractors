@@ -1,4 +1,4 @@
-import{ useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Download,LogOut, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
@@ -52,19 +52,14 @@ export function Dashboard() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Calculate header height for proper spacing (mobile only)
+  // Simple mobile detection for header behavior
   useEffect(() => {
-    const updateHeaderHeight = () => {
-      if (headerRef.current && window.innerWidth < 768) {
-        setHeaderHeight(headerRef.current.offsetHeight);
-      } else {
-        setHeaderHeight(0);
-      }
-    };
-
-    updateHeaderHeight();
-    window.addEventListener('resize', updateHeaderHeight);
-    return () => window.removeEventListener('resize', updateHeaderHeight);
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      setHeaderHeight(180); // Fixed height for mobile header
+    } else {
+      setHeaderHeight(0);
+    }
   }, []);
 
   const loadRecords = async () => {
@@ -206,16 +201,19 @@ export function Dashboard() {
         keywords="tractor dashboard, rental management, equipment tracking, business administration, KBS Tractors dashboard"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50 overflow-x-hidden">
+    <div data-testid="dashboard-container" className="min-h-screen bg-gray-50 overflow-x-hidden relative">
       {/* Static Header with iOS-like animations - Mobile Only */}
       <header 
         ref={headerRef}
         data-testid="dashboard-header" 
-        className={`md:relative md:static transition-all duration-300 ease-out ${
+        className={`mobile-header md:relative md:static transition-all duration-300 ease-out ${
           isScrolled 
-            ? 'fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
-            : 'fixed md:relative top-0 left-0 right-0 z-50 md:z-auto bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b'
+            ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
+            : 'bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b'
         }`}
+        style={{
+          paddingTop: window.innerWidth < 768 ? 'env(safe-area-inset-top)' : undefined
+        }}
       >
         <div data-testid="header-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
           <div data-testid="header-main" className="flex flex-col items-center">
@@ -285,11 +283,7 @@ export function Dashboard() {
 
       <div 
         data-testid="dashboard-main-content" 
-        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 md:pt-4 md:py-8 pb-20"
-        style={{ 
-          paddingTop: window.innerWidth < 768 ? `${headerHeight + 24}px` : undefined,
-          minHeight: window.innerWidth < 768 ? `calc(100vh - ${headerHeight}px - 24px)` : undefined
-        }}
+        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 md:pt-4 md:py-8 mobile-content"
       >
         {/* Stats Cards */}
         <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
