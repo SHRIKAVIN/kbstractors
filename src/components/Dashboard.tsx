@@ -293,7 +293,7 @@ export function Dashboard() {
           </div>
           <div data-testid="total-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">மொத்த தொகை</p>
-            <p data-testid="total-amount-value" className="text-xl sm:text-2xl font-bold text-orange-400 tracking-wide">{formatCurrency(totalAmount)}</p>
+            <p data-testid="total-amount-value" className="text-xl sm:text-2xl font-bold text-orange-500 tracking-wide">{formatCurrency(totalAmount)}</p>
           </div>
           <div data-testid="total-received-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">பெறப்பட்ட தொகை</p>
@@ -301,7 +301,7 @@ export function Dashboard() {
           </div>
           <div data-testid="pending-amount-card" className="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col items-center justify-center text-center">
             <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1">நிலுவைத் தொகை</p>
-            <p data-testid="pending-amount-value" className="text-xl sm:text-2xl font-bold text-red-500 tracking-wide">{formatCurrency(pendingAmount)}</p>
+            <p data-testid="pending-amount-value" className="text-xl sm:text-2xl font-bold text-red-600 tracking-wide">{formatCurrency(pendingAmount)}</p>
           </div>
         </div>
 
