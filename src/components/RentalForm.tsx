@@ -321,6 +321,31 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                         {formData.details.length > 1 && (
                           <span data-testid={`detail-set-number-${i}`} className="absolute -top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">{i + 1}</span>
                         )}
+                        {/* Action buttons in top right corner */}
+                        <div data-testid={`detail-actions-${i}`} className="absolute top-2 right-2 flex gap-1">
+                          {formData.details.length > 1 && (
+                            <button 
+                              data-testid={`remove-detail-button-${i}`} 
+                              type="button" 
+                              onClick={() => handleRemoveDetail(i)} 
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 text-lg font-bold w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+                              title="Remove this item"
+                            >
+                              ×
+                            </button>
+                          )}
+                          {i === formData.details.length - 1 && (
+                            <button 
+                              data-testid={`add-detail-button-${i}`} 
+                              type="button" 
+                              onClick={handleAddDetail} 
+                              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 text-lg font-bold w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+                              title="Add new item"
+                            >
+                              +
+                            </button>
+                          )}
+                        </div>
                         {/* Always show type dropdown */}
                         <div data-testid={`equipment-type-container-${i}`} className="sm:border-l sm:border-gray-300 sm:pl-4">
                           <label data-testid={`equipment-type-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
@@ -399,15 +424,6 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                             </div>
                           </>
                         )}
-                        {/* Add/Remove buttons always visible for every row */}
-                        <div data-testid={`detail-actions-${i}`} className="flex gap-2 mt-2">
-                          {formData.details.length > 1 && (
-                            <button data-testid={`remove-detail-button-${i}`} type="button" onClick={() => handleRemoveDetail(i)} className="text-red-500 hover:text-red-700 text-lg font-bold px-2 py-1 rounded-full">×</button>
-                          )}
-                          {i === formData.details.length - 1 && (
-                            <button data-testid={`add-detail-button-${i}`} type="button" onClick={handleAddDetail} className="text-blue-500 hover:text-blue-700 text-lg font-bold px-2 py-1 rounded-full">+</button>
-                          )}
-                        </div>
                       </div>
                     );
                   })}
