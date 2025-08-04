@@ -37,7 +37,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
             <col style={{ width: '10%' }} />
             <col style={{ width: '10%' }} />
           </colgroup>
-          <thead data-testid="table-head" className="bg-gradient-to-r from-gray-100 to-blue-100 sticky top-0 z-10 shadow-sm">
+          <thead data-testid="table-head" className="bg-gradient-to-r from-blue-200 to-indigo-300 sticky top-0 z-10 shadow-md">
             <tr data-testid="table-head-row" className="divide-x divide-gray-300">
               <th data-testid="name-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெயர்</th>
               <th data-testid="details-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">விவரங்கள்</th>
