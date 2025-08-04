@@ -230,28 +230,28 @@ export function Dashboard() {
       <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10">
         {/* Stats Cards with 3D Effects */}
         <div data-testid="stats-cards" className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 mb-6 sm:mb-8">
-          <div data-testid="total-records-card" className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
+          <div data-testid="total-records-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
               <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">மொத்த பதிவுகள்</p>
               <p data-testid="total-records-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{filteredRecords.length}</p>
             </div>
           </div>
           
-          <div data-testid="total-amount-card" className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-green-100/50 backdrop-blur-sm relative overflow-hidden">
+          <div data-testid="total-amount-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-green-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
               <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">மொத்த தொகை</p>
               <p data-testid="total-amount-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalAmount)}</p>
             </div>
           </div>
           
-          <div data-testid="total-received-card" className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
+          <div data-testid="total-received-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
               <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">பெறப்பட்ட தொகை</p>
               <p data-testid="total-received-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalReceived)}</p>
             </div>
           </div>
           
-          <div data-testid="pending-amount-card" className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-orange-100/50 backdrop-blur-sm relative overflow-hidden">
+          <div data-testid="pending-amount-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-orange-100/50 backdrop-blur-sm relative overflow-hidden">
             <div className="relative">
               <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">நிலுவைத் தொகை</p>
               <p data-testid="pending-amount-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(pendingAmount)}</p>
