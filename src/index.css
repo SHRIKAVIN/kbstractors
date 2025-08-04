@@ -5,7 +5,7 @@
 /* Custom CSS for mobile PWA header handling */
 :root {
   --mobile-header-height: 240px;
-  --mobile-bottom-padding: 160px;
+  --mobile-bottom-padding: 80px;
 }
 
 /* Mobile-specific styles */
@@ -13,8 +13,8 @@
   .mobile-content {
     padding-top: var(--mobile-header-height);
     padding-bottom: var(--mobile-bottom-padding);
-    min-height: calc(100vh - var(--mobile-header-height) - var(--mobile-bottom-padding));
-    overflow-y: auto;
+    min-height: auto;
+    overflow-y: visible;
   }
   
   .mobile-header {
@@ -26,12 +26,31 @@
   }
 }
 
+/* PWA-specific styles */
+@media (display-mode: standalone) {
+  .mobile-content {
+    padding-top: var(--mobile-header-height);
+    padding-bottom: 40px;
+    min-height: auto;
+  }
+  
+  .mobile-header {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
 /* Ensure proper viewport handling for mobile */
 @supports (height: 100dvh) {
   @media (max-width: 767px) {
     .mobile-content {
-      min-height: calc(100dvh - var(--mobile-header-height) - var(--mobile-bottom-padding));
       padding-bottom: calc(var(--mobile-bottom-padding) + env(safe-area-inset-bottom));
     }
+  }
+}
+
+/* Additional PWA optimizations */
+@media (display-mode: standalone) and (max-width: 767px) {
+  .mobile-content {
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
   }
 }
