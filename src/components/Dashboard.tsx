@@ -36,22 +36,29 @@ export function Dashboard() {
     applyFilters();
   }, [records, filter]);
 
-  // Scroll detection for header animations
+  // Scroll detection for header animations (mobile only)
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      setIsScrolled(scrollTop > 10);
+      // Only apply scroll effects on mobile devices
+      if (window.innerWidth < 768) {
+        const scrollTop = window.scrollY;
+        setIsScrolled(scrollTop > 10);
+      } else {
+        setIsScrolled(false);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Calculate header height for proper spacing
+  // Calculate header height for proper spacing (mobile only)
   useEffect(() => {
     const updateHeaderHeight = () => {
-      if (headerRef.current) {
+      if (headerRef.current && window.innerWidth < 768) {
         setHeaderHeight(headerRef.current.offsetHeight);
+      } else {
+        setHeaderHeight(0);
       }
     };
 
@@ -200,14 +207,14 @@ export function Dashboard() {
         canonical="https://kbstractors.vercel.app/"
       />
     <div data-testid="dashboard-container" className="min-h-screen bg-gray-50">
-      {/* Static Header with iOS-like animations */}
+      {/* Static Header with iOS-like animations - Mobile Only */}
       <header 
         ref={headerRef}
         data-testid="dashboard-header" 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-out ${
+        className={`md:relative md:static transition-all duration-300 ease-out ${
           isScrolled 
-            ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
-            : 'bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b'
+            ? 'fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200' 
+            : 'fixed md:relative top-0 left-0 right-0 z-50 md:z-auto bg-gradient-to-t from-blue-50 to-blue-100 shadow-sm border-b'
         }`}
       >
         <div data-testid="header-content" className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-4 pb-2">
@@ -278,8 +285,8 @@ export function Dashboard() {
 
       <div 
         data-testid="dashboard-main-content" 
-        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8"
-        style={{ paddingTop: `${headerHeight + 16}px` }}
+        className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8 md:pt-4 md:py-8"
+        style={{ paddingTop: window.innerWidth < 768 ? `${headerHeight + 16}px` : undefined }}
       >
         {/* Stats Cards */}
         <div data-testid="stats-cards" className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 mb-6">
