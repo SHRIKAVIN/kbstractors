@@ -135,8 +135,8 @@ export function Dashboard() {
     return (
       <>
         <SEO 
-          title="Loading Dashboard - KBS Tractors"
-          description="Loading KBS Tractors management dashboard..."
+          title="KBS Tractors - Loading Dashboard"
+          description="KBS Tractors - Professional tractor rental and sales management system. Loading your dashboard..."
         />
       <div data-testid="dashboard-loading-screen" className="min-h-screen bg-white flex items-center justify-center">
         <div data-testid="dashboard-loading-content" className="text-center transform hover:scale-105 transition-transform duration-300">
@@ -168,9 +168,9 @@ export function Dashboard() {
   return (
     <>
       <SEO 
-        title="Dashboard - KBS Tractors Management System"
-        description="Manage your tractor rental and sales operations with KBS Tractors dashboard. Track equipment, manage rentals, and monitor business performance."
-        keywords="tractor dashboard, rental management, equipment tracking, business administration, KBS Tractors dashboard"
+        title="KBS Tractors - Dashboard"
+        description="KBS Tractors - Professional tractor rental and sales management dashboard. Manage equipment, track rentals, and monitor business performance efficiently."
+        keywords="KBS Tractors dashboard, KBS management, tractor rental management, equipment tracking, business administration, KBS equipment"
         canonical="https://kbstractors.vercel.app/"
       />
     <div data-testid="dashboard-container" className="min-h-screen bg-white">

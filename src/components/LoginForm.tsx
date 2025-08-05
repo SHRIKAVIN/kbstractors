@@ -26,9 +26,9 @@ export function LoginForm() {
   return (
     <>
       <SEO 
-        title="Login - KBS Tractors Management System"
-        description="Access your KBS Tractors management system account. Secure login for tractor rental and sales management."
-        keywords="KBS Tractors login, tractor management login, rental system access, business administration login"
+        title="KBS Tractors - Login"
+        description="KBS Tractors - Professional tractor rental and sales management system. Secure login for business administration and equipment management."
+        keywords="KBS Tractors login, KBS management login, tractor rental system access, business administration login, KBS equipment management"
         canonical="https://kbstractors.vercel.app/"
       />
     <div data-testid="login-container" className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">

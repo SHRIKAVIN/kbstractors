@@ -10,8 +10,8 @@ function App() {
     return (
       <>
         <SEO 
-          title="Loading - KBS Tractors"
-          description="Loading KBS Tractors management system..."
+          title="KBS Tractors - Loading"
+          description="KBS Tractors - Professional tractor rental and sales management system. Loading your dashboard..."
         />
       <div data-testid="loading-screen" className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div data-testid="loading-content" className="text-center">
@@ -26,8 +26,8 @@ function App() {
   return (
     <>
       <SEO 
-        title={user ? "Dashboard - KBS Tractors" : "Login - KBS Tractors"}
-        description={user ? "Manage your tractor rental and sales operations with KBS Tractors dashboard." : "Access your KBS Tractors management system account."}
+        title={user ? "KBS Tractors - Dashboard" : "KBS Tractors - Login"}
+        description={user ? "KBS Tractors - Professional tractor rental and sales management dashboard. Manage your equipment, rentals, and business operations efficiently." : "KBS Tractors - Professional tractor rental and sales management system. Login to access your account and manage operations."}
       />
       {user ? <Dashboard /> : <LoginForm />}
     </>

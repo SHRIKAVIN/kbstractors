@@ -14,7 +14,7 @@ interface SEOProps {
 export const SEO: React.FC<SEOProps> = ({
   title = 'KBS Tractors - Professional Tractor Rental & Sales Management System',
   description = 'KBS Tractors - Leading provider of tractor rental and sales management solutions. Professional equipment tracking, rental management, and business administration tools for agricultural and construction industries.',
-  keywords = 'KBS, KBS Tractors, tractor rental, tractor sales, equipment management, agricultural machinery, construction equipment, rental management system, business administration, KBS equipment',
+  keywords = 'KBS, KBS Tractors, tractor rental, tractor sales, equipment management, agricultural machinery, construction equipment, rental management system, business administration, KBS equipment, KBS management',
   image = '/icons/KBS TRACTORS Emblem Logo - Green and Gray.jpg',
   url = 'https://kbstractors.vercel.app/',
   type = 'website',
