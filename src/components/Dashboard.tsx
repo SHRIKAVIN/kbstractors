@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
 import { RentalForm } from './RentalForm';
 import { DataTable } from './DataTable';
+import { ConfirmDialog } from './ConfirmDialog';
 import { SEO } from './SEO';
 import type { RentalRecord } from '../types/rental';
 import { exportToExcel, exportToPDF } from '../utils/export';
@@ -24,6 +25,7 @@ export function Dashboard() {
   });
   const [editRecord, setEditRecord] = useState<RentalRecord | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; record: RentalRecord | null }>({ isOpen: false, record: null });
   const { signOut } = useAuth();
 
   useEffect(() => {
@@ -108,14 +110,19 @@ export function Dashboard() {
   };
 
   const handleDelete = async (record: RentalRecord) => {
-    if (window.confirm('Are you sure you want to delete this record?')) {
-      try {
-        await rentalService.delete(record.id);
-        setRecords(prev => prev.filter(r => r.id !== record.id));
-      } catch (error) {
-        alert('Failed to delete record from database.');
-        console.error(error);
-      }
+    setDeleteDialog({ isOpen: true, record });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteDialog.record) return;
+    
+    try {
+      await rentalService.delete(deleteDialog.record.id);
+      setRecords(prev => prev.filter(r => r.id !== deleteDialog.record!.id));
+      setDeleteDialog({ isOpen: false, record: null });
+    } catch (error) {
+      alert('Failed to delete record from database.');
+      console.error(error);
     }
   };
 
@@ -367,6 +374,17 @@ export function Dashboard() {
         <DataTable records={filteredRecords} onEdit={handleEdit} onDelete={handleDelete} />
       </div>
     </div>
+
+    {/* Custom Delete Confirmation Dialog */}
+    <ConfirmDialog
+      isOpen={deleteDialog.isOpen}
+      onClose={() => setDeleteDialog({ isOpen: false, record: null })}
+      onConfirm={confirmDelete}
+      title="kbstractors"
+      message="Are you sure you want to delete this record?"
+      confirmText="Delete"
+      cancelText="Cancel"
+    />
     </>
   );
 }
