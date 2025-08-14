@@ -145,7 +145,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                         <span className="font-medium">{record.mobile_number}</span>
                       </button>
                     ) : (
-                      <span className="text-gray-400 text-sm italic">Not provided</span>
+                      <span className="text-gray-400 text-sm italic text-center block">Not provided</span>
                     )}
                   </td>
                   <td data-testid={`actions-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
