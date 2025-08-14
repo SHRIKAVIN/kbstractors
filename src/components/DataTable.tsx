@@ -126,15 +126,15 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       )}
                     </div>
                   </td>
-                  <td data-testid={`total-cell-${idx}`} className="px-3 py-2 whitespace-nowrap font-semibold text-gray-900">{formatCurrency(record.total_amount)}</td>
-                  <td data-testid={`received-cell-${idx}`} className="px-3 py-2 whitespace-nowrap font-semibold text-green-600">{formatCurrency(record.received_amount)}</td>
-                  <td data-testid={`pending-cell-${idx}`} className={"px-3 py-2 whitespace-nowrap font-semibold " + (pendingAmount > 0 ? 'text-red-600' : 'text-green-600')}>{formatCurrency(pendingAmount)}</td>
-                  <td data-testid={`status-cell-${idx}`} className="px-3 py-2 whitespace-nowrap">
+                  <td data-testid={`total-cell-${idx}`} className="px-3 py-2 whitespace-nowrap font-semibold text-gray-900 text-center">{formatCurrency(record.total_amount)}</td>
+                  <td data-testid={`received-cell-${idx}`} className="px-3 py-2 whitespace-nowrap font-semibold text-green-600 text-center">{formatCurrency(record.received_amount)}</td>
+                  <td data-testid={`pending-cell-${idx}`} className={"px-3 py-2 whitespace-nowrap font-semibold text-center " + (pendingAmount > 0 ? 'text-red-600' : 'text-green-600')}>{formatCurrency(pendingAmount)}</td>
+                  <td data-testid={`status-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
                     <span data-testid={`status-badge-${idx}`} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
                       {statusText}
                     </span>
                   </td>
-                  <td data-testid={`mobile-cell-${idx}`} className="px-3 py-2 whitespace-nowrap">
+                  <td data-testid={`mobile-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
                     {record.mobile_number ? (
                       <button
                         data-testid={`mobile-call-button-${idx}`}
