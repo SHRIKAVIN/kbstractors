@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Save, X, Calculator } from 'lucide-react';
+import { Save, X, Calculator, Phone } from 'lucide-react';
 import { rentalService } from '../lib/supabase';
 import { calculateTotalAmount, formatCurrency, EQUIPMENT_RATES } from '../utils/calculations';
 import type { RentalRecord, RentalDetail } from '../types/rental';
@@ -21,6 +21,7 @@ interface RentalDetailDraft {
 export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
+    mobile_number: initialData?.mobile_number || '',
     details: initialData?.details?.length
       ? initialData.details.map(d => ({
           acres: d.equipment_type === 'Dipper' ? '' : String(d.acres ?? ''),
@@ -70,6 +71,11 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) {
       newErrors.name = 'பெயர் அவசியம்';
+    }
+    if (!formData.mobile_number.trim()) {
+      newErrors.mobile_number = 'மொபைல் எண் அவசியம்';
+    } else if (!validateMobileNumber(formData.mobile_number.trim())) {
+      newErrors.mobile_number = 'சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும் (6, 7, 8, 9 தொடங்கும்)';
     }
     if (oldBalanceOnly) {
       if (!formData.old_balance || !formData.old_balance.trim()) {
@@ -125,6 +131,26 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     }));
   };
 
+  const handleMobileNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length <= 10) {
+      setFormData(prev => ({ ...prev, mobile_number: value }));
+    }
+    if (errors.mobile_number) {
+      setErrors(prev => ({ ...prev, mobile_number: '' }));
+    }
+  };
+
+  const validateMobileNumber = (mobileNumber: string): boolean => {
+    const trimmed = mobileNumber.trim();
+    if (!/^[0-9]{10}$/.test(trimmed)) {
+      return false;
+    }
+    // Check if it starts with valid Indian mobile prefixes (6, 7, 8, 9)
+    const firstDigit = parseInt(trimmed.charAt(0));
+    return [6, 7, 8, 9].includes(firstDigit);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -135,6 +161,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
         const oldBalanceValue = parseFloat(formData.old_balance) || 0;
         recordData = {
           name: formData.name.trim(),
+          mobile_number: formData.mobile_number.trim(),
           old_balance: formData.old_balance || undefined,
           old_balance_status: oldBalanceStatus,
           old_balance_reason: formData.old_balance_reason || undefined,
@@ -161,6 +188,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
         });
         recordData = {
           name: formData.name.trim(),
+          mobile_number: formData.mobile_number.trim(),
           details,
           total_amount: totalAmount,
           received_amount: parseFloat(formData.received_amount),
@@ -250,6 +278,31 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   />
                   {errors.name && <p data-testid="name-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
                 </div>
+                {/* Mobile Number Field */}
+                <div data-testid="mobile-number-field-container" className="mt-2 sm:mt-4">
+                  <label data-testid="mobile-number-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மொபைல் எண் *</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input
+                      data-testid="mobile-number-input"
+                      type="tel"
+                      id="mobile_number"
+                      value={formData.mobile_number}
+                      onChange={handleMobileNumberChange}
+                      onFocus={() => errors.mobile_number && setErrors(prev => ({ ...prev, mobile_number: '' }))}
+                      className={`w-full pl-10 pr-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.mobile_number ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                      placeholder="மொபைல் எண் (10 இலக்கங்கள்)"
+                      maxLength={10}
+                      pattern="[0-9]{10}"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <span className="text-xs text-gray-400">{formData.mobile_number.length}/10</span>
+                    </div>
+                  </div>
+                  {errors.mobile_number && <p data-testid="mobile-number-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.mobile_number}</p>}
+                </div>
                 {/* Old Balance Field */}
                 <div data-testid="old-balance-field-container" className="mt-2 sm:mt-4">
                   <label data-testid="old-balance-label" htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
@@ -310,6 +363,40 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
                   {errors.name && <p data-testid="customer-name-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
+                </div>
+
+                {/* Customer Mobile Number */}
+                <div data-testid="customer-mobile-container">
+                  <label data-testid="customer-mobile-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                    மொபைல் எண் *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className={`h-4 w-4 ${formData.mobile_number.length === 10 && validateMobileNumber(formData.mobile_number) ? 'text-green-500' : 'text-gray-400'}`} />
+                    </div>
+                    <input
+                      data-testid="customer-mobile-input"
+                      type="tel"
+                      id="mobile_number"
+                      value={formData.mobile_number}
+                      onChange={handleMobileNumberChange}
+                      onFocus={() => errors.mobile_number && setErrors(prev => ({ ...prev, mobile_number: '' }))}
+                      className={`w-full pl-10 pr-12 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.mobile_number ? 'border-red-500' : 
+                        formData.mobile_number.length === 10 && validateMobileNumber(formData.mobile_number) ? 'border-green-500' : 
+                        'border-gray-300'
+                      } text-xs sm:text-base`}
+                      placeholder="மொபைல் எண் (10 இலக்கங்கள்)"
+                      maxLength={10}
+                      pattern="[0-9]{10}"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <span className={`text-xs ${formData.mobile_number.length === 10 && validateMobileNumber(formData.mobile_number) ? 'text-green-500' : 'text-gray-400'}`}>
+                        {formData.mobile_number.length}/10
+                      </span>
+                    </div>
+                  </div>
+                  {errors.mobile_number && <p data-testid="customer-mobile-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.mobile_number}</p>}
                 </div>
 
                 {/* Details Sets */}

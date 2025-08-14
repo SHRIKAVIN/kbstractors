@@ -1,4 +1,4 @@
-import { User, Settings, Pencil, Trash2 } from 'lucide-react';
+import { User, Settings, Pencil, Trash2, Phone } from 'lucide-react';
 import type { RentalRecord } from '../types/rental';
 import { formatCurrency, calculateTotalAmount} from '../utils/calculations';
 
@@ -30,11 +30,13 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
       <div data-testid="table-scroll-container" className="overflow-x-auto max-h-[60vh]">
         <table data-testid="rental-table" className="min-w-full border border-gray-300 table-fixed">
           <colgroup>
-            <col style={{ width: '18%' }} />
-            <col style={{ width: '35%' }} />
-            <col style={{ width: '13%' }} />
-            <col style={{ width: '13%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '30%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '12%' }} />
             <col style={{ width: '10%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '12%' }} />
             <col style={{ width: '10%' }} />
           </colgroup>
           <thead data-testid="table-head" className="bg-gradient-to-r from-blue-200 to-indigo-300 sticky top-0 z-10 shadow-md">
@@ -45,6 +47,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
               <th data-testid="received-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெறப்பட்டது</th>
               <th data-testid="pending-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலுவை</th>
               <th data-testid="status-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலை</th>
+              <th data-testid="mobile-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொபைல்</th>
               <th data-testid="actions-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm" style={{ minWidth: '90px' }}>Actions</th>
             </tr>
           </thead>
@@ -130,6 +133,20 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                     <span data-testid={`status-badge-${idx}`} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
                       {statusText}
                     </span>
+                  </td>
+                  <td data-testid={`mobile-cell-${idx}`} className="px-3 py-2 whitespace-nowrap">
+                    {record.mobile_number ? (
+                      <button
+                        data-testid={`mobile-call-button-${idx}`}
+                        onClick={() => window.open(`tel:${record.mobile_number}`, '_self')}
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded-lg transition-colors cursor-pointer"
+                        title="Click to call"
+                      >
+                        <span className="font-medium">{record.mobile_number}</span>
+                      </button>
+                    ) : (
+                      <span className="text-gray-400 text-sm italic">Not provided</span>
+                    )}
                   </td>
                   <td data-testid={`actions-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
                     <div data-testid={`actions-container-${idx}`} className="flex justify-center gap-3">
