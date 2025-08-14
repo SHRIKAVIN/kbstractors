@@ -41,13 +41,13 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
           </colgroup>
           <thead data-testid="table-head" className="bg-gradient-to-r from-blue-200 to-indigo-300 sticky top-0 z-10 shadow-md">
             <tr data-testid="table-head-row" className="divide-x divide-gray-300">
-              <th data-testid="name-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெயர்</th>
-              <th data-testid="details-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">விவரங்கள்</th>
-              <th data-testid="total-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொத்தம்</th>
-              <th data-testid="received-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெறப்பட்டது</th>
-              <th data-testid="pending-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலுவை</th>
-              <th data-testid="status-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலை</th>
-              <th data-testid="mobile-header" className="px-3 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொபைல்</th>
+              <th data-testid="name-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெயர்</th>
+              <th data-testid="details-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">விவரங்கள்</th>
+              <th data-testid="total-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொத்தம்</th>
+              <th data-testid="received-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெறப்பட்டது</th>
+              <th data-testid="pending-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலுவை</th>
+              <th data-testid="status-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலை</th>
+              <th data-testid="mobile-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொபைல்</th>
               <th data-testid="actions-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm" style={{ minWidth: '90px' }}>Actions</th>
             </tr>
           </thead>
