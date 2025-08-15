@@ -72,9 +72,8 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     if (!formData.name.trim()) {
       newErrors.name = 'பெயர் அவசியம்';
     }
-    if (!formData.mobile_number.trim()) {
-      newErrors.mobile_number = 'மொபைல் எண் அவசியம்';
-    } else if (!validateMobileNumber(formData.mobile_number.trim())) {
+    // Validate mobile number if provided (optional field)
+    if (formData.mobile_number.trim() && !validateMobileNumber(formData.mobile_number.trim())) {
       newErrors.mobile_number = 'சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும் (6, 7, 8, 9 தொடங்கும்)';
     }
     if (oldBalanceOnly) {
@@ -135,13 +134,17 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
     if (value.length <= 10) {
       setFormData(prev => ({ ...prev, mobile_number: value }));
-    }
-    if (errors.mobile_number) {
-      setErrors(prev => ({ ...prev, mobile_number: '' }));
+      // Clear mobile number errors when user types
+      if (errors.mobile_number) {
+        setErrors(prev => ({ ...prev, mobile_number: '' }));
+      }
     }
   };
 
   const validateMobileNumber = (mobileNumber: string): boolean => {
+    if (!mobileNumber || mobileNumber.trim() === '') {
+      return true; // Empty is valid (optional field)
+    }
     const trimmed = mobileNumber.trim();
     if (!/^[0-9]{10}$/.test(trimmed)) {
       return false;
@@ -161,7 +164,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
         const oldBalanceValue = parseFloat(formData.old_balance) || 0;
         recordData = {
           name: formData.name.trim(),
-          mobile_number: formData.mobile_number.trim(),
+          mobile_number: formData.mobile_number.trim() || null,
           old_balance: formData.old_balance || undefined,
           old_balance_status: oldBalanceStatus,
           old_balance_reason: formData.old_balance_reason || undefined,
@@ -188,7 +191,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
         });
         recordData = {
           name: formData.name.trim(),
-          mobile_number: formData.mobile_number.trim(),
+          mobile_number: formData.mobile_number.trim() || null,
           details,
           total_amount: totalAmount,
           received_amount: parseFloat(formData.received_amount),
@@ -280,7 +283,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 </div>
                 {/* Mobile Number Field */}
                 <div data-testid="mobile-number-field-container" className="mt-2 sm:mt-4">
-                  <label data-testid="mobile-number-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மொபைல் எண் *</label>
+                  <label data-testid="mobile-number-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மொபைல் எண்</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Phone className="h-4 w-4 text-gray-400" />
@@ -368,7 +371,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                 {/* Customer Mobile Number */}
                 <div data-testid="customer-mobile-container">
                   <label data-testid="customer-mobile-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                    மொபைல் எண் *
+                    மொபைல் எண்
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

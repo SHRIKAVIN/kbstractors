@@ -8,7 +8,7 @@ export interface RentalDetail {
 export interface RentalRecord {
   id: string;
   name: string;
-  mobile_number: string;
+  mobile_number?: string | null;
   details: RentalDetail[];
   total_amount: number;
   received_amount: number;
