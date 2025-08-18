@@ -1,16 +1,18 @@
 import{ useState, useEffect } from 'react';
-import { Plus, Download,LogOut, RefreshCw } from 'lucide-react';
+import { Plus, Download,LogOut, RefreshCw, Truck, Construction } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
 import { RentalForm } from './RentalForm';
 import { DataTable } from './DataTable';
 import { ConfirmDialog } from './ConfirmDialog';
 import { SEO } from './SEO';
+import { JCBDashboard } from './JCBDashboard';
 import type { RentalRecord } from '../types/rental';
 import { exportToExcel, exportToPDF } from '../utils/export';
 import { formatCurrency } from '../utils/calculations';
 
 export function Dashboard() {
+  const [currentView, setCurrentView] = useState<'tractor' | 'jcb'>('tractor');
   const [records, setRecords] = useState<RentalRecord[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<RentalRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -155,6 +157,11 @@ export function Dashboard() {
     );
   }
 
+  // Show JCB Dashboard if current view is JCB
+  if (currentView === 'jcb') {
+    return <JCBDashboard onBackToTractor={() => setCurrentView('tractor')} />;
+  }
+
   if (showForm && editRecord) {
     return <RentalForm onClose={() => { setShowForm(false); setEditRecord(null); }} onSave={async (updated) => {
       try {
@@ -184,7 +191,17 @@ export function Dashboard() {
       {/* Header with 3D Effects */}
       <header data-testid="dashboard-header" className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-2xl transform-gpu">
         <div data-testid="header-content" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6">
-          <div data-testid="header-main" className="flex flex-col items-center">
+          <div data-testid="header-main" className="flex flex-col items-center relative">
+            {/* JCB Button - Top Right */}
+            <button
+              data-testid="jcb-switch-button"
+              onClick={() => setCurrentView('jcb')}
+              className="absolute top-0 right-0 text-white hover:text-blue-100 bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all duration-200 transform hover:scale-110 hover:shadow-lg backdrop-blur-md border border-white/20"
+              aria-label="Switch to JCB"
+            >
+              <Construction className="w-4 h-4" />
+            </button>
+            
             {/* Logo with 3D Effect */}
             <div className="relative transform hover:scale-110 transition-all duration-300 hover:rotate-3">
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-xl opacity-60 transform scale-110"></div>
@@ -204,7 +221,7 @@ export function Dashboard() {
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}
-                className="flex-1 text-white hover:text-blue-100 p-2 sm:p-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
+                className="flex-1 text-white hover:text-blue-100 p-2 sm:py-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 disabled={loading}
                 aria-label="Refresh"
               >
@@ -225,7 +242,7 @@ export function Dashboard() {
               <button
                 data-testid="logout-button"
                 onClick={handleLogout}
-                className="flex-1 text-white hover:text-red-100 p-2 sm:p-3 rounded-xl hover:bg-red-500/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
+                className="flex-1 text-white hover:text-red-100 p-2 sm:py-3 rounded-xl hover:bg-red-500/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 aria-label="Logout"
               >
                 <LogOut data-testid="logout-icon" className="w-5 h-5" />
