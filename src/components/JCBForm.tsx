@@ -79,6 +79,11 @@ export function JCBForm({ onClose, onSave, initialData }: JCBFormProps) {
         if (!d.hours || parseFloat(d.hours) <= 0) {
           newErrors[`hours_${i}`] = 'சரியான மணி எண்ணை உள்ளிடவும்';
         }
+        // Allow decimal values like 1.03, 1.30, etc.
+        const hoursValue = parseFloat(d.hours);
+        if (isNaN(hoursValue) || hoursValue <= 0) {
+          newErrors[`hours_${i}`] = 'சரியான மணி எண்ணை உள்ளிடவும் (எ.கா: 1.03, 1.30)';
+        }
       });
       // Amount validation is not required for JCB
     }
@@ -494,9 +499,9 @@ export function JCBForm({ onClose, onSave, initialData }: JCBFormProps) {
                           value={d.hours}
                           onChange={e => handleDetailChange(i, 'hours', e.target.value)}
                           className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${errors[`hours_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                          placeholder="மணி எண்ணிக்கை"
+                          placeholder="மணி எண்ணிக்கை (எ.கா: 1.03, 1.30)"
                           min="0"
-                          step="0.5"
+                          step="0.01"
                         />
                         {errors[`hours_${i}`] && <p data-testid={`hours-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`hours_${i}`]}</p>}
                       </div>

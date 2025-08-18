@@ -490,9 +490,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                                 value={d.acres}
                                 onChange={e => handleDetailChange(i, 'acres', e.target.value)}
                                 className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                                placeholder="மா எண்ணிக்கை"
+                                placeholder="மா எண்ணிக்கை (எ.கா: 1.03, 1.30)"
                                 min="0"
-                                step="0.1"
+                                step="0.01"
                               />
                               {errors[`acres_${i}`] && <p data-testid={`acres-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
                             </div>
@@ -571,7 +571,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     value={formData.received_amount}
                     onChange={e => setFormData(prev => ({ ...prev, received_amount: e.target.value }))}
                     className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.received_amount ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                    placeholder="பெறப்பட்ட தொகை"
+                    placeholder="பெறப்பட்ட தொகை (எ.கா: 1500.50)"
                     min="0"
                     step="0.01"
                   />
