@@ -1,4 +1,4 @@
-import { User, Settings, Pencil, Trash2, Phone } from 'lucide-react';
+import { User, Settings, Pencil, Trash2} from 'lucide-react';
 import type { RentalRecord } from '../types/rental';
 import { formatCurrency, calculateTotalAmount} from '../utils/calculations';
 
@@ -73,6 +73,13 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                       </div>
                       <div data-testid={`name-text-${idx}`} className="ml-4">
                         <div data-testid={`customer-name-${idx}`} className="text-sm font-medium text-gray-900">{record.name}</div>
+                        <div data-testid={`date-added-${idx}`} className="text-xs text-gray-500 mt-1">
+                          {new Date(record.created_at).toLocaleDateString('en-GB', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                          })}
+                        </div>
                       </div>
                     </div>
                   </td>
