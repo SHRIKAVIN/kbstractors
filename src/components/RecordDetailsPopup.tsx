@@ -15,18 +15,31 @@ export function RecordDetailsPopup({ record, isOpen, onClose, triggerElement }: 
   const [animationState, setAnimationState] = useState<'opening' | 'open' | 'closing' | 'closed'>('closed');
   const [transformOrigin, setTransformOrigin] = useState('center center');
 
-  // Prevent body scrolling when popup is open
+  // Prevent body scrolling when popup is open (PWA/mobile compatible)
   useEffect(() => {
     if (isOpen) {
+      // Store the current scroll position
+      const scrollY = window.scrollY;
+      
+      // Apply styles to prevent scrolling (PWA/mobile compatible)
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'none';
+      document.documentElement.style.overflow = 'hidden';
+      
+      // Cleanup function to restore scrolling
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        document.body.style.touchAction = '';
+        document.documentElement.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
     }
-
-    // Cleanup function to restore scrolling when component unmounts
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
   }, [isOpen]);
 
   // Handle opening animation
