@@ -57,13 +57,12 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
           <table data-testid="rental-table" className="min-w-full border border-gray-300 table-fixed">
             <colgroup>
               <col style={{ width: '15%' }} />
-              <col style={{ width: '30%' }} />
+              <col style={{ width: '35%' }} />
               <col style={{ width: '12%' }} />
               <col style={{ width: '12%' }} />
               <col style={{ width: '10%' }} />
               <col style={{ width: '10%' }} />
-              <col style={{ width: '12%' }} />
-              <col style={{ width: '10%' }} />
+              <col style={{ width: '15%' }} />
             </colgroup>
             <thead data-testid="table-head" className="bg-gradient-to-r from-blue-200 to-indigo-300 sticky top-0 z-10 shadow-md">
               <tr data-testid="table-head-row" className="divide-x divide-gray-300">
@@ -73,7 +72,6 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                 <th data-testid="received-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெறப்பட்டது</th>
                 <th data-testid="pending-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலுவை</th>
                 <th data-testid="status-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலை</th>
-                <th data-testid="mobile-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொபைல்</th>
                 <th data-testid="actions-header" className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm" style={{ minWidth: '90px' }}>Actions</th>
               </tr>
             </thead>
@@ -114,8 +112,8 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                         </div>
                       </div>
                     </td>
-                    <td data-testid={`details-cell-${idx}`} className="px-3 py-2 whitespace-nowrap align-top">
-                      <div data-testid={`details-content-${idx}`} className="text-sm text-gray-900 flex flex-col gap-1">
+                    <td data-testid={`details-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
+                      <div data-testid={`details-content-${idx}`} className="text-sm text-gray-900 flex flex-col gap-1 items-center">
                         {(record.details && record.details.length > 0) ? (
                           record.details.map((d, detailIdx) => {
                             let amount = 0;
@@ -168,23 +166,21 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                     <td data-testid={`received-cell-${idx}`} className="px-3 py-2 whitespace-nowrap font-semibold text-green-600 text-center">{formatCurrency(record.received_amount)}</td>
                     <td data-testid={`pending-cell-${idx}`} className={"px-3 py-2 whitespace-nowrap font-semibold text-center " + (pendingAmount > 0 ? 'text-red-600' : 'text-green-600')}>{formatCurrency(pendingAmount)}</td>
                     <td data-testid={`status-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
-                      <span data-testid={`status-badge-${idx}`} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
-                        {statusText}
-                      </span>
-                    </td>
-                    <td data-testid={`mobile-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
-                      {record.mobile_number ? (
-                        <button
-                          data-testid={`mobile-call-button-${idx}`}
-                          onClick={() => window.open(`tel:${record.mobile_number}`, '_self')}
-                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1 rounded-lg transition-colors cursor-pointer"
-                          title="Click to call"
-                        >
-                          <span className="font-medium">{record.mobile_number}</span>
-                        </button>
-                      ) : (
-                        <span className="text-gray-400 text-sm italic text-center block">Not provided</span>
-                      )}
+                      <div className="flex flex-col items-center gap-2">
+                        <span data-testid={`status-badge-${idx}`} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
+                          {statusText}
+                        </span>
+                        {record.mobile_number && (
+                          <button
+                            data-testid={`mobile-call-button-${idx}`}
+                            onClick={() => window.open(`tel:${record.mobile_number}`, '_self')}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1 rounded transition-colors cursor-pointer text-xs font-medium"
+                            title="Click to call"
+                          >
+                            📞 {record.mobile_number}
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td data-testid={`actions-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
                       <div data-testid={`actions-container-${idx}`} className="flex justify-center gap-3">
