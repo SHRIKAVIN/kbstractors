@@ -87,7 +87,7 @@ export function RecordDetailsPopup({ record, isOpen, onClose, triggerElement }: 
     >
       <div 
         ref={popupRef}
-        className={`bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-500 ${getAnimationClasses()}`}
+        className={`bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-500 ${getAnimationClasses()}`}
         style={{ 
           transformOrigin,
           transition: animationState === 'closing' 
@@ -97,7 +97,7 @@ export function RecordDetailsPopup({ record, isOpen, onClose, triggerElement }: 
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 rounded-t-2xl">
           <div className="flex items-center space-x-3">
             <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
               <User className="h-6 w-6 text-blue-600" />
@@ -116,7 +116,7 @@ export function RecordDetailsPopup({ record, isOpen, onClose, triggerElement }: 
         </div>
 
         {/* Content */}
-        <div className={`p-6 space-y-6 transition-all duration-700 ease-out delay-200 ${
+        <div className={`p-6 space-y-6 transition-all duration-700 ease-out delay-200 rounded-b-2xl ${
           isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
         }`}>
           {/* Basic Information */}
