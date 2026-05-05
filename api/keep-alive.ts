@@ -6,29 +6,28 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Get Supabase credentials from environment variables
-  // Vercel automatically exposes VITE_ prefixed env vars, but we'll check both
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  // Prefer service role on the server: RLS on rental_records/jcb_records only allows `authenticated`, not `anon`
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabaseKey) {
     console.error('Missing Supabase environment variables');
     return res.status(500).json({ 
       error: 'Missing Supabase configuration',
-      message: 'Supabase URL or Anon Key not found in environment variables'
+      message: 'Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (recommended) or anon key in Vercel env'
     });
   }
 
   try {
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Make a simple query to keep the database active
-    // This is a lightweight query that just checks if we can connect
-    // Using 'rental_records' table from your database
-    const { data, error } = await supabase
+    // Lightweight head request: still hits Postgres (counts as project activity)
+    const { error } = await supabase
       .from('rental_records')
-      .select('id')
+      .select('id', { head: true, count: 'exact' })
       .limit(1);
 
     if (error) {
@@ -46,8 +45,7 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({ 
       success: true,
       message: 'Database keep-alive successful',
-      timestamp,
-      data: data ? 'Connection verified' : 'No data returned'
+      timestamp
     });
   } catch (error: any) {
     console.error('Keep-alive error:', error);
