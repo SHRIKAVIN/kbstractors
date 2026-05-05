@@ -58,11 +58,11 @@ jobs:
             "title": "Supabase Keep-Alive Notification",
             "sections": [
               {
-                "activityTitle": "KBS EARTHMOVERS",
+                "activityTitle": "KBS TRACTORS",
                 "activitySubtitle": "Keep-alive workflow result",
                 "activityImage": "${LOGO_URL}",
                 "facts": [
-                  { "name": "Project Name", "value": "KBS EARTHMOVERS" },
+                  { "name": "Project Name", "value": "KBS TRACTORS" },
                   { "name": "Job Status", "value": "Success ✅" },
                   { "name": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")" },
                   { "name": "Action", "value": "${{ github.workflow }}" },
@@ -104,11 +104,11 @@ jobs:
             "title": "Supabase Keep-Alive Notification",
             "sections": [
               {
-                "activityTitle": "KBS EARTHMOVERS",
+                "activityTitle": "KBS TRACTORS",
                 "activitySubtitle": "Keep-alive workflow result",
                 "activityImage": "${LOGO_URL}",
                 "facts": [
-                  { "name": "Project Name", "value": "KBS EARTHMOVERS" },
+                  { "name": "Project Name", "value": "KBS TRACTORS" },
                   { "name": "Job Status", "value": "Failed ❌" },
                   { "name": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")" },
                   { "name": "Action", "value": "${{ github.workflow }}" },
