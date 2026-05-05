@@ -41,3 +41,35 @@ jobs:
             echo "⚠️  Please check your Vercel deployment and API endpoint."
             exit 1
           fi
+
+      - name: Notify Teams on Success
+        if: success()
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: |
+          payload=$(cat <<EOF
+          {
+            "text": "✅ Supabase Keep-Alive Succeeded\nRepository: ${{ github.repository }}\nWorkflow: ${{ github.workflow }}\nRun: #${{ github.run_number }}\nTime (UTC): $(date -u +"%Y-%m-%d %H:%M:%S")"
+          }
+          EOF
+          )
+
+          curl -sS -X POST "$TEAMS_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
+
+      - name: Notify Teams on Failure
+        if: failure()
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: |
+          payload=$(cat <<EOF
+          {
+            "text": "❌ Supabase Keep-Alive Failed\nRepository: ${{ github.repository }}\nWorkflow: ${{ github.workflow }}\nRun: #${{ github.run_number }}\nTime (UTC): $(date -u +"%Y-%m-%d %H:%M:%S")\nRun URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }
+          EOF
+          )
+
+          curl -sS -X POST "$TEAMS_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
