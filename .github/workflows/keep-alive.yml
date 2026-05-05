@@ -47,9 +47,39 @@ jobs:
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         run: |
+          LOGO_URL="https://kbstractors.vercel.app/icons/kbs-tractors-192.png"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           payload=$(cat <<EOF
           {
-            "text": "✅ Supabase Keep-Alive Succeeded\nRepository: ${{ github.repository }}\nWorkflow: ${{ github.workflow }}\nRun: #${{ github.run_number }}\nTime (UTC): $(date -u +"%Y-%m-%d %H:%M:%S")"
+            "@type": "MessageCard",
+            "@context": "https://schema.org/extensions",
+            "summary": "Supabase keep-alive success",
+            "themeColor": "2EB886",
+            "title": "Supabase Keep-Alive Notification",
+            "sections": [
+              {
+                "activityTitle": "KBS EARTHMOVERS",
+                "activitySubtitle": "Keep-alive workflow result",
+                "activityImage": "${LOGO_URL}",
+                "facts": [
+                  { "name": "Project Name", "value": "KBS EARTHMOVERS" },
+                  { "name": "Job Status", "value": "Success ✅" },
+                  { "name": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")" },
+                  { "name": "Action", "value": "${{ github.workflow }}" },
+                  { "name": "Job Number", "value": "#${{ github.run_number }}" }
+                ],
+                "markdown": true
+              }
+            ],
+            "potentialAction": [
+              {
+                "@type": "OpenUri",
+                "name": "Open GitHub Run",
+                "targets": [
+                  { "os": "default", "uri": "${RUN_URL}" }
+                ]
+              }
+            ]
           }
           EOF
           )
@@ -63,9 +93,39 @@ jobs:
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         run: |
+          LOGO_URL="https://kbstractors.vercel.app/icons/kbs-tractors-192.png"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           payload=$(cat <<EOF
           {
-            "text": "❌ Supabase Keep-Alive Failed\nRepository: ${{ github.repository }}\nWorkflow: ${{ github.workflow }}\nRun: #${{ github.run_number }}\nTime (UTC): $(date -u +"%Y-%m-%d %H:%M:%S")\nRun URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            "@type": "MessageCard",
+            "@context": "https://schema.org/extensions",
+            "summary": "Supabase keep-alive failure",
+            "themeColor": "E81123",
+            "title": "Supabase Keep-Alive Notification",
+            "sections": [
+              {
+                "activityTitle": "KBS EARTHMOVERS",
+                "activitySubtitle": "Keep-alive workflow result",
+                "activityImage": "${LOGO_URL}",
+                "facts": [
+                  { "name": "Project Name", "value": "KBS EARTHMOVERS" },
+                  { "name": "Job Status", "value": "Failed ❌" },
+                  { "name": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")" },
+                  { "name": "Action", "value": "${{ github.workflow }}" },
+                  { "name": "Job Number", "value": "#${{ github.run_number }}" }
+                ],
+                "markdown": true
+              }
+            ],
+            "potentialAction": [
+              {
+                "@type": "OpenUri",
+                "name": "Open GitHub Run",
+                "targets": [
+                  { "os": "default", "uri": "${RUN_URL}" }
+                ]
+              }
+            ]
           }
           EOF
           )
