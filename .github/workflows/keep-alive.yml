@@ -18,7 +18,8 @@ jobs:
           # Value: https://your-app.vercel.app (your actual Vercel URL)
           VERCEL_URL: ${{ secrets.VERCEL_DEPLOYMENT_URL || 'https://kbstractors.vercel.app/' }}
         run: |
-          KEEP_ALIVE_URL="${VERCEL_URL}/api/keep-alive"
+          CLEAN_VERCEL_URL="${VERCEL_URL%/}"
+          KEEP_ALIVE_URL="${CLEAN_VERCEL_URL}/api/keep-alive"
           
           echo "🚀 Pinging keep-alive endpoint: $KEEP_ALIVE_URL"
           echo "⏰ Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"

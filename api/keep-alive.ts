@@ -12,6 +12,8 @@ export default async function handler(req: any, res: any) {
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_ANON_KEY;
+  const tableName = process.env.KEEP_ALIVE_TABLE || 'rental_records';
+  const keyType = process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service_role' : 'anon';
 
   if (!supabaseUrl || !supabaseKey) {
     console.error('Missing Supabase environment variables');
@@ -24,17 +26,29 @@ export default async function handler(req: any, res: any) {
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Lightweight head request: still hits Postgres (counts as project activity)
+    // Lightweight query that still touches Postgres (counts as activity)
     const { error } = await supabase
-      .from('rental_records')
-      .select('id', { head: true, count: 'exact' })
+      .from(tableName)
+      .select('id')
       .limit(1);
 
     if (error) {
-      console.error('Supabase keep-alive failed:', error);
+      const errorMessage =
+        error.message ||
+        error.details ||
+        error.hint ||
+        (error.code ? `code=${error.code}` : '') ||
+        'Unknown Supabase error';
+      console.error('Supabase keep-alive failed:', {
+        tableName,
+        keyType,
+        error,
+      });
       return res.status(500).json({ 
         error: 'Database connection failed',
-        message: error.message 
+        message: errorMessage,
+        table: tableName,
+        keyType
       });
     }
 
@@ -45,7 +59,9 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({ 
       success: true,
       message: 'Database keep-alive successful',
-      timestamp
+      timestamp,
+      table: tableName,
+      keyType
     });
   } catch (error: any) {
     console.error('Keep-alive error:', error);
