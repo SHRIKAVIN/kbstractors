@@ -1,14 +1,14 @@
 # 🚜 KBS Tractors - Professional Rental Management System
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-View%20Now-green?style=for-the-badge&logo=vercel)](https://kbstractors.vercel.app/)
-[![React](https://img.shields.io/badge/React-18.0.0-blue?style=flat-square&logo=react)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.0-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Vite](https://img.shields.io/badge/Vite-4.0-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-18.3-blue?style=flat-square&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-2.0-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
-> **A comprehensive tractor rental and sales management system built with modern web technologies**
+> **A bilingual (Tamil/English) tractor & JCB rental management system with financial tracking, exports, and automated Supabase keep-alive**
 
 ## 📋 Table of Contents
 
@@ -17,46 +17,41 @@
 - [🛠️ Tech Stack](#️-tech-stack)
 - [📦 Installation](#-installation)
 - [🔧 Configuration](#-configuration)
+- [💓 Supabase Keep-Alive](#-supabase-keep-alive)
 - [📱 Usage](#-usage)
 - [🏗️ Project Structure](#️-project-structure)
-- [🎨 UI/UX Features](#-uiux-features)
-- [🔒 Security Features](#-security-features)
 - [📊 Database Schema](#-database-schema)
-- [🧪 Testing](#-testing)
 - [🚀 Deployment](#-deployment)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 
 ## ✨ Features
 
-### 🎯 **Core Functionality**
-- **📝 Rental Record Management** - Create, edit, and delete rental records
-- **💰 Financial Tracking** - Monitor payments, pending amounts, and total revenue
-- **🔍 Advanced Filtering** - Filter by equipment type, status, date range, and customer name
-- **📊 Real-time Statistics** - Live dashboard with key business metrics
-- **📤 Export Capabilities** - Export data to Excel and PDF formats
+### 🚜 **Tractor Rental Management**
+- Create, edit, and delete rental records
+- Equipment types: Cage Wheel, Rotavator, Dipper, புழுதி, Mini
+- Flexible measurements (acres, rounds, nadai)
+- Mobile number capture with one-tap call links
+- Person detail popup (flashcard) for quick customer overview
+- Financial tracking for payments, pending amounts, and old balances
+- Filter by equipment, status, date range, and customer name
+- Export to Excel and PDF
 
-### 🛠️ **Equipment Management**
-- **🚜 Multiple Equipment Types** - Cage Wheel, Rotavator, Dipper, புழுதி, Mini
-- **📏 Flexible Measurements** - Support for acres, rounds, and nadai (steps)
-- **💡 Automatic Calculations** - Real-time cost calculations based on equipment rates
-- **🔄 Dynamic Pricing** - Configurable rates for different equipment types
-
-### 👥 **Customer Management**
-- **👤 Customer Profiles** - Store and manage customer information
-- **💰 Balance Tracking** - Track old balances and payment history
-- **📋 Payment Status** - Monitor paid vs pending amounts
-- **🔍 Search & Filter** - Quick customer lookup and filtering
+### 🚧 **JCB Operations**
+- Separate JCB dashboard (switch via top-right button)
+- Company name, driver name, hours, and work date
+- Hourly billing (₹1000/hour)
+- Optional amount received and advance amount
+- Mobile number and balance tracking
+- Export and filtering support
 
 ### 🎨 **User Experience**
-- **📱 Responsive Design** - Works seamlessly on desktop, tablet, and mobile
-- **🌐 Bilingual Support** - Tamil and English interface
-- **⚡ Fast Performance** - Optimized with Vite and modern React patterns
-- **🎯 Intuitive Interface** - Clean, professional design with excellent UX
+- Responsive design for desktop, tablet, and mobile
+- Bilingual Tamil / English interface
+- Real-time dashboard statistics
+- Secure login with Supabase Auth
 
 ## 🚀 Live Demo
-
-**Experience the full application live:**
 
 [![Live Demo Button](https://img.shields.io/badge/🚀%20Live%20Demo%20-%20Try%20Now%20→-brightgreen?style=for-the-badge&logo=vercel)](https://kbstractors.vercel.app/)
 
@@ -67,30 +62,28 @@
 ## 🛠️ Tech Stack
 
 ### **Frontend**
-- **⚛️ React 18** - Modern React with hooks and functional components
-- **📘 TypeScript** - Type-safe development with enhanced IDE support
-- **🎨 Tailwind CSS** - Utility-first CSS framework for rapid UI development
-- **⚡ Vite** - Lightning-fast build tool and development server
-- **📱 Responsive Design** - Mobile-first approach with Tailwind CSS
+- React 18 + TypeScript
+- Vite 5
+- Tailwind CSS
+- Lucide React icons
+- jspdf / pdfmake / xlsx for exports
+- React Helmet Async for SEO
 
 ### **Backend & Database**
-- **🔥 Supabase** - Open-source Firebase alternative with PostgreSQL
-- **🗄️ PostgreSQL** - Robust, scalable database
-- **🔐 Row Level Security** - Advanced security policies
-- **🔄 Real-time Subscriptions** - Live data updates
+- Supabase (PostgreSQL + Auth + RLS)
+- Vercel serverless API (`/api/keep-alive`)
 
-### **Development Tools**
-- **🔧 ESLint** - Code linting and formatting
-- **📦 npm** - Package management
-- **🌐 React Router** - Client-side routing
-- **📄 React Helmet** - Document head management for SEO
+### **Automation**
+- GitHub Actions scheduled keep-alive workflow
+- Optional Microsoft Teams webhook notifications
 
 ## 📦 Installation
 
 ### **Prerequisites**
-- Node.js (v16 or higher)
-- npm or yarn
+- Node.js (v18 or higher recommended)
+- npm
 - Supabase account
+- Vercel account (for production + keep-alive API)
 
 ### **Quick Start**
 
@@ -111,197 +104,206 @@ npm run dev
 
 ### **Environment Variables**
 
-Create a `.env.local` file with the following variables:
+Create a `.env.local` file:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
+For the keep-alive API on Vercel (server-side), also set:
+
+```env
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # preferred (bypasses RLS)
+# or SUPABASE_ANON_KEY / VITE_SUPABASE_ANON_KEY as fallback
+# KEEP_ALIVE_TABLE=rental_records                  # optional, default shown
+```
+
 ## 🔧 Configuration
 
 ### **Supabase Setup**
 
-1. **Create a new Supabase project**
-2. **Set up the database schema** 
-3. **Configure Row Level Security policies**
-4. **Add environment variables to your project**
+1. Create a new Supabase project
+2. Run the SQL migrations in `supabase/migrations/` (in order)
+3. Configure Row Level Security policies
+4. Add environment variables locally and on Vercel
 
-### **Database Migration**
+### **Database Migrations**
 
-```sql
--- Run the migration files in supabase/migrations/
--- This will set up all necessary tables and policies
+```bash
+# Apply migrations from supabase/migrations/ in chronological order:
+# - turquoise_butterfly.sql          (base rental_records)
+# - add_optional_fields...           (old balance fields)
+# - add_mobile_number...             (mobile_number on rentals)
+# - create_jcb_records_table.sql     (JCB system)
+# - fix_jcb_records_name_nullable.sql
 ```
+
+## 💓 Supabase Keep-Alive
+
+Supabase free-tier projects pause after inactivity. This repo keeps the DB warm via:
+
+1. **Vercel API** — `GET /api/keep-alive` runs a lightweight `select` against Postgres
+2. **GitHub Action** — `.github/workflows/keep-alive.yml` pings that endpoint on a schedule
+
+### **Schedule**
+- Cron: every **15 minutes** UTC (`*/15 * * * *`)
+- Also supports manual runs via **workflow_dispatch**
+
+### **GitHub Secrets**
+
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `VERCEL_DEPLOYMENT_URL` | Optional | App URL (defaults to `https://kbstractors.vercel.app/`) |
+| `TEAMS_WEBHOOK_URL` | Optional | Microsoft Teams incoming webhook for success/failure cards |
+
+### **Manual test**
+
+```bash
+curl -sL https://kbstractors.vercel.app/api/keep-alive
+```
+
+Expected response includes `"success": true` and a timestamp.
 
 ## 📱 Usage
 
 ### **Authentication**
-- Secure login system with username/password
-- Session management with Supabase Auth
-- Automatic logout on session expiry
+- Username/password login via Supabase Auth
+- Session management with automatic expiry handling
 
-### **Dashboard Overview**
-- **📊 Statistics Cards** - View total records, amounts, and pending balances
-- **🔍 Quick Filters** - Filter data by various criteria
-- **📤 Export Options** - Download data in Excel or PDF format
-- **🔄 Refresh Data** - Real-time data updates
+### **Tractor Dashboard**
+1. Click **புதிய பதிவு** (New Record)
+2. Enter customer name and optional mobile number
+3. Add equipment lines (acres, rounds, type)
+4. Set received amount / old balance as needed
+5. Save — use filters and export from the dashboard
 
-### **Adding Rental Records**
-1. Click **"புதிய பதிவு"** (New Record) button
-2. Fill in customer details
-3. Add equipment details (acres, rounds, equipment type)
-4. Set received amount
-5. Save the record
+### **JCB Dashboard**
+1. Click the **JCB** button (top right of tractor dashboard)
+2. Enter company name, driver name, hours, and work date
+3. Optionally set amount received and advance
+4. Switch back with the **Tractor** button
 
-### **Managing Records**
-- **✏️ Edit** - Modify existing records
-- **🗑️ Delete** - Remove records (with confirmation)
-- **🔍 Filter** - Use advanced filtering options
-- **📊 Export** - Download filtered data
+### **Record Details**
+- Click the person icon on a rental row to open the detail flashcard popup
+- Tap a mobile number to dial (`tel:`)
 
 ## 🏗️ Project Structure
 
 ```
 kbstractors/
-├── 📁 src/
-│   ├── 📁 components/          # React components
-│   │   ├── Dashboard.tsx      # Main dashboard
-│   │   ├── DataTable.tsx      # Data display table
-│   │   ├── LoginForm.tsx      # Authentication form
-│   │   ├── RentalForm.tsx     # Rental record form
-│   │   └── SEO.tsx           # SEO management
-│   ├── 📁 hooks/              # Custom React hooks
-│   │   └── useAuth.tsx       # Authentication hook
-│   ├── 📁 lib/                # Utility libraries
-│   │   ├── supabase.ts       # Supabase client
-│   │   └── localStorage.ts   # Local storage utilities
-│   ├── 📁 types/              # TypeScript type definitions
-│   │   └── rental.ts         # Rental record types
-│   ├── 📁 utils/              # Utility functions
-│   │   ├── analytics.ts      # Analytics utilities
-│   │   ├── calculations.ts   # Business logic calculations
-│   │   └── export.ts         # Export functionality
-│   └── 📁 assets/             # Static assets
-├── 📁 supabase/               # Database migrations
-├── 📁 public/                 # Public assets
-└── 📄 Configuration files
+├── api/
+│   └── keep-alive.ts           # Vercel serverless keep-alive endpoint
+├── .github/workflows/
+│   └── keep-alive.yml          # Scheduled DB ping + Teams notifications
+├── src/
+│   ├── components/
+│   │   ├── Dashboard.tsx       # Tractor dashboard + view switch
+│   │   ├── DataTable.tsx       # Rental table + person flashcard trigger
+│   │   ├── RentalForm.tsx      # Tractor rental form
+│   │   ├── JCBDashboard.tsx    # JCB operations dashboard
+│   │   ├── JCBDataTable.tsx    # JCB records table
+│   │   ├── JCBForm.tsx         # JCB entry form
+│   │   ├── RecordDetailsPopup.tsx
+│   │   ├── LoginForm.tsx
+│   │   ├── ConfirmDialog.tsx
+│   │   └── SEO.tsx
+│   ├── hooks/
+│   │   └── useAuth.tsx
+│   ├── lib/
+│   │   ├── supabase.ts         # Tractor Supabase client/services
+│   │   ├── jcb-supabase.ts     # JCB Supabase services
+│   │   └── localStorage.ts
+│   ├── types/
+│   │   ├── rental.ts
+│   │   └── jcb.ts
+│   └── utils/
+│       ├── calculations.ts
+│       ├── jcb-calculations.ts
+│       ├── export.ts
+│       └── analytics.ts
+├── supabase/migrations/        # SQL migrations
+├── public/                     # Static assets, icons, SEO files
+└── vercel.json                 # SPA rewrites (excludes /api)
 ```
-
-## 🎨 UI/UX Features
-
-### **Design Principles**
-- **🎯 User-Centered Design** - Intuitive interface for business users
-- **📱 Mobile-First Approach** - Responsive design for all devices
-- **♿ Accessibility** - WCAG compliant with proper ARIA labels
-- **🎨 Consistent Design System** - Unified color scheme and typography
-
-### **Visual Elements**
-- **🎨 Professional Color Scheme** - Blue and gray theme
-- **📊 Data Visualization** - Clear statistics and progress indicators
-- **🔍 Interactive Elements** - Hover effects and smooth transitions
-- **📱 Touch-Friendly** - Optimized for mobile interaction
-
-## 🔒 Security Features
-
-### **Authentication & Authorization**
-- **🔐 Secure Login** - Username/password authentication
-- **🛡️ Row Level Security** - Database-level access control
-- **⏰ Session Management** - Automatic session expiry
-- **🚪 Secure Logout** - Proper session cleanup
-
-### **Data Protection**
-- **🔒 Encrypted Connections** - HTTPS/TLS encryption
-- **🛡️ Input Validation** - Client and server-side validation
-- **🚫 XSS Protection** - Sanitized user inputs
-- **📊 Audit Trail** - Track data modifications
 
 ## 📊 Database Schema
 
-### **Core Tables**
-
+### **rental_records**
 ```sql
--- Rental Records
 rental_records (
-  id: uuid PRIMARY KEY,
-  name: text NOT NULL,
-  details: jsonb,
-  total_amount: numeric,
-  received_amount: numeric,
-  old_balance: text,
-  old_balance_status: text,
-  old_balance_reason: text,
-  created_at: timestamp,
-  updated_at: timestamp
+  id uuid PRIMARY KEY,
+  name text NOT NULL,
+  mobile_number text,
+  details jsonb,              -- acres, equipment_type, rounds, nadai
+  total_amount numeric,
+  received_amount numeric,
+  old_balance text,
+  old_balance_status text,    -- 'paid' | 'pending'
+  old_balance_reason text,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+```
+
+### **jcb_records**
+```sql
+jcb_records (
+  id uuid PRIMARY KEY,
+  company_name text NOT NULL,
+  driver_name text NOT NULL,
+  mobile_number text,
+  work_date date,
+  details jsonb,              -- hours, equipment_type ('JCB')
+  total_amount numeric NOT NULL,
+  amount_received numeric DEFAULT 0,
+  advance_amount numeric DEFAULT 0,
+  old_balance text,
+  old_balance_reason text,
+  old_balance_status text,    -- 'paid' | 'pending'
+  created_at timestamptz,
+  updated_at timestamptz
 )
 ```
 
 ### **Equipment Types**
-- **Cage Wheel** 
-- **Rotavator** 
-- **Dipper** 
-- **புழுதி** 
-- **Mini** 
-
-## 🧪 Testing
-
-### **Test Coverage**
-- **🧪 Unit Tests** - Component and utility function testing
-- **🔍 Integration Tests** - API and database integration
-- **🌐 E2E Tests** - Full user workflow testing
-- **📱 Cross-Browser Testing** - Chrome, Firefox, Safari, Edge
-
-### **Test IDs**
-All components include comprehensive `data-testid` attributes for reliable testing:
-
-```jsx
-// Example test selectors
-<button data-testid="add-record-button">Add Record</button>
-<input data-testid="customer-name-input" />
-<div data-testid="total-amount-value">₹5,000</div>
-```
+- Tractor: Cage Wheel, Rotavator, Dipper, புழுதி, Mini
+- JCB: JCB (hourly)
 
 ## 🚀 Deployment
 
-### **Vercel Deployment**
-1. **Connect Repository** - Link your GitHub repository to Vercel
-2. **Configure Environment** - Add Supabase environment variables
-3. **Deploy** - Automatic deployment on push to main branch
+### **Vercel**
+1. Connect the GitHub repository to Vercel
+2. Set environment variables:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (for keep-alive)
+3. Deploy — pushes to `main` deploy automatically
+4. Confirm keep-alive: `https://your-app.vercel.app/api/keep-alive`
 
-### **Environment Setup**
-```bash
-# Production environment variables
-VITE_SUPABASE_URL=your_production_supabase_url
-VITE_SUPABASE_ANON_KEY=your_production_supabase_anon_key
-```
+### **GitHub Actions**
+1. (Optional) Add `VERCEL_DEPLOYMENT_URL` secret
+2. (Optional) Add `TEAMS_WEBHOOK_URL` for Teams alerts
+3. Enable Actions on the repo — the schedule runs automatically
 
-### **Performance Optimization**
-- **⚡ Code Splitting** - Lazy loading for better performance
-- **📦 Bundle Optimization** - Minimized and compressed assets
-- **🌐 CDN Delivery** - Global content delivery network
-- **📱 PWA Ready** - Progressive web app capabilities
+### **Performance**
+- Vite production build with code splitting
+- CDN delivery via Vercel
+- SPA rewrites configured in `vercel.json` (API routes excluded)
 
 ## 🤝 Contributing
 
-We welcome contributions! Please follow these guidelines:
-
-### **Development Workflow**
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push and open a Pull Request
 
 ### **Code Standards**
-- **📝 TypeScript** - Use TypeScript for all new code
-- **🎨 Prettier** - Follow consistent code formatting
-- **🔍 ESLint** - Maintain code quality standards
-- **📚 Documentation** - Update README and code comments
-
-### **Testing Requirements**
-- **✅ Unit Tests** - Add tests for new functionality
-- **✅ Integration Tests** - Test component interactions
-- **✅ E2E Tests** - Verify user workflows
+- TypeScript for all new code
+- Follow existing ESLint / Prettier conventions
+- Prefer bilingual UI labels where users see text
+- Update README when adding features or workflows
 
 ## 📄 License
 
@@ -311,22 +313,17 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🙏 Acknowledgments
 
-- **React Team** - For the amazing React framework
-- **Supabase Team** - For the excellent backend-as-a-service platform
-- **Tailwind CSS** - For the utility-first CSS framework
-- **Vercel** - For seamless deployment and hosting
+- React, Supabase, Tailwind CSS, and Vercel teams
 
 ## 📞 Support
 
-- **🌐 Website:** [https://kbstractors.vercel.app/](https://kbstractors.vercel.app/)
-- **📧 Email:**  shrikavinkbs@gmail.com
-
+- **Website:** [https://kbstractors.vercel.app/](https://kbstractors.vercel.app/)
+- **Email:** shrikavinkbs@gmail.com
 
 ---
 
 <div align="center">
 
 **Made with ❤️ for the agricultural community**
-
 
 </div>
