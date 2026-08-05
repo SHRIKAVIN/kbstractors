@@ -74,7 +74,8 @@
 - Vercel serverless API (`/api/keep-alive`)
 
 ### **Automation**
-- GitHub Actions scheduled keep-alive workflow
+- Vercel Cron daily keep-alive + Teams cards
+- GitHub Actions scheduled keep-alive workflow (every 15 minutes)
 - Optional Microsoft Teams webhook notifications
 
 ## 📦 Installation
@@ -118,6 +119,7 @@ SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # preferred (bypasses RLS)
 # or SUPABASE_ANON_KEY / VITE_SUPABASE_ANON_KEY as fallback
 # KEEP_ALIVE_TABLE=rental_records                  # optional, default shown
+TEAMS_WEBHOOK_URL=your_teams_incoming_webhook_url  # Vercel Cron Teams cards
 ```
 
 ## 🔧 Configuration
@@ -144,12 +146,19 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # preferred (bypasses RLS)
 
 Supabase free-tier projects pause after inactivity. This repo keeps the DB warm via:
 
-1. **Vercel API** — `GET /api/keep-alive` runs a lightweight `select` against Postgres
-2. **GitHub Action** — `.github/workflows/keep-alive.yml` pings that endpoint on a schedule
+1. **`/api/keep-alive`** — lightweight `SELECT` against Supabase
+2. **Vercel Cron** — once daily at 12:00 UTC (`0 12 * * *`) + Teams success/failure cards
+3. **GitHub Actions** — every 15 minutes + Teams cards (existing workflow)
 
-### **Schedule**
-- Cron: every **15 minutes** UTC (`*/15 * * * *`)
-- Also supports manual runs via **workflow_dispatch**
+Hobby Vercel allows at most one cron per day; GitHub Actions covers the 15‑minute pings. Vercel Cron Teams cards only fire on real cron requests (avoids double notify on Action pings).
+
+### **Vercel env**
+
+| Variable | Purpose |
+|----------|---------|
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Keep-alive queries (bypasses RLS) |
+| `TEAMS_WEBHOOK_URL` | Teams alerts from Vercel Cron |
 
 ### **GitHub Secrets**
 
@@ -164,7 +173,7 @@ Supabase free-tier projects pause after inactivity. This repo keeps the DB warm 
 curl -sL https://kbstractors.vercel.app/api/keep-alive
 ```
 
-Expected response includes `"success": true` and a timestamp.
+Expect `"success": true` and `"teams": { "sent": false, "reason": "Not a Vercel Cron request..." }` (manual pings skip Teams).
 
 ## 📱 Usage
 
@@ -225,7 +234,7 @@ kbstractors/
 │       └── analytics.ts
 ├── supabase/migrations/        # SQL migrations
 ├── public/                     # Static assets, icons, SEO files
-└── vercel.json                 # SPA rewrites (excludes /api)
+└── vercel.json                 # SPA rewrites + daily Cron (/api/keep-alive)
 ```
 
 ## 📊 Database Schema
@@ -279,8 +288,10 @@ jcb_records (
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
    - `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (for keep-alive)
+   - `TEAMS_WEBHOOK_URL` (for Vercel Cron Teams cards)
 3. Deploy — pushes to `main` deploy automatically
-4. Confirm keep-alive: `https://your-app.vercel.app/api/keep-alive`
+4. Confirm Cron Jobs: path `/api/keep-alive`, schedule `0 12 * * *`
+5. Confirm keep-alive: `https://your-app.vercel.app/api/keep-alive`
 
 ### **GitHub Actions**
 1. (Optional) Add `VERCEL_DEPLOYMENT_URL` secret
