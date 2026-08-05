@@ -147,7 +147,7 @@ TEAMS_WEBHOOK_URL=your_teams_incoming_webhook_url  # Vercel Cron Teams cards
 Supabase free-tier projects pause after inactivity. This repo keeps the DB warm via:
 
 1. **`/api/keep-alive`** — lightweight `SELECT` against Supabase
-2. **Vercel Cron** — once daily at 12:00 UTC (`0 12 * * *`) + Teams success/failure cards
+2. **Vercel Cron** — once daily at 03:00 UTC (`0 3 * * *`) + Teams success/failure cards
 3. **GitHub Actions** — every 15 minutes + Teams cards (existing workflow)
 
 Hobby Vercel allows at most one cron per day; GitHub Actions covers the 15‑minute pings. Vercel Cron Teams cards only fire on real cron requests (avoids double notify on Action pings).
@@ -290,7 +290,7 @@ jcb_records (
    - `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (for keep-alive)
    - `TEAMS_WEBHOOK_URL` (for Vercel Cron Teams cards)
 3. Deploy — pushes to `main` deploy automatically
-4. Confirm Cron Jobs: path `/api/keep-alive`, schedule `0 12 * * *`
+4. Confirm Cron Jobs: path `/api/keep-alive`, schedule `0 3 * * *`
 5. Confirm keep-alive: `https://your-app.vercel.app/api/keep-alive`
 
 ### **GitHub Actions**
