@@ -75,7 +75,7 @@
 
 ### **Automation**
 - Vercel Cron daily keep-alive + Teams cards
-- GitHub Actions scheduled keep-alive workflow (every 15 minutes)
+- GitHub Actions keep-alive workflow (cron commented out; manual `workflow_dispatch` only)
 - Optional Microsoft Teams webhook notifications
 
 ## 📦 Installation
@@ -148,9 +148,9 @@ Supabase free-tier projects pause after inactivity. This repo keeps the DB warm 
 
 1. **`/api/keep-alive`** — lightweight `SELECT` against Supabase
 2. **Vercel Cron** — once daily at 03:00 UTC (`0 3 * * *`) + Teams success/failure cards
-3. **GitHub Actions** — every 15 minutes + Teams cards (existing workflow)
+3. **GitHub Actions** — schedule commented out for now; manual `workflow_dispatch` still available
 
-Hobby Vercel allows at most one cron per day; GitHub Actions covers the 15‑minute pings. Vercel Cron Teams cards only fire on real cron requests (avoids double notify on Action pings).
+Hobby Vercel allows at most one cron per day. Vercel Cron Teams cards only fire on real cron requests.
 
 ### **Vercel env**
 
@@ -205,7 +205,7 @@ kbstractors/
 ├── api/
 │   └── keep-alive.ts           # Vercel serverless keep-alive endpoint
 ├── .github/workflows/
-│   └── keep-alive.yml          # Scheduled DB ping + Teams notifications
+│   └── keep-alive.yml          # Keep-alive + Teams (cron disabled; manual only)
 ├── src/
 │   ├── components/
 │   │   ├── Dashboard.tsx       # Tractor dashboard + view switch
@@ -296,7 +296,7 @@ jcb_records (
 ### **GitHub Actions**
 1. (Optional) Add `VERCEL_DEPLOYMENT_URL` secret
 2. (Optional) Add `TEAMS_WEBHOOK_URL` for Teams alerts
-3. Enable Actions on the repo — the schedule runs automatically
+3. Cron schedule is commented out; run manually via **Actions → Keep Supabase Database Active → Run workflow**
 
 ### **Performance**
 - Vite production build with code splitting

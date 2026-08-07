@@ -1,10 +1,11 @@
 name: Keep Supabase Database Active
 
 on:
-  schedule:
-    # Frequent pings (Supabase free tier pauses on long inactivity; GitHub may delay schedules slightly off-peak)
-    # Cron: every 15 minutes UTC — ~96 runs/day
-    - cron: '*/15 * * * *'
+  # Disabled for now — Vercel Cron handles daily keep-alive
+  # schedule:
+  #   # Frequent pings (Supabase free tier pauses on long inactivity; GitHub may delay schedules slightly off-peak)
+  #   # Cron: every 15 minutes UTC — ~96 runs/day
+  #   - cron: '*/15 * * * *'
   workflow_dispatch: # Allows manual triggering from GitHub Actions UI
 
 jobs:
