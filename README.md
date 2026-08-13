@@ -189,6 +189,8 @@ to subscribe this device (grants OS notification permission).
 
 1. Run `supabase/migrations/20260813000000_create_push_notification_tables.sql` (adds
    `push_subscriptions` and `notification_sent`).
+2. Run `supabase/migrations/20260813120000_live_app_notifications.sql` (adds
+   `app_notifications` and enables Realtime so alerts show while the app is open).
 2. Generate a VAPID key pair: `npx web-push generate-vapid-keys`.
 3. Add to `.env.local` (client) and Vercel project settings (server):
 
@@ -208,10 +210,12 @@ CRON_SECRET=...                       # optional — protects /api/pending-remin
 
 ### **How it works**
 
-- `src/sw.ts` — service worker (built via `vite-plugin-pwa`) that shows the notification and focuses
-  the app on click. Only active in production builds/`vite preview` (disabled in `vite dev`).
-- `/api/send-push` — called by the client right after every rental/JCB create, update, or delete
-  (`src/lib/pushNotify.ts` → `rentalService`/`jcbService`); broadcasts to every subscribed device.
+- `LiveNotificationListener` — Supabase Realtime subscription (same pattern as Expense Manager).
+  When a row is inserted into `app_notifications`, every open app shows a live notification and
+  refreshes the dashboard. Works in `vite dev` (no service worker required).
+- `src/sw.ts` — service worker for background Web Push. If the app is already visible, it skips
+  the OS banner (Realtime already showed it) and tells open tabs to refresh.
+- `/api/send-push` — still used for background delivery to closed/locked devices.
 - `/api/pending-reminders` — Vercel Cron, daily, digests every unpaid record older than 10 days
   (payer name + amount + days overdue), deduped so it sends at most once per day.
 

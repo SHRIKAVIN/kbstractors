@@ -34,13 +34,33 @@ self.addEventListener('push', (event) => {
   const tag = payload.id ? `kbs-push-${payload.id}` : `kbs-push-${Date.now()}`;
 
   event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      icon: '/icons/kbs-tractors-192.png',
-      badge: '/icons/kbs-tractors-192.png',
-      tag,
-      data: { url },
-    }),
+    (async () => {
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const appVisible = clients.some((c) => c.visibilityState === 'visible');
+      if (appVisible) {
+        // Realtime may be suspended in the PWA — nudge open clients to refresh
+        // and show the in-app/OS banner via notifyPush instead of a duplicate.
+        await Promise.all(
+          clients.map((client) =>
+            client.postMessage({
+              type: 'kbs-push',
+              id: payload.id,
+              title,
+              body,
+            }),
+          ),
+        );
+        return;
+      }
+
+      return self.registration.showNotification(title, {
+        body,
+        icon: '/icons/kbs-tractors-192.png',
+        badge: '/icons/kbs-tractors-192.png',
+        tag,
+        data: { url },
+      });
+    })(),
   );
 });
 

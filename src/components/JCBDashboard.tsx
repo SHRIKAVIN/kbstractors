@@ -1,4 +1,4 @@
-import{ useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Download, RefreshCw, Truck } from 'lucide-react';
 import { jcbService } from '../lib/jcb-supabase';
 import { JCBForm } from './JCBForm';
@@ -9,6 +9,7 @@ import { PushToggleButton } from './PushToggleButton';
 import type { JCBRecord } from '../types/jcb';
 import { formatCurrency } from '../utils/jcb-calculations';
 import { getJCBPending } from '../utils/pending';
+import { RECORDS_CHANGED_EVENT } from '../lib/liveEvents';
 
 interface JCBDashboardProps {
   onBackToTractor: () => void;
@@ -31,25 +32,36 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; record: JCBRecord | null }>({ isOpen: false, record: null });
 
-  useEffect(() => {
-    loadRecords();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [records, filter]);
-
-  const loadRecords = async () => {
-    setLoading(true);
+  const loadRecords = async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
     try {
       const data = await jcbService.getAll();
       setRecords(data);
     } catch (error) {
       console.error('Error loading records:', error);
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   };
+
+  const loadRecordsRef = useRef(loadRecords);
+  loadRecordsRef.current = loadRecords;
+
+  useEffect(() => {
+    void loadRecords();
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => {
+      void loadRecordsRef.current({ silent: true });
+    };
+    window.addEventListener(RECORDS_CHANGED_EVENT, onChange);
+    return () => window.removeEventListener(RECORDS_CHANGED_EVENT, onChange);
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [records, filter]);
 
   const applyFilters = () => {
     let filtered = records;
@@ -208,7 +220,7 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
             <div data-testid="jcb-header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
               <button
                 data-testid="jcb-refresh-button"
-                onClick={loadRecords}
+                onClick={() => void loadRecords()}
                 className="flex-1 text-white hover:text-orange-100 p-2 sm:p-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 disabled={loading}
                 aria-label="Refresh"

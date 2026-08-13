@@ -199,7 +199,11 @@ export async function getPushSetupStatus(userId: string): Promise<PushSetupStatu
 }
 
 /** Ask the server to deliver a Web Push to every registered device. */
-export async function invokeSendPush(input: { title: string; body: string }): Promise<{
+export async function invokeSendPush(input: {
+  title: string;
+  body: string;
+  notification_id?: string;
+}): Promise<{
   ok: boolean;
   sent?: number;
   error?: string;

@@ -116,6 +116,16 @@ export default async function handler(req: any, res: any) {
     const body = `${lines.join(' • ')} — Total ${formatCurrency(totalPending)}`;
 
     const result = await sendPushToAllSubscriptions(admin, vapid, title, body, dedupKey);
+
+    // Live clients (app open) pick this up via Realtime, same as CRUD alerts.
+    const { error: liveErr } = await admin.from('app_notifications').insert({
+      actor_name: 'system',
+      title,
+      body,
+      kind: 'pending_digest',
+    });
+    if (liveErr) console.warn('Live pending digest insert failed:', liveErr.message);
+
     return res.status(200).json({ ok: true, overdue: overdue.length, totalPending, ...result });
   } catch (err: any) {
     return res.status(500).json({ error: err?.message || 'Unknown error' });

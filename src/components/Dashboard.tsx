@@ -1,4 +1,4 @@
-import{ useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Download,LogOut, RefreshCw, Truck, Construction } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
@@ -12,6 +12,7 @@ import type { RentalRecord } from '../types/rental';
 import { exportToExcel, exportToPDF } from '../utils/export';
 import { formatCurrency } from '../utils/calculations';
 import { getRentalPending } from '../utils/pending';
+import { RECORDS_CHANGED_EVENT } from '../lib/liveEvents';
 
 export function Dashboard() {
   const [currentView, setCurrentView] = useState<'tractor' | 'jcb'>('tractor');
@@ -32,25 +33,36 @@ export function Dashboard() {
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; record: RentalRecord | null }>({ isOpen: false, record: null });
   const { signOut } = useAuth();
 
-  useEffect(() => {
-    loadRecords();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [records, filter]);
-
-  const loadRecords = async () => {
-    setLoading(true);
+  const loadRecords = async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
     try {
       const data = await rentalService.getAll();
       setRecords(data);
     } catch (error) {
       console.error('Error loading records:', error);
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   };
+
+  const loadRecordsRef = useRef(loadRecords);
+  loadRecordsRef.current = loadRecords;
+
+  useEffect(() => {
+    void loadRecords();
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => {
+      void loadRecordsRef.current({ silent: true });
+    };
+    window.addEventListener(RECORDS_CHANGED_EVENT, onChange);
+    return () => window.removeEventListener(RECORDS_CHANGED_EVENT, onChange);
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [records, filter]);
 
   const applyFilters = () => {
     let filtered = records;
@@ -220,7 +232,7 @@ export function Dashboard() {
             <div data-testid="header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
               <button
                 data-testid="refresh-button"
-                onClick={loadRecords}
+                onClick={() => void loadRecords()}
                 className="flex-1 text-white hover:text-blue-100 p-2 sm:py-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
                 disabled={loading}
                 aria-label="Refresh"
