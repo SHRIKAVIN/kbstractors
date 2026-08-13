@@ -10,9 +10,14 @@ function normalizeEnv(value?: string) {
 }
 
 const DEADLINE_DAYS = 10;
+// After the first nudge at 10 days overdue, re-nudge weekly (not daily) for as
+// long as the record stays unpaid.
+const REMINDER_INTERVAL_DAYS = 7;
 const DIGEST_LIST_LIMIT = 6;
 
 type Overdue = {
+  id: string;
+  entity: 'rental' | 'jcb';
   label: string;
   payer: string;
   amount: number;
@@ -24,8 +29,13 @@ function daysOld(createdAt: string, now: Date): number {
   return Math.floor((now.getTime() - created) / 86400000);
 }
 
-function todayUTC(now: Date): string {
-  return now.toISOString().slice(0, 10);
+/** 0 the day it first crosses DEADLINE_DAYS, 1 a week later, 2 the week after, etc. */
+function cycleIndex(daysOverdue: number): number {
+  return Math.floor((daysOverdue - DEADLINE_DAYS) / REMINDER_INTERVAL_DAYS);
+}
+
+function dedupKeyFor(o: Pick<Overdue, 'entity' | 'id' | 'daysOld'>): string {
+  return `pending:${o.entity}:${o.id}:cycle:${cycleIndex(o.daysOld)}`;
 }
 
 export default async function handler(req: any, res: any) {
@@ -76,6 +86,8 @@ export default async function handler(req: any, res: any) {
       const { amount, isPaid } = getRentalPending(record as any);
       if (isPaid || amount <= 0) continue;
       overdue.push({
+        id: (record as any).id,
+        entity: 'rental',
         label: 'rental',
         payer: (record as any).name || 'Unknown',
         amount,
@@ -87,25 +99,43 @@ export default async function handler(req: any, res: any) {
       const { amount, isPaid } = getJCBPending(record as any);
       if (isPaid || amount <= 0) continue;
       const payer = (record as any).driver_name || (record as any).company_name || 'Unknown';
-      overdue.push({ label: 'JCB', payer, amount, daysOld: daysOld((record as any).created_at, now) });
+      overdue.push({
+        id: (record as any).id,
+        entity: 'jcb',
+        label: 'JCB',
+        payer,
+        amount,
+        daysOld: daysOld((record as any).created_at, now),
+      });
     }
 
     if (!overdue.length) {
-      return res.status(200).json({ ok: true, overdue: 0 });
+      return res.status(200).json({ ok: true, overdue: 0, dueToday: 0 });
     }
 
-    overdue.sort((a, b) => b.daysOld - a.daysOld);
-
-    const dedupKey = `pending-digest:${todayUTC(now)}`;
-    const { error: dedupErr } = await admin.from('notification_sent').insert({ dedup_key: dedupKey });
-    if (dedupErr?.code === '23505') {
-      return res.status(200).json({ ok: true, skipped: 'already sent today', overdue: overdue.length });
-    }
+    // Per-record dedup: only records crossing a new cycle boundary today (day 10,
+    // then day 17, day 24, ...) get inserted — `ignoreDuplicates` + `.select()`
+    // means the response only contains the keys that were actually new, so this
+    // single upsert also tells us exactly which records are due for a nudge today.
+    const candidates = overdue.map((o) => ({ dedup_key: dedupKeyFor(o) }));
+    const { data: inserted, error: dedupErr } = await admin
+      .from('notification_sent')
+      .upsert(candidates, { onConflict: 'dedup_key', ignoreDuplicates: true })
+      .select('dedup_key');
     if (dedupErr) throw dedupErr;
 
-    const totalPending = overdue.reduce((sum, o) => sum + o.amount, 0);
-    const shown = overdue.slice(0, DIGEST_LIST_LIMIT);
-    const more = overdue.length - shown.length;
+    const dueKeys = new Set((inserted ?? []).map((r: any) => r.dedup_key as string));
+    const dueToday = overdue.filter((o) => dueKeys.has(dedupKeyFor(o)));
+
+    if (!dueToday.length) {
+      return res.status(200).json({ ok: true, overdue: overdue.length, dueToday: 0, skipped: 'no reminders due today' });
+    }
+
+    dueToday.sort((a, b) => b.daysOld - a.daysOld);
+
+    const totalPending = dueToday.reduce((sum, o) => sum + o.amount, 0);
+    const shown = dueToday.slice(0, DIGEST_LIST_LIMIT);
+    const more = dueToday.length - shown.length;
 
     const lines = shown.map((o) => {
       const tag = o.label === 'JCB' ? '[JCB] ' : '';
@@ -113,7 +143,7 @@ export default async function handler(req: any, res: any) {
     });
     if (more > 0) lines.push(`+${more} more`);
 
-    const title = `⏰ ${overdue.length} pending payment${overdue.length === 1 ? '' : 's'} — 10+ days overdue`;
+    const title = `⏰ ${dueToday.length} pending payment${dueToday.length === 1 ? '' : 's'} — 10+ days overdue`;
     const body = `${lines.join(' • ')} — Total ${formatCurrency(totalPending)}`;
 
     const notificationId = randomUUID();
@@ -130,7 +160,7 @@ export default async function handler(req: any, res: any) {
     });
     if (liveErr) console.warn('Live pending digest insert failed:', liveErr.message);
 
-    return res.status(200).json({ ok: true, overdue: overdue.length, totalPending, ...result });
+    return res.status(200).json({ ok: true, overdue: overdue.length, dueToday: dueToday.length, totalPending, ...result });
   } catch (err: any) {
     return res.status(500).json({ error: err?.message || 'Unknown error' });
   }
