@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { readVapidConfig, sendPushToAllSubscriptions } from '../server/push';
+import { readVapidConfig, sendPushToAllSubscriptions } from '../server/push.js';
 
 function normalizeEnv(value?: string) {
   if (!value) return '';

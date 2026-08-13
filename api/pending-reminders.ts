@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
-import { readVapidConfig, sendPushToAllSubscriptions } from '../server/push';
-import { getRentalPending, getJCBPending } from '../src/utils/pending';
-import { formatCurrency } from '../src/utils/calculations';
+import { readVapidConfig, sendPushToAllSubscriptions } from '../server/push.js';
+import { getRentalPending, getJCBPending } from '../src/utils/pending.js';
+import { formatCurrency } from '../src/utils/calculations.js';
 
 function normalizeEnv(value?: string) {
   if (!value) return '';
