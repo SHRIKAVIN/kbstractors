@@ -175,6 +175,9 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
       <header data-testid="jcb-dashboard-header" className="relative bg-gradient-to-br from-orange-600 via-orange-700 to-red-800 shadow-2xl transform-gpu">
         <div data-testid="jcb-header-content" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6">
           <div data-testid="jcb-header-main" className="flex flex-col items-center relative">
+            {/* Push Notifications Toggle - Top Left */}
+            <PushToggleButton className="absolute top-0 left-0" />
+
             {/* Tractor Button - Top Right */}
             <button
               data-testid="jcb-back-button"
@@ -203,7 +206,6 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
             
             {/* Action Buttons with 3D Card Effect */}
             <div data-testid="jcb-header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
-              <PushToggleButton />
               <button
                 data-testid="jcb-refresh-button"
                 onClick={loadRecords}

@@ -2,14 +2,24 @@ import { useCallback, useEffect, useState } from 'react';
 import { Bell, BellOff, BellRing } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { requestNotificationPermission } from '../lib/notifications';
-import { getPushSetupStatus, registerWebPushSubscription, type PushSetupStatus } from '../lib/webPush';
+import { getPushSetupStatus, registerWebPushSubscription, webPushSupported, vapidConfigured, type PushSetupStatus } from '../lib/webPush';
+
+interface PushToggleButtonProps {
+  /** Extra classes for positioning — e.g. "absolute top-0 left-0" in a header. */
+  className?: string;
+}
 
 /**
  * Small header button to opt this device in to Web Push notifications
  * (new/updated/deleted entries, pending-payment reminders). Self-contained —
  * drop it into any header, it reads the logged-in admin from useAuth().
+ *
+ * Always asks for OS notification permission on click (never silently
+ * disabled) — even when VAPID isn't configured yet, the permission prompt
+ * still fires so the button never looks broken; it just explains what's
+ * still missing afterward.
  */
-export function PushToggleButton() {
+export function PushToggleButton({ className = '' }: PushToggleButtonProps) {
   const { user } = useAuth();
   const [status, setStatus] = useState<PushSetupStatus | 'loading'>('loading');
   const [busy, setBusy] = useState(false);
@@ -27,13 +37,17 @@ export function PushToggleButton() {
     if (!user || busy || status === 'ready') return;
     setBusy(true);
     try {
-      if (status === 'needs_vapid') {
-        alert('Push notifications are not configured on this deployment yet.');
-        return;
-      }
       const permission = await requestNotificationPermission();
       if (permission !== 'granted') {
         alert('Notification permission was not granted.');
+        return;
+      }
+      if (!webPushSupported()) {
+        alert(
+          vapidConfigured()
+            ? 'Notifications allowed, but this browser/device does not support background push.'
+            : 'Notifications allowed, but background push is not configured on this deployment yet (missing VITE_VAPID_PUBLIC_KEY).',
+        );
         return;
       }
       await registerWebPushSubscription(user.id);
@@ -56,12 +70,12 @@ export function PushToggleButton() {
       type="button"
       data-testid="push-toggle-button"
       onClick={handleClick}
-      disabled={busy || status === 'loading' || status === 'needs_vapid'}
-      className="flex-1 text-white p-2 sm:py-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg disabled:opacity-60 disabled:hover:scale-100"
+      disabled={busy || status === 'loading' || ready}
+      className={`text-white bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all duration-200 transform hover:scale-110 hover:shadow-lg backdrop-blur-md border border-white/20 disabled:opacity-70 disabled:hover:scale-100 ${className}`}
       aria-label={label}
       title={label}
     >
-      <Icon className="w-5 h-5" />
+      <Icon className="w-4 h-4" />
     </button>
   );
 }

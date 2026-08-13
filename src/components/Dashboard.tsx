@@ -189,6 +189,9 @@ export function Dashboard() {
       <header data-testid="dashboard-header" className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-2xl transform-gpu">
         <div data-testid="header-content" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6">
           <div data-testid="header-main" className="flex flex-col items-center relative">
+            {/* Push Notifications Toggle - Top Left */}
+            <PushToggleButton className="absolute top-0 left-0" />
+
             {/* JCB Button - Top Right */}
             <button
               data-testid="jcb-switch-button"
@@ -215,7 +218,6 @@ export function Dashboard() {
             
             {/* Action Buttons with 3D Card Effect */}
             <div data-testid="header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
-              <PushToggleButton />
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}
