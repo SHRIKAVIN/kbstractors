@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
 
 export type VapidConfig = {
@@ -22,7 +22,7 @@ export function readVapidConfig(): VapidConfig | null {
  * the push service reports as gone).
  */
 export async function sendPushToAllSubscriptions(
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient,
   vapid: VapidConfig,
   title: string,
   body: string,
