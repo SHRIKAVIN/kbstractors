@@ -5,8 +5,10 @@ import { JCBForm } from './JCBForm';
 import { JCBDataTable } from './JCBDataTable';
 import { ConfirmDialog } from './ConfirmDialog';
 import { SEO } from './SEO';
+import { PushToggleButton } from './PushToggleButton';
 import type { JCBRecord } from '../types/jcb';
 import { formatCurrency } from '../utils/jcb-calculations';
+import { getJCBPending } from '../utils/pending';
 
 interface JCBDashboardProps {
   onBackToTractor: () => void;
@@ -77,14 +79,7 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
 
     if (filter.status) {
       filtered = filtered.filter(record => {
-        let status;
-        if (record.old_balance_status) {
-          status = record.old_balance_status;
-        } else if (record.amount_received !== undefined) {
-          status = (record.amount_received >= record.total_amount) ? 'paid' : 'pending';
-        } else {
-          status = 'pending';
-        }
+        const status = getJCBPending(record).isPaid ? 'paid' : 'pending';
         return status === filter.status;
       });
     }
@@ -117,7 +112,7 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
     if (!deleteDialog.record) return;
     
     try {
-      await jcbService.delete(deleteDialog.record.id);
+      await jcbService.delete(deleteDialog.record);
       setRecords(prev => prev.filter(r => r.id !== deleteDialog.record!.id));
       setDeleteDialog({ isOpen: false, record: null });
     } catch (error) {
@@ -208,6 +203,7 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
             
             {/* Action Buttons with 3D Card Effect */}
             <div data-testid="jcb-header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
+              <PushToggleButton />
               <button
                 data-testid="jcb-refresh-button"
                 onClick={loadRecords}

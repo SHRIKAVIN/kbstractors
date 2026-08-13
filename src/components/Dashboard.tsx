@@ -7,9 +7,11 @@ import { DataTable } from './DataTable';
 import { ConfirmDialog } from './ConfirmDialog';
 import { SEO } from './SEO';
 import { JCBDashboard } from './JCBDashboard';
+import { PushToggleButton } from './PushToggleButton';
 import type { RentalRecord } from '../types/rental';
 import { exportToExcel, exportToPDF } from '../utils/export';
 import { formatCurrency } from '../utils/calculations';
+import { getRentalPending } from '../utils/pending';
 
 export function Dashboard() {
   const [currentView, setCurrentView] = useState<'tractor' | 'jcb'>('tractor');
@@ -81,12 +83,7 @@ export function Dashboard() {
 
     if (filter.status) {
       filtered = filtered.filter(record => {
-        let status;
-        if (record.old_balance_status) {
-          status = record.old_balance_status;
-        } else {
-          status = (record.received_amount >= record.total_amount) ? 'paid' : 'pending';
-        }
+        const status = getRentalPending(record).isPaid ? 'paid' : 'pending';
         return status === filter.status;
       });
     }
@@ -119,7 +116,7 @@ export function Dashboard() {
     if (!deleteDialog.record) return;
     
     try {
-      await rentalService.delete(deleteDialog.record.id);
+      await rentalService.delete(deleteDialog.record);
       setRecords(prev => prev.filter(r => r.id !== deleteDialog.record!.id));
       setDeleteDialog({ isOpen: false, record: null });
     } catch (error) {
@@ -218,6 +215,7 @@ export function Dashboard() {
             
             {/* Action Buttons with 3D Card Effect */}
             <div data-testid="header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
+              <PushToggleButton />
               <button
                 data-testid="refresh-button"
                 onClick={loadRecords}

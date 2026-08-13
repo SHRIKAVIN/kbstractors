@@ -18,6 +18,7 @@
 - [📦 Installation](#-installation)
 - [🔧 Configuration](#-configuration)
 - [💓 Supabase Keep-Alive](#-supabase-keep-alive)
+- [🔔 Push Notifications](#-push-notifications)
 - [📱 Usage](#-usage)
 - [🏗️ Project Structure](#️-project-structure)
 - [📊 Database Schema](#-database-schema)
@@ -122,6 +123,8 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key   # preferred (bypasses RLS)
 TEAMS_WEBHOOK_URL=your_teams_incoming_webhook_url  # Vercel Cron Teams cards
 ```
 
+For Push Notifications on Vercel (server-side), see [🔔 Push Notifications](#-push-notifications) below.
+
 ## 🔧 Configuration
 
 ### **Supabase Setup**
@@ -174,6 +177,52 @@ curl -sL https://kbstractors.vercel.app/api/keep-alive
 ```
 
 Expect `"success": true` and `"teams": { "sent": false, "reason": "Not a Vercel Cron request..." }` (manual pings skip Teams).
+
+## 🔔 Push Notifications
+
+Separate from the Teams keep-alive cards above. Web Push (VAPID) notifications fire on this device
+whenever a rental/JCB record is created, updated, or deleted, and once a day for a digest of every
+payment still pending 10+ days after its entry date. Tap the bell icon in the tractor or JCB header
+to subscribe this device (grants OS notification permission).
+
+### **Setup**
+
+1. Run `supabase/migrations/20260813000000_create_push_notification_tables.sql` (adds
+   `push_subscriptions` and `notification_sent`).
+2. Generate a VAPID key pair: `npx web-push generate-vapid-keys`.
+3. Add to `.env.local` (client) and Vercel project settings (server):
+
+```env
+# .env.local
+VITE_VAPID_PUBLIC_KEY=BF...           # the "Public Key" from step 2
+
+# Vercel → Settings → Environment Variables
+VAPID_PUBLIC_KEY=BF...                # same public key
+VAPID_PRIVATE_KEY=...                 # the "Private Key" from step 2 — keep secret
+VAPID_SUBJECT=mailto:you@example.com
+SUPABASE_SERVICE_ROLE_KEY=...         # already set for keep-alive; reused here
+CRON_SECRET=...                       # optional — protects /api/pending-reminders
+```
+
+4. Redeploy. Log in, tap the bell — a row should appear in Supabase's `push_subscriptions` table.
+
+### **How it works**
+
+- `src/sw.ts` — service worker (built via `vite-plugin-pwa`) that shows the notification and focuses
+  the app on click. Only active in production builds/`vite preview` (disabled in `vite dev`).
+- `/api/send-push` — called by the client right after every rental/JCB create, update, or delete
+  (`src/lib/pushNotify.ts` → `rentalService`/`jcbService`); broadcasts to every subscribed device.
+- `/api/pending-reminders` — Vercel Cron, daily, digests every unpaid record older than 10 days
+  (payer name + amount + days overdue), deduped so it sends at most once per day.
+
+### **Vercel Cron**
+
+```json
+{ "path": "/api/pending-reminders", "schedule": "0 4 * * *" }
+```
+
+Added alongside the existing keep-alive cron in `vercel.json` — Hobby plans allow up to 100 cron jobs
+per project as long as each runs at most once a day, so this doesn't affect the keep-alive schedule.
 
 ## 📱 Usage
 

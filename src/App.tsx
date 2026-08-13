@@ -1,10 +1,21 @@
+import { useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { LoginForm } from './components/LoginForm';
 import { Dashboard } from './components/Dashboard';
 import { SEO } from './components/SEO';
+import { registerWebPushSubscription, shouldAttemptWebPushRegistration } from './lib/webPush';
 
 function App() {
   const { user, loading } = useAuth();
+
+  // Silently re-subscribe this device if notification permission was already
+  // granted in a previous session, so the admin doesn't have to re-tap the bell.
+  useEffect(() => {
+    if (!user || !shouldAttemptWebPushRegistration()) return;
+    void registerWebPushSubscription(user.id).catch((err) => {
+      console.warn('Push subscription auto-register failed:', err);
+    });
+  }, [user]);
 
   if (loading) {
     return (

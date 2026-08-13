@@ -1,6 +1,7 @@
 import { X, User, Phone, Calendar, DollarSign, FileText, AlertCircle } from 'lucide-react';
 import type { RentalRecord } from '../types/rental';
 import { formatCurrency, calculateTotalAmount } from '../utils/calculations';
+import { getRentalPending } from '../utils/pending';
 import { useEffect, useRef, useState } from 'react';
 
 interface RecordDetailsPopupProps {
@@ -61,8 +62,7 @@ export function RecordDetailsPopup({ record, isOpen, onClose, triggerElement }: 
     return null;
   }
 
-  const isPaid = record.received_amount >= record.total_amount;
-  const balanceAmount = record.total_amount - record.received_amount;
+  const { amount: balanceAmount, isPaid } = getRentalPending(record);
 
   const getAnimationClasses = () => {
     switch (animationState) {

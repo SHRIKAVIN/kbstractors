@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
 import type { JCBRecord } from '../types/jcb';
+import { notifyCrud } from './pushNotify';
+import { getJCBPending } from '../utils/pending';
 
 // Database operations using Supabase for JCB
 export const jcbService = {
@@ -9,8 +11,10 @@ export const jcbService = {
       .insert([record])
       .select()
       .single();
-    
+
     if (error) throw error;
+    const { amount } = getJCBPending(data);
+    notifyCrud('created', 'jcb', data.driver_name || data.company_name, data.total_amount, amount);
     return data;
   },
 
@@ -56,16 +60,20 @@ export const jcbService = {
       .select()
       .single();
     if (error) throw error;
+    const { amount } = getJCBPending(data);
+    notifyCrud('updated', 'jcb', data.driver_name || data.company_name, data.total_amount, amount);
     return data;
   },
 
-  // Delete a JCB record by id
-  async delete(id: string) {
+  // Delete a JCB record
+  async delete(record: JCBRecord) {
     const { error } = await supabase
       .from('jcb_records')
       .delete()
-      .eq('id', id);
+      .eq('id', record.id);
     if (error) throw error;
+    const { amount } = getJCBPending(record);
+    notifyCrud('deleted', 'jcb', record.driver_name || record.company_name, record.total_amount, amount);
     return true;
   }
 };

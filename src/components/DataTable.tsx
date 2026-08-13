@@ -1,6 +1,7 @@
 import { User, Settings, Pencil, Trash2} from 'lucide-react';
 import type { RentalRecord } from '../types/rental';
 import { formatCurrency, calculateTotalAmount} from '../utils/calculations';
+import { getRentalPending } from '../utils/pending';
 import { RecordDetailsPopup } from './RecordDetailsPopup';
 import { useState } from 'react';
 
@@ -77,16 +78,9 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
             </thead>
             <tbody data-testid="table-body" className="bg-white">
               {records.map((record, idx) => {
-                // Fix the status calculation:
-                let isPaid = false;
-                let pendingAmount = record.total_amount - record.received_amount;
-                let statusText = '';
-                let statusClass = '';
-                
-                // Status should be "paid" only if there is no pending amount
-                isPaid = pendingAmount <= 0;
-                statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
-                statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
+                const { amount: pendingAmount, isPaid } = getRentalPending(record);
+                const statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
+                const statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
                 
                 return (
                   <tr key={record.id} data-testid={`table-row-${idx}`} className={`hover:bg-blue-50 divide-x divide-gray-300 border-b border-gray-300 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>

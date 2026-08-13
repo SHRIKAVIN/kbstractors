@@ -1,6 +1,7 @@
 import { User, Pencil, Trash2, Phone } from 'lucide-react';
 import type { JCBRecord } from '../types/jcb';
 import { formatCurrency, calculateJCBTotalAmount } from '../utils/jcb-calculations';
+import { getJCBPending } from '../utils/pending';
 
 interface JCBDataTableProps {
   records: JCBRecord[];
@@ -51,8 +52,7 @@ export function JCBDataTable({ records, onEdit, onDelete }: JCBDataTableProps) {
           <tbody data-testid="table-body" className="bg-white">
             {records.map((record, idx) => {
               const receivedAmount = record.amount_received || 0;
-              const pendingAmount = Math.max((record.total_amount || 0) - receivedAmount, 0);
-              const isPaid = pendingAmount <= 0 || record.old_balance_status === 'paid';
+              const { amount: pendingAmount, isPaid } = getJCBPending(record);
               const statusText = isPaid ? 'முழுமையாக பெறப்பட்டது' : 'நிலுவையில்';
               const statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
 

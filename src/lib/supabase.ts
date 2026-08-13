@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { RentalRecord } from '../types/rental';
+import { notifyCrud } from './pushNotify';
+import { getRentalPending } from '../utils/pending';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -23,8 +25,10 @@ export const rentalService = {
       .insert([record])
       .select()
       .single();
-    
+
     if (error) throw error;
+    const { amount } = getRentalPending(data);
+    notifyCrud('created', 'rental', data.name, data.total_amount, amount);
     return data;
   },
 
@@ -70,16 +74,20 @@ export const rentalService = {
       .select()
       .single();
     if (error) throw error;
+    const { amount } = getRentalPending(data);
+    notifyCrud('updated', 'rental', data.name, data.total_amount, amount);
     return data;
   },
 
-  // Delete a rental record by id
-  async delete(id: string) {
+  // Delete a rental record
+  async delete(record: RentalRecord) {
     const { error } = await supabase
       .from('rental_records')
       .delete()
-      .eq('id', id);
+      .eq('id', record.id);
     if (error) throw error;
+    const { amount } = getRentalPending(record);
+    notifyCrud('deleted', 'rental', record.name, record.total_amount, amount);
     return true;
   }
 };
