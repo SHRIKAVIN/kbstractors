@@ -6,12 +6,43 @@ function normalizeEnv(value?: string) {
   return value.trim().replace(/^['"]|['"]$/g, '');
 }
 
+function headerValue(headers: Record<string, unknown> | undefined, name: string): string {
+  if (!headers) return '';
+  const direct = headers[name] ?? headers[name.toLowerCase()];
+  if (typeof direct === 'string') return direct;
+  if (Array.isArray(direct) && typeof direct[0] === 'string') return direct[0];
+  return '';
+}
+
+function readJsonBody(req: { body?: unknown }): { title?: string; body?: string; notification_id?: string } {
+  const raw = req.body;
+  if (raw && typeof raw === 'object' && !Buffer.isBuffer(raw)) {
+    return raw as { title?: string; body?: string; notification_id?: string };
+  }
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw) as { title?: string; body?: string; notification_id?: string };
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
 /**
- * Called from the client (with the logged-in admin's Supabase access token)
- * right after a rental/JCB record is created, updated, or deleted, to push a
- * Web Push notification to every subscribed device.
+ * Background Web Push fan-out.
+ *
+ * Auth: logged-in admin JWT, or x-push-secret matching APP_PUSH_WEBHOOK_SECRET
+ * / CRON_SECRET (used by the Postgres trigger, same pattern as Expense Manager).
  */
 export default async function handler(req: any, res: any) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type, x-push-secret');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -24,25 +55,33 @@ export default async function handler(req: any, res: any) {
   const supabaseUrl = normalizeEnv(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL);
   const supabaseAnonKey = normalizeEnv(process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY);
   const serviceRoleKey = normalizeEnv(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const webhookSecret = normalizeEnv(process.env.APP_PUSH_WEBHOOK_SECRET || process.env.CRON_SECRET);
 
-  if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
+  if (!supabaseUrl || !serviceRoleKey) {
     return res.status(500).json({ error: 'Supabase environment variables are not configured.' });
   }
 
-  const authHeader = req.headers?.authorization || req.headers?.Authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  const pushSecret = headerValue(req.headers, 'x-push-secret');
+  const webhookOk = Boolean(webhookSecret && pushSecret && pushSecret === webhookSecret);
+
+  if (!webhookOk) {
+    if (!supabaseAnonKey) {
+      return res.status(500).json({ error: 'Supabase environment variables are not configured.' });
+    }
+    const authHeader = headerValue(req.headers, 'authorization') || headerValue(req.headers, 'Authorization');
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
   }
 
-  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data: userData, error: userErr } = await userClient.auth.getUser();
-  if (userErr || !userData?.user) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const { title, body, notification_id } = req.body || {};
+  const { title, body, notification_id } = readJsonBody(req);
   if (!title || !body) {
     return res.status(400).json({ error: 'title and body are required.' });
   }

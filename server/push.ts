@@ -52,6 +52,7 @@ export async function sendPushToAllSubscriptions(
       await webpush.sendNotification(
         { endpoint: sub.endpoint as string, keys: { p256dh: sub.p256dh as string, auth: sub.auth as string } },
         payload,
+        { TTL: 60 * 60 * 24, urgency: 'high' },
       );
       sent++;
     } catch (err: any) {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Bell, BellOff, BellRing } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { requestNotificationPermission } from '../lib/notifications';
-import { getPushSetupStatus, registerWebPushSubscription, webPushSupported, vapidConfigured, type PushSetupStatus } from '../lib/webPush';
+import { getPushSetupStatus, registerWebPushSubscription, sendTestBackgroundPush, webPushSupported, vapidConfigured, type PushSetupStatus } from '../lib/webPush';
 
 interface PushToggleButtonProps {
   /** Extra classes for positioning — e.g. "absolute top-0 left-0" in a header. */
@@ -34,9 +34,14 @@ export function PushToggleButton({ className = '' }: PushToggleButtonProps) {
   }, [refreshStatus]);
 
   const handleClick = async () => {
-    if (!user || busy || status === 'ready') return;
+    if (!user || busy || status === 'loading') return;
     setBusy(true);
     try {
+      if (status === 'ready') {
+        const result = await sendTestBackgroundPush();
+        alert(result.message);
+        return;
+      }
       const permission = await requestNotificationPermission();
       if (permission !== 'granted') {
         alert('Notification permission was not granted.');
@@ -63,14 +68,14 @@ export function PushToggleButton({ className = '' }: PushToggleButtonProps) {
 
   const ready = status === 'ready';
   const Icon = status === 'needs_vapid' ? BellOff : ready ? BellRing : Bell;
-  const label = ready ? 'Push notifications enabled' : 'Enable push notifications';
+  const label = ready ? 'Push on — tap to send a test' : 'Enable push notifications';
 
   return (
     <button
       type="button"
       data-testid="push-toggle-button"
       onClick={handleClick}
-      disabled={busy || status === 'loading' || ready}
+      disabled={busy || status === 'loading'}
       className={`text-white bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all duration-200 transform hover:scale-110 hover:shadow-lg backdrop-blur-md border border-white/20 disabled:opacity-70 disabled:hover:scale-100 ${className}`}
       aria-label={label}
       title={label}

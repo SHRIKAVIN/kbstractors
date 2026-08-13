@@ -213,17 +213,31 @@ export async function invokeSendPush(input: {
     const token = sessionData.session?.access_token;
     if (!token) return { ok: false, error: 'Not signed in' };
 
-    const response = await fetch('/api/send-push', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(input),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) return { ok: false, error: result?.error ?? `HTTP ${response.status}` };
-    return { ok: true, sent: result?.sent };
+    const endpoints = ['/api/send-push'];
+    if (typeof window !== 'undefined' && !window.location.hostname.endsWith('kbstractors.vercel.app')) {
+      endpoints.push('https://kbstractors.vercel.app/api/send-push');
+    }
+
+    let lastError = 'Push failed';
+    for (const url of endpoints) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(input),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (response.ok) return { ok: true, sent: result?.sent };
+        lastError = result?.error ?? `HTTP ${response.status}`;
+        if (response.status === 401 || response.status === 400) break;
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : 'Push failed';
+      }
+    }
+    return { ok: false, error: lastError };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Push failed';
     console.warn('Web push invoke failed:', err);

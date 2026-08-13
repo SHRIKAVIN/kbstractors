@@ -187,10 +187,10 @@ to subscribe this device (grants OS notification permission).
 
 ### **Setup**
 
-1. Run `supabase/migrations/20260813000000_create_push_notification_tables.sql` (adds
-   `push_subscriptions` and `notification_sent`).
-2. Run `supabase/migrations/20260813120000_live_app_notifications.sql` (adds
-   `app_notifications` and enables Realtime so alerts show while the app is open).
+1. Run these SQL files in the Supabase SQL Editor (in order):
+   - `supabase/migrations/20260813000000_create_push_notification_tables.sql`
+   - `supabase/migrations/20260813120000_live_app_notifications.sql`
+   - `supabase/migrations/20260813130000_background_push_trigger.sql`
 2. Generate a VAPID key pair: `npx web-push generate-vapid-keys`.
 3. Add to `.env.local` (client) and Vercel project settings (server):
 
@@ -203,19 +203,26 @@ VAPID_PUBLIC_KEY=BF...                # same public key
 VAPID_PRIVATE_KEY=...                 # the "Private Key" from step 2 — keep secret
 VAPID_SUBJECT=mailto:you@example.com
 SUPABASE_SERVICE_ROLE_KEY=...         # already set for keep-alive; reused here
-CRON_SECRET=...                       # optional — protects /api/pending-reminders
+CRON_SECRET=...                       # also used as the background-push webhook secret
 ```
 
-4. Redeploy. Log in, tap the bell — a row should appear in Supabase's `push_subscriptions` table.
+4. Point the database trigger at that secret (same value as `CRON_SECRET`):
+
+```sql
+insert into public.app_push_config (id, webhook_secret)
+values (1, 'your-cron-secret-here')
+on conflict (id) do update set webhook_secret = excluded.webhook_secret;
+```
+
+5. Redeploy. Log in, tap the bell — a row should appear in Supabase's `push_subscriptions` table.
+   Tap the bell again to send a test background push, then lock the phone to confirm the banner.
 
 ### **How it works**
 
-- `LiveNotificationListener` — Supabase Realtime subscription (same pattern as Expense Manager).
-  When a row is inserted into `app_notifications`, every open app shows a live notification and
-  refreshes the dashboard. Works in `vite dev` (no service worker required).
-- `src/sw.ts` — service worker for background Web Push. If the app is already visible, it skips
-  the OS banner (Realtime already showed it) and tells open tabs to refresh.
-- `/api/send-push` — still used for background delivery to closed/locked devices.
+- **Live (app open):** insert into `app_notifications` → Supabase Realtime → banner on every open device.
+- **Background (app closed):** a Postgres trigger calls `/api/send-push` with `x-push-secret`
+  (same pattern as Expense Manager's `send-partner-push`). The service worker shows the OS banner.
+- `src/sw.ts` — if the app is already visible, it skips a duplicate OS banner and refreshes instead.
 - `/api/pending-reminders` — Vercel Cron, daily, digests every unpaid record older than 10 days
   (payer name + amount + days overdue), deduped so it sends at most once per day.
 

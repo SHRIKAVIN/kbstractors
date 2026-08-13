@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'node:crypto';
 import { readVapidConfig, sendPushToAllSubscriptions } from '../server/push.js';
 import { getRentalPending, getJCBPending } from '../src/utils/pending.js';
 import { formatCurrency } from '../src/utils/calculations.js';
@@ -115,10 +116,13 @@ export default async function handler(req: any, res: any) {
     const title = `⏰ ${overdue.length} pending payment${overdue.length === 1 ? '' : 's'} — 10+ days overdue`;
     const body = `${lines.join(' • ')} — Total ${formatCurrency(totalPending)}`;
 
-    const result = await sendPushToAllSubscriptions(admin, vapid, title, body, dedupKey);
+    const notificationId = randomUUID();
+    const result = await sendPushToAllSubscriptions(admin, vapid, title, body, notificationId);
 
-    // Live clients (app open) pick this up via Realtime, same as CRUD alerts.
+    // Live clients pick this up via Realtime; the insert trigger also sends
+    // background Web Push (same notification id, so the SW tag dedupes).
     const { error: liveErr } = await admin.from('app_notifications').insert({
+      id: notificationId,
       actor_name: 'system',
       title,
       body,

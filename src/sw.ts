@@ -58,6 +58,7 @@ self.addEventListener('push', (event) => {
         icon: '/icons/kbs-tractors-192.png',
         badge: '/icons/kbs-tractors-192.png',
         tag,
+        renotify: true,
         data: { url },
       });
     })(),

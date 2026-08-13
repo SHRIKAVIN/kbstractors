@@ -44,7 +44,8 @@ function buildMessage(
  * update, or delete. Never throws — a failed push must never break CRUD.
  *
  * Live (app open): insert into app_notifications → Realtime → notifyPush.
- * Background: /api/send-push Web Push to subscribed devices.
+ * Background: DB trigger calls /api/send-push (Expense Manager pattern).
+ * Client invokeSendPush is a fallback if the trigger secret is not set yet.
  */
 export function notifyCrud(
   action: CrudAction,
