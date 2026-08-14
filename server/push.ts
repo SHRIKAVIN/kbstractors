@@ -21,13 +21,23 @@ export function readVapidConfig(): VapidConfig | null {
  * to whatever is registered in `push_subscriptions`, and prune any endpoint
  * the push service reports as gone).
  */
+function endpointHost(endpoint: string): string {
+  try {
+    return new URL(endpoint).host;
+  } catch {
+    return 'unknown';
+  }
+}
+
+type SendOutcome = { host: string; ok: boolean; status?: number; attempt: 'initial' | 'retry'; error?: string };
+
 export async function sendPushToAllSubscriptions(
   admin: SupabaseClient,
   vapid: VapidConfig,
   title: string,
   body: string,
   notificationId?: string,
-): Promise<{ sent: number; total: number }> {
+): Promise<{ sent: number; total: number; results: SendOutcome[] }> {
   webpush.setVapidDetails(vapid.subject, vapid.publicKey, vapid.privateKey);
 
   const { data: subs, error } = await admin
@@ -35,7 +45,7 @@ export async function sendPushToAllSubscriptions(
     .select('endpoint, p256dh, auth');
 
   if (error) throw error;
-  if (!subs?.length) return { sent: 0, total: 0 };
+  if (!subs?.length) return { sent: 0, total: 0, results: [] };
 
   const payload = JSON.stringify({
     id: notificationId,
@@ -53,31 +63,41 @@ export async function sendPushToAllSubscriptions(
 
   let sent = 0;
   const stale: string[] = [];
+  const results: SendOutcome[] = [];
 
   for (const sub of subs) {
+    const host = endpointHost(sub.endpoint as string);
+    const keys = { endpoint: sub.endpoint as string, keys: { p256dh: sub.p256dh as string, auth: sub.auth as string } };
+
     try {
-      await webpush.sendNotification(
-        { endpoint: sub.endpoint as string, keys: { p256dh: sub.p256dh as string, auth: sub.auth as string } },
-        payload,
-        { TTL: 60 * 60 * 24, urgency: 'high' },
-      );
+      await webpush.sendNotification(keys, payload, { TTL: 60 * 60 * 24, urgency: 'high' });
       sent++;
+      results.push({ host, ok: true, attempt: 'initial' });
+      continue;
     } catch (err: any) {
       const status = err?.statusCode;
       if (isDeadSubscription(status)) {
         stale.push(sub.endpoint as string);
+        results.push({ host, ok: false, status, attempt: 'initial', error: 'stale — pruned' });
         continue;
       }
-      try {
-        await webpush.sendNotification(
-          { endpoint: sub.endpoint as string, keys: { p256dh: sub.p256dh as string, auth: sub.auth as string } },
-          payload,
-        );
-        sent++;
-      } catch (retryErr: any) {
-        const retryStatus = retryErr?.statusCode;
-        if (isDeadSubscription(retryStatus)) stale.push(sub.endpoint as string);
-        else console.warn('Web Push delivery failed:', retryErr?.message || retryErr);
+      console.warn(`Web Push initial attempt failed (${host}, status=${status}):`, err?.body || err?.message || err);
+    }
+
+    // Retry without TTL/urgency — some push services reject those headers.
+    try {
+      await webpush.sendNotification(keys, payload);
+      sent++;
+      results.push({ host, ok: true, attempt: 'retry' });
+    } catch (retryErr: any) {
+      const retryStatus = retryErr?.statusCode;
+      if (isDeadSubscription(retryStatus)) {
+        stale.push(sub.endpoint as string);
+        results.push({ host, ok: false, status: retryStatus, attempt: 'retry', error: 'stale — pruned' });
+      } else {
+        const message = retryErr?.body || retryErr?.message || String(retryErr);
+        console.warn(`Web Push retry also failed (${host}, status=${retryStatus}):`, message);
+        results.push({ host, ok: false, status: retryStatus, attempt: 'retry', error: String(message).slice(0, 300) });
       }
     }
   }
@@ -86,5 +106,5 @@ export async function sendPushToAllSubscriptions(
     await admin.from('push_subscriptions').delete().in('endpoint', stale);
   }
 
-  return { sent, total: subs.length };
+  return { sent, total: subs.length, results };
 }
