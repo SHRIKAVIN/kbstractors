@@ -87,20 +87,17 @@ export async function sendPushToAllSubscriptions(
   const isDeadSubscription = (status: number | undefined) =>
     status === 404 || status === 410 || status === 401 || status === 403;
 
-  let sent = 0;
-  const stale: string[] = [];
-  const results: SendOutcome[] = [];
-
-  for (const sub of subs) {
+  // One device's push service being slow must not delay every other
+  // device's notification — dispatch all of them at once instead of
+  // awaiting each subscription in turn.
+  const perSubscription = subs.map(async (sub): Promise<{ outcome: SendOutcome; delivered: boolean; deadEndpoint?: string }> => {
     const host = endpointHost(sub.endpoint as string);
     const keys = { p256dh: sub.p256dh as string, auth: sub.auth as string };
     const endpoint = sub.endpoint as string;
 
     const initial = await attemptSend(endpoint, keys, payload, { TTL: 60 * 60 * 24, urgency: 'high' });
     if (initial.ok) {
-      sent++;
-      results.push({ host, ok: true, attempt: 'initial' });
-      continue;
+      return { outcome: { host, ok: true, attempt: 'initial' }, delivered: true };
     }
 
     // Always retry without TTL/urgency, even on a 401/403 — some push
@@ -108,31 +105,37 @@ export async function sendPushToAllSubscriptions(
     // subscription, so bailing out early here would prune good rows.
     const retry = await attemptSend(endpoint, keys, payload);
     if (retry.ok) {
-      sent++;
-      results.push({
-        host,
-        ok: true,
-        attempt: 'retry',
-        error: `initial attempt failed (status=${initial.status}): ${initial.detail}`,
-      });
-      continue;
+      return {
+        outcome: {
+          host,
+          ok: true,
+          attempt: 'retry',
+          error: `initial attempt failed (status=${initial.status}): ${initial.detail}`,
+        },
+        delivered: true,
+      };
     }
 
     const bothDead = isDeadSubscription(initial.status) && isDeadSubscription(retry.status);
     const detail = `initial(${initial.status}): ${initial.detail} | retry(${retry.status}): ${retry.detail}`;
-    if (bothDead) {
-      stale.push(endpoint);
-    } else {
-      console.warn(`Web Push failed for ${host} —`, detail);
-    }
-    results.push({
-      host,
-      ok: false,
-      status: retry.status,
-      attempt: 'retry',
-      error: bothDead ? `stale — pruned. ${detail}` : detail,
-    });
-  }
+    if (!bothDead) console.warn(`Web Push failed for ${host} —`, detail);
+    return {
+      outcome: {
+        host,
+        ok: false,
+        status: retry.status,
+        attempt: 'retry',
+        error: bothDead ? `stale — pruned. ${detail}` : detail,
+      },
+      delivered: false,
+      deadEndpoint: bothDead ? endpoint : undefined,
+    };
+  });
+
+  const settled = await Promise.all(perSubscription);
+  const sent = settled.filter((r) => r.delivered).length;
+  const results = settled.map((r) => r.outcome);
+  const stale = settled.map((r) => r.deadEndpoint).filter((e): e is string => Boolean(e));
 
   if (stale.length) {
     await admin.from('push_subscriptions').delete().in('endpoint', stale);
