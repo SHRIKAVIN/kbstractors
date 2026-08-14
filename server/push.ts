@@ -7,11 +7,21 @@ export type VapidConfig = {
   subject: string;
 };
 
+// Apple's push service validates the VAPID JWT far more strictly than FCM —
+// a stray leading/trailing space or wrapping quote picked up from a
+// copy-paste into the Vercel dashboard is enough to make it reject the
+// token outright as malformed ("BadJwtToken"), while FCM tolerates the same
+// defect silently. Always normalize, unlike a plain `process.env.X` read.
+function normalizeEnv(value?: string): string {
+  if (!value) return '';
+  return value.trim().replace(/^['"]|['"]$/g, '');
+}
+
 export function readVapidConfig(): VapidConfig | null {
-  const publicKey = process.env.VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const publicKey = normalizeEnv(process.env.VAPID_PUBLIC_KEY);
+  const privateKey = normalizeEnv(process.env.VAPID_PRIVATE_KEY);
   if (!publicKey || !privateKey) return null;
-  const subject = process.env.VAPID_SUBJECT || 'mailto:support@kbstractors.local';
+  const subject = normalizeEnv(process.env.VAPID_SUBJECT) || 'mailto:support@kbstractors.local';
   return { publicKey, privateKey, subject };
 }
 
