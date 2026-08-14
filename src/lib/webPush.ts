@@ -45,6 +45,12 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return arr;
 }
 
+function uint8ArrayToUrlBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 function waitForServiceWorker(timeoutMs = 15000): Promise<ServiceWorkerRegistration> {
   return new Promise((resolve, reject) => {
     const timer = window.setTimeout(() => {
@@ -95,6 +101,21 @@ export async function registerWebPushSubscription(userId: string): Promise<void>
   const reg = await waitForServiceWorker();
 
   let sub = await reg.pushManager.getSubscription();
+
+  if (sub) {
+    // A subscription created under a *different* VAPID key (e.g. a rotated
+    // key pair) looks valid to the browser but gets permanently rejected by
+    // strict push services (Apple returns 403 on every send) — the browser
+    // won't create a new one via subscribe() while an old one still exists,
+    // so it has to be explicitly unsubscribed first.
+    const existingKey = sub.options?.applicationServerKey
+      ? uint8ArrayToUrlBase64(new Uint8Array(sub.options.applicationServerKey))
+      : null;
+    if (existingKey && existingKey !== VAPID_PUBLIC_KEY) {
+      await sub.unsubscribe();
+      sub = null;
+    }
+  }
 
   if (!sub) {
     sub = await reg.pushManager.subscribe({
