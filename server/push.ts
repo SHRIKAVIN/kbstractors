@@ -30,6 +30,22 @@ function endpointHost(endpoint: string): string {
 }
 
 type SendOutcome = { host: string; ok: boolean; status?: number; attempt: 'initial' | 'retry'; error?: string };
+type SendAttempt = { ok: true } | { ok: false; status?: number; detail: string };
+
+async function attemptSend(
+  endpoint: string,
+  keys: { p256dh: string; auth: string },
+  payload: string,
+  options?: { TTL: number; urgency: 'high' },
+): Promise<SendAttempt> {
+  try {
+    await webpush.sendNotification({ endpoint, keys }, payload, options);
+    return { ok: true };
+  } catch (err: any) {
+    const detail = String(err?.body || err?.message || err || 'unknown error').slice(0, 300);
+    return { ok: false, status: err?.statusCode, detail };
+  }
+}
 
 export async function sendPushToAllSubscriptions(
   admin: SupabaseClient,
@@ -54,10 +70,10 @@ export async function sendPushToAllSubscriptions(
     url: '/',
   });
 
-  // 404/410 = subscription gone. 401/403 = the push service rejected these
-  // VAPID keys for this subscription — permanent for that row (e.g. it was
-  // created under a since-rotated key pair), not a transient error, so it's
-  // safe to prune the same as an expired endpoint.
+  // 404/410 = subscription gone for good. 401/403 usually means "gone" too,
+  // but only trust that once *both* attempts below have failed — the with-
+  // headers attempt failing with 401/403 can also mean the push service
+  // objected to the TTL/urgency headers themselves, not the subscription.
   const isDeadSubscription = (status: number | undefined) =>
     status === 404 || status === 410 || status === 401 || status === 403;
 
@@ -67,39 +83,45 @@ export async function sendPushToAllSubscriptions(
 
   for (const sub of subs) {
     const host = endpointHost(sub.endpoint as string);
-    const keys = { endpoint: sub.endpoint as string, keys: { p256dh: sub.p256dh as string, auth: sub.auth as string } };
+    const keys = { p256dh: sub.p256dh as string, auth: sub.auth as string };
+    const endpoint = sub.endpoint as string;
 
-    try {
-      await webpush.sendNotification(keys, payload, { TTL: 60 * 60 * 24, urgency: 'high' });
+    const initial = await attemptSend(endpoint, keys, payload, { TTL: 60 * 60 * 24, urgency: 'high' });
+    if (initial.ok) {
       sent++;
       results.push({ host, ok: true, attempt: 'initial' });
       continue;
-    } catch (err: any) {
-      const status = err?.statusCode;
-      if (isDeadSubscription(status)) {
-        stale.push(sub.endpoint as string);
-        results.push({ host, ok: false, status, attempt: 'initial', error: 'stale — pruned' });
-        continue;
-      }
-      console.warn(`Web Push initial attempt failed (${host}, status=${status}):`, err?.body || err?.message || err);
     }
 
-    // Retry without TTL/urgency — some push services reject those headers.
-    try {
-      await webpush.sendNotification(keys, payload);
+    // Always retry without TTL/urgency, even on a 401/403 — some push
+    // services (notably Apple's) reject those headers on an otherwise-valid
+    // subscription, so bailing out early here would prune good rows.
+    const retry = await attemptSend(endpoint, keys, payload);
+    if (retry.ok) {
       sent++;
-      results.push({ host, ok: true, attempt: 'retry' });
-    } catch (retryErr: any) {
-      const retryStatus = retryErr?.statusCode;
-      if (isDeadSubscription(retryStatus)) {
-        stale.push(sub.endpoint as string);
-        results.push({ host, ok: false, status: retryStatus, attempt: 'retry', error: 'stale — pruned' });
-      } else {
-        const message = retryErr?.body || retryErr?.message || String(retryErr);
-        console.warn(`Web Push retry also failed (${host}, status=${retryStatus}):`, message);
-        results.push({ host, ok: false, status: retryStatus, attempt: 'retry', error: String(message).slice(0, 300) });
-      }
+      results.push({
+        host,
+        ok: true,
+        attempt: 'retry',
+        error: `initial attempt failed (status=${initial.status}): ${initial.detail}`,
+      });
+      continue;
     }
+
+    const bothDead = isDeadSubscription(initial.status) && isDeadSubscription(retry.status);
+    const detail = `initial(${initial.status}): ${initial.detail} | retry(${retry.status}): ${retry.detail}`;
+    if (bothDead) {
+      stale.push(endpoint);
+    } else {
+      console.warn(`Web Push failed for ${host} —`, detail);
+    }
+    results.push({
+      host,
+      ok: false,
+      status: retry.status,
+      attempt: 'retry',
+      error: bothDead ? `stale — pruned. ${detail}` : detail,
+    });
   }
 
   if (stale.length) {
