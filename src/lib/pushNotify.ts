@@ -1,6 +1,7 @@
 import { invokeSendPush } from './webPush';
 import { formatCurrency } from '../utils/calculations';
 import { insertAppNotification } from './appNotify';
+import { broadcastAlert } from './alertBus';
 
 export type CrudAction = 'created' | 'updated' | 'deleted';
 export type CrudEntity = 'rental' | 'jcb';
@@ -43,9 +44,8 @@ function buildMessage(
  * Fire-and-forget live + background notification for a rental/JCB create,
  * update, or delete. Never throws — a failed push must never break CRUD.
  *
- * Live (app open): insert into app_notifications → Realtime → notifyPush.
- * Background: DB trigger calls /api/send-push (Expense Manager pattern).
- * Client invokeSendPush is a fallback if the trigger secret is not set yet.
+ * Live (app open): Realtime Broadcast to every other logged-in device, plus
+ * an on-screen banner. Background: DB trigger + /api/send-push Web Push.
  */
 export function notifyCrud(
   action: CrudAction,
@@ -66,12 +66,15 @@ export function notifyCrud(
       );
 
       const row = await insertAppNotification({ id, title, body, kind });
+      const alertId = row?.id ?? id;
+
+      broadcastAlert({ id: alertId, title, body });
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('kbs-local-notification', {
             detail: {
-              id: row?.id ?? id,
+              id: alertId,
               actor_name: 'KBS',
               title,
               body,
@@ -85,7 +88,7 @@ export function notifyCrud(
       await invokeSendPush({
         title,
         body,
-        notification_id: row?.id ?? id,
+        notification_id: alertId,
       });
     } catch (err) {
       console.warn('CRUD push notification failed:', err);

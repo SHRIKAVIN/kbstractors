@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { notifyPush } from '../lib/notifications';
 import { emitRecordsChanged } from '../lib/liveEvents';
+import { bindAlertChannel } from '../lib/alertBus';
 import { registerWebPushSubscription, shouldAttemptWebPushRegistration } from '../lib/webPush';
 import type { AppNotificationRow } from '../lib/appNotify';
 
@@ -41,13 +42,14 @@ function markSeen(userId: string, id: string) {
 }
 
 /**
- * Live alerts while the app is open (Supabase Realtime), matching expense-manager:
- * insert → Realtime → notifyPush. Background devices still get Web Push.
- * Also refreshes dashboards when rental/JCB rows change on another device.
+ * Live alerts on every open device via Realtime Broadcast (does not need table
+ * replication). Background devices still get Web Push.
  */
 export function LiveNotificationListener() {
   const { user } = useAuth();
   const seenRef = useRef<Set<string>>(new Set());
+  const [banner, setBanner] = useState<{ title: string; body: string } | null>(null);
+  const bannerTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (!user) return;
@@ -66,16 +68,21 @@ export function LiveNotificationListener() {
       });
     }
 
+    const showBanner = (title: string, body: string) => {
+      setBanner({ title, body });
+      if (bannerTimer.current) window.clearTimeout(bannerTimer.current);
+      bannerTimer.current = window.setTimeout(() => setBanner(null), 8000);
+    };
+
     const deliver = (row: Pick<AppNotificationRow, 'id' | 'title' | 'body'>) => {
-      if (seenRef.current.has(row.id)) return;
+      if (!row.id || seenRef.current.has(row.id)) return;
       seenRef.current.add(row.id);
       markSeen(user.id, row.id);
 
       emitRecordsChanged();
-
-      if (Notification.permission !== 'granted') return;
-      if (document.visibilityState === 'visible') {
-        void notifyPush(row.title, row.body);
+      showBanner(row.title, row.body);
+      if (Notification.permission === 'granted') {
+        void notifyPush(row.title, row.body, row.id);
       }
     };
 
@@ -87,6 +94,7 @@ export function LiveNotificationListener() {
     };
 
     const removeChannel = () => {
+      bindAlertChannel(null, false);
       if (!channel) return;
       const ch = channel;
       channel = null;
@@ -97,8 +105,16 @@ export function LiveNotificationListener() {
       if (disposed) return;
       removeChannel();
 
+      void supabase.auth.getSession().then(({ data }) => {
+        if (data.session?.access_token) void supabase.realtime.setAuth(data.session.access_token);
+      });
+
       const ch = supabase
-        .channel(`kbs-live-${user.id}`)
+        .channel('kbs-alerts', { config: { broadcast: { self: false, ack: false } } })
+        .on('broadcast', { event: 'notify' }, ({ payload }) => {
+          const row = payload as Pick<AppNotificationRow, 'id' | 'title' | 'body'>;
+          if (row?.id && row.title && row.body) deliver(row);
+        })
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'app_notifications' },
@@ -120,8 +136,10 @@ export function LiveNotificationListener() {
           if (disposed) return;
           if (status === 'SUBSCRIBED') {
             reconnectAttempt = 0;
+            bindAlertChannel(ch, true);
             return;
           }
+          bindAlertChannel(ch, false);
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
             window.clearTimeout(reconnectTimer);
             const delay = Math.min(8_000, 800 * 2 ** reconnectAttempt);
@@ -144,6 +162,10 @@ export function LiveNotificationListener() {
     };
 
     void (async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (token) await supabase.realtime.setAuth(token);
+
       const { data, error } = await supabase
         .from('app_notifications')
         .select('id')
@@ -151,15 +173,14 @@ export function LiveNotificationListener() {
         .limit(20);
       if (error) {
         console.warn('Could not seed notification ids:', error.message);
-        return;
+      } else {
+        for (const row of data ?? []) {
+          seenRef.current.add(row.id);
+          markSeen(user.id, row.id);
+        }
       }
-      for (const row of data ?? []) {
-        seenRef.current.add(row.id);
-        markSeen(user.id, row.id);
-      }
+      if (!disposed) subscribe();
     })();
-
-    subscribe();
 
     if (isStandalonePwa()) {
       pollTimer = setInterval(() => {
@@ -194,8 +215,10 @@ export function LiveNotificationListener() {
 
     return () => {
       disposed = true;
+      bindAlertChannel(null, false);
       window.clearTimeout(debounceTimer);
       window.clearTimeout(reconnectTimer);
+      if (bannerTimer.current) window.clearTimeout(bannerTimer.current);
       if (pollTimer) window.clearInterval(pollTimer);
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('pageshow', wake);
@@ -207,5 +230,15 @@ export function LiveNotificationListener() {
     };
   }, [user]);
 
-  return null;
+  if (!banner) return null;
+
+  return (
+    <div
+      className="fixed top-4 left-4 right-4 z-[200] mx-auto max-w-lg rounded-2xl bg-blue-700 text-white shadow-2xl border border-white/20 px-4 py-3"
+      role="status"
+    >
+      <p className="font-semibold text-sm">{banner.title}</p>
+      <p className="text-xs text-blue-100 mt-0.5">{banner.body}</p>
+    </div>
+  );
 }

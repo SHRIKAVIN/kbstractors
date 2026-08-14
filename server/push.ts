@@ -57,7 +57,21 @@ export async function sendPushToAllSubscriptions(
       sent++;
     } catch (err: any) {
       const status = err?.statusCode;
-      if (status === 404 || status === 410) stale.push(sub.endpoint as string);
+      if (status === 404 || status === 410) {
+        stale.push(sub.endpoint as string);
+        continue;
+      }
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint as string, keys: { p256dh: sub.p256dh as string, auth: sub.auth as string } },
+          payload,
+        );
+        sent++;
+      } catch (retryErr: any) {
+        const retryStatus = retryErr?.statusCode;
+        if (retryStatus === 404 || retryStatus === 410) stale.push(sub.endpoint as string);
+        else console.warn('Web Push delivery failed:', retryErr?.message || retryErr);
+      }
     }
   }
 

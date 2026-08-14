@@ -26,13 +26,14 @@ async function showViaServiceWorker(title: string, options: NotificationOptions)
 }
 
 /** Show a notification via the service worker when available (works in PWA background). */
-export async function notifyPush(title: string, body: string) {
+export async function notifyPush(title: string, body: string, id?: string) {
   if (!notificationsSupported() || Notification.permission !== 'granted') return;
   const options: NotificationOptions = {
     body,
     icon: '/icons/kbs-tractors-192.png',
     badge: '/icons/kbs-tractors-192.png',
-    tag: `kbs-${Date.now()}`,
+    tag: id ? `kbs-push-${id}` : `kbs-${Date.now()}`,
+    renotify: true,
   };
   const shown = await showViaServiceWorker(title, options);
   if (shown) return;

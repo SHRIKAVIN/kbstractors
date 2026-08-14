@@ -11,8 +11,13 @@ const defaultUrl = 'https://placeholder.supabase.co';
 const defaultKey = 'placeholder-key';
 
 export const supabase = createClient(
-  supabaseUrl || defaultUrl, 
-  supabaseKey || defaultKey
+  supabaseUrl || defaultUrl,
+  supabaseKey || defaultKey,
+  {
+    realtime: {
+      params: { eventsPerSecond: 10 },
+    },
+  },
 );
 
 export const auth = supabase.auth;

@@ -66,13 +66,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) void supabase.realtime.setAuth(session.access_token);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
+        if (session?.access_token) void supabase.realtime.setAuth(session.access_token);
         setUser(session?.user ?? null);
         setLoading(false);
       }

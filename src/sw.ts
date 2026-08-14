@@ -36,23 +36,19 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     (async () => {
       const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      const appVisible = clients.some((c) => c.visibilityState === 'visible');
-      if (appVisible) {
-        // Realtime may be suspended in the PWA — nudge open clients to refresh
-        // and show the in-app/OS banner via notifyPush instead of a duplicate.
-        await Promise.all(
-          clients.map((client) =>
-            client.postMessage({
-              type: 'kbs-push',
-              id: payload.id,
-              title,
-              body,
-            }),
-          ),
-        );
-        return;
-      }
+      await Promise.all(
+        clients.map((client) =>
+          client.postMessage({
+            type: 'kbs-push',
+            id: payload.id,
+            title,
+            body,
+          }),
+        ),
+      );
 
+      // Always show the OS banner. Skipping when a tab is visible made the
+      // other phone look "broken" whenever Realtime did not deliver.
       return self.registration.showNotification(title, {
         body,
         icon: '/icons/kbs-tractors-192.png',
