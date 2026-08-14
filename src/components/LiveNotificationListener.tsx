@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { notifyPush } from '../lib/notifications';
 import { emitRecordsChanged } from '../lib/liveEvents';
 import { bindAlertChannel } from '../lib/alertBus';
 import { registerWebPushSubscription, shouldAttemptWebPushRegistration } from '../lib/webPush';
@@ -42,14 +41,17 @@ function markSeen(userId: string, id: string) {
 }
 
 /**
- * Live alerts on every open device via Realtime Broadcast (does not need table
- * replication). Background devices still get Web Push.
+ * No UI of its own — real notifications come only from actual Web Push (the
+ * service worker's `push` handler shows the OS banner, on every device,
+ * whether the app is open, backgrounded, or closed). This component just
+ * keeps the push subscription registered and silently refreshes open
+ * dashboards (via Realtime Broadcast + postgres_changes) when data changes
+ * on another device, so there is no separate in-app toast to duplicate what
+ * the OS notification already shows.
  */
 export function LiveNotificationListener() {
   const { user } = useAuth();
   const seenRef = useRef<Set<string>>(new Set());
-  const [banner, setBanner] = useState<{ title: string; body: string } | null>(null);
-  const bannerTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (!user) return;
@@ -68,22 +70,14 @@ export function LiveNotificationListener() {
       });
     }
 
-    const showBanner = (title: string, body: string) => {
-      setBanner({ title, body });
-      if (bannerTimer.current) window.clearTimeout(bannerTimer.current);
-      bannerTimer.current = window.setTimeout(() => setBanner(null), 8000);
-    };
-
     const deliver = (row: Pick<AppNotificationRow, 'id' | 'title' | 'body'>) => {
       if (!row.id || seenRef.current.has(row.id)) return;
       seenRef.current.add(row.id);
       markSeen(user.id, row.id);
 
+      // Silent refresh only — the OS notification for this row already came
+      // (or is coming) from the service worker's real Web Push `push` event.
       emitRecordsChanged();
-      showBanner(row.title, row.body);
-      if (Notification.permission === 'granted') {
-        void notifyPush(row.title, row.body, row.id);
-      }
     };
 
     const onRecordsChange = () => {
@@ -218,7 +212,6 @@ export function LiveNotificationListener() {
       bindAlertChannel(null, false);
       window.clearTimeout(debounceTimer);
       window.clearTimeout(reconnectTimer);
-      if (bannerTimer.current) window.clearTimeout(bannerTimer.current);
       if (pollTimer) window.clearInterval(pollTimer);
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('pageshow', wake);
@@ -230,15 +223,5 @@ export function LiveNotificationListener() {
     };
   }, [user]);
 
-  if (!banner) return null;
-
-  return (
-    <div
-      className="fixed top-4 left-4 right-4 z-[200] mx-auto max-w-lg rounded-2xl bg-blue-700 text-white shadow-2xl border border-white/20 px-4 py-3"
-      role="status"
-    >
-      <p className="font-semibold text-sm">{banner.title}</p>
-      <p className="text-xs text-blue-100 mt-0.5">{banner.body}</p>
-    </div>
-  );
+  return null;
 }

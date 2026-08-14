@@ -44,6 +44,13 @@ export async function sendPushToAllSubscriptions(
     url: '/',
   });
 
+  // 404/410 = subscription gone. 401/403 = the push service rejected these
+  // VAPID keys for this subscription — permanent for that row (e.g. it was
+  // created under a since-rotated key pair), not a transient error, so it's
+  // safe to prune the same as an expired endpoint.
+  const isDeadSubscription = (status: number | undefined) =>
+    status === 404 || status === 410 || status === 401 || status === 403;
+
   let sent = 0;
   const stale: string[] = [];
 
@@ -57,7 +64,7 @@ export async function sendPushToAllSubscriptions(
       sent++;
     } catch (err: any) {
       const status = err?.statusCode;
-      if (status === 404 || status === 410) {
+      if (isDeadSubscription(status)) {
         stale.push(sub.endpoint as string);
         continue;
       }
@@ -69,7 +76,7 @@ export async function sendPushToAllSubscriptions(
         sent++;
       } catch (retryErr: any) {
         const retryStatus = retryErr?.statusCode;
-        if (retryStatus === 404 || retryStatus === 410) stale.push(sub.endpoint as string);
+        if (isDeadSubscription(retryStatus)) stale.push(sub.endpoint as string);
         else console.warn('Web Push delivery failed:', retryErr?.message || retryErr);
       }
     }
