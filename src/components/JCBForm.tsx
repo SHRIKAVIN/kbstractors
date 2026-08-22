@@ -213,7 +213,7 @@ export function JCBForm({ onClose, onSave, initialData }: JCBFormProps) {
       <div data-testid="jcb-form-wrapper" className="max-w-2xl mx-auto h-full min-h-screen md:min-h-0">
         <div data-testid="jcb-form-card" className="bg-white rounded-none md:rounded-2xl shadow-none md:shadow-2xl min-h-screen md:min-h-0 flex flex-col">
           {/* Header */}
-          <div data-testid="jcb-form-header" className="bg-orange-600 text-white p-4 sm:p-6 rounded-none md:rounded-t-2xl sticky top-0 z-20 shadow-md">
+          <div data-testid="jcb-form-header" className="bg-orange-600 text-white px-4 sm:px-6 pb-4 sm:pb-6 pt-[calc(1rem_+_env(safe-area-inset-top))] sm:pt-[calc(1.5rem_+_env(safe-area-inset-top))] rounded-none md:rounded-t-2xl sticky top-0 z-20 shadow-md">
             <div data-testid="header-content" className="flex items-center justify-between">
               <div data-testid="header-text">
                 <h2 data-testid="form-title" className="text-lg sm:text-xl font-bold">
@@ -756,7 +756,7 @@ export function JCBForm({ onClose, onSave, initialData }: JCBFormProps) {
             )}
 
             {/* Action Buttons (Fixed Footer on Mobile) */}
-            <div data-testid="action-buttons" className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200/80 p-4 flex gap-3 z-30 md:static md:border-none md:p-0 md:mt-8 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] md:shadow-none">
+            <div data-testid="action-buttons" className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200/80 px-4 pt-4 pb-[calc(1rem_+_env(safe-area-inset-bottom))] flex gap-3 z-30 md:static md:border-none md:px-0 md:pt-0 md:pb-0 md:mt-8 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] md:shadow-none">
               <button
                 data-testid="cancel-button"
                 type="button"
