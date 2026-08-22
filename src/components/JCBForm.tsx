@@ -234,7 +234,7 @@ export function JCBForm({ onClose, onSave, initialData }: JCBFormProps) {
             </div>
           </div>
 
-          <form data-testid="jcb-form" onSubmit={handleSubmit} className="flex-1 p-4 sm:p-6 space-y-5 pb-24 md:pb-6">
+          <form data-testid="jcb-form" onSubmit={handleSubmit} className="flex-1 p-4 sm:p-6 space-y-5 pb-[calc(6rem_+_env(safe-area-inset-bottom))] md:pb-6">
             {/* Old Balance Only Toggle (Segmented Control) */}
             <div data-testid="old-balance-only-container" className="flex bg-gray-150 p-1 rounded-xl w-full max-w-md mx-auto shadow-inner border border-gray-200">
               <input
