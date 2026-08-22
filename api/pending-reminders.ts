@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'node:crypto';
-import { readVapidConfig, sendPushToAllSubscriptions } from '../server/push.js';
+import { readVapidConfig } from '../server/push.js';
 import { getRentalPending, getJCBPending } from '../src/utils/pending.js';
 import { formatCurrency } from '../src/utils/calculations.js';
 
@@ -147,10 +147,11 @@ export default async function handler(req: any, res: any) {
     const body = `${lines.join(' • ')} — Total ${formatCurrency(totalPending)}`;
 
     const notificationId = randomUUID();
-    const result = await sendPushToAllSubscriptions(admin, vapid, title, body, notificationId);
 
-    // Live clients pick this up via Realtime; the insert trigger also sends
-    // background Web Push (same notification id, so the SW tag dedupes).
+    // Insert only — the AFTER INSERT trigger on app_notifications delivers the
+    // background Web Push (see 20260813130000_background_push_trigger.sql),
+    // same pattern as notifyCrud(). Also sending it directly here would fire
+    // both, delivering two separate push messages for one digest.
     const { error: liveErr } = await admin.from('app_notifications').insert({
       id: notificationId,
       actor_name: 'system',
@@ -160,7 +161,7 @@ export default async function handler(req: any, res: any) {
     });
     if (liveErr) console.warn('Live pending digest insert failed:', liveErr.message);
 
-    return res.status(200).json({ ok: true, overdue: overdue.length, dueToday: dueToday.length, totalPending, ...result });
+    return res.status(200).json({ ok: true, overdue: overdue.length, dueToday: dueToday.length, totalPending });
   } catch (err: any) {
     return res.status(500).json({ error: err?.message || 'Unknown error' });
   }

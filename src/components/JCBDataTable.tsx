@@ -1,4 +1,5 @@
-import { User, Pencil, Trash2, Phone } from 'lucide-react';
+import { User, Pencil, Trash2 } from 'lucide-react';
+// Phone icon was only used by the mobile number column, temporarily commented out below.
 import type { JCBRecord } from '../types/jcb';
 import { formatCurrency, calculateJCBTotalAmount } from '../utils/jcb-calculations';
 import { getJCBPending } from '../utils/pending';
@@ -25,7 +26,8 @@ export function JCBDataTable({ records, onEdit, onDelete }: JCBDataTableProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-60"></div>
         <h3 data-testid="table-title" className="text-lg font-bold text-gray-900 text-center relative bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">JCB பதிவுகள்</h3>
       </div>
-      <div data-testid="table-scroll-container" className="overflow-x-auto max-h-[60vh]">
+      {/* Desktop View */}
+      <div data-testid="table-scroll-container" className="hidden md:block overflow-x-auto max-h-[60vh]">
         <table data-testid="jcb-table" className="min-w-full border border-gray-300 table-fixed">
           <colgroup>
             <col style={{ width: '15%' }} />
@@ -34,7 +36,7 @@ export function JCBDataTable({ records, onEdit, onDelete }: JCBDataTableProps) {
             <col style={{ width: '12%' }} />
             <col style={{ width: '10%' }} />
             <col style={{ width: '10%' }} />
-            <col style={{ width: '12%' }} />
+            {/* Mobile column — temporarily commented out, see below <col style={{ width: '12%' }} /> */}
             <col style={{ width: '10%' }} />
           </colgroup>
           <thead data-testid="table-head" className="bg-gradient-to-r from-blue-200 to-indigo-300 sticky top-0 z-10 shadow-md">
@@ -45,7 +47,9 @@ export function JCBDataTable({ records, onEdit, onDelete }: JCBDataTableProps) {
               <th className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">பெறப்பட்டது</th>
               <th className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலுவை</th>
               <th className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">நிலை</th>
+              {/* மொபைல் column header — temporarily commented out
               <th className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm">மொபைல்</th>
+              */}
               <th className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gradient-to-b from-gray-50 to-gray-100 shadow-sm" style={{ minWidth: '90px' }}>Actions</th>
             </tr>
           </thead>
@@ -104,6 +108,7 @@ export function JCBDataTable({ records, onEdit, onDelete }: JCBDataTableProps) {
                   <td className="px-3 py-2 whitespace-nowrap text-center">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>{statusText}</span>
                   </td>
+                  {/* Mobile column cell — temporarily commented out
                   <td className="px-3 py-2 whitespace-nowrap text-center">
                     {record.mobile_number ? (
                       <button
@@ -117,6 +122,7 @@ export function JCBDataTable({ records, onEdit, onDelete }: JCBDataTableProps) {
                       <span className="text-gray-400 text-sm italic text-center block">Not provided</span>
                     )}
                   </td>
+                  */}
                   <td className="px-3 py-2 whitespace-nowrap text-center">
                     <div className="flex justify-center gap-3">
                       <button onClick={() => onEdit(record)} title="Edit">
@@ -132,6 +138,132 @@ export function JCBDataTable({ records, onEdit, onDelete }: JCBDataTableProps) {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile View */}
+      <div data-testid="mobile-cards-container" className="block md:hidden overflow-y-auto max-h-[60vh] p-4 space-y-4 bg-gray-50/50">
+        {records.map((record, idx) => {
+          const receivedAmount = record.amount_received || 0;
+          const { amount: pendingAmount, isPaid } = getJCBPending(record);
+          const statusText = isPaid ? 'பெறப்பட்டது' : 'நிலுவையில்';
+          const statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
+
+          return (
+            <div
+              key={record.id}
+              data-testid={`mobile-card-${idx}`}
+              className="bg-white rounded-xl shadow-md border border-gray-150 p-4 space-y-3 relative hover:shadow-lg transition-shadow"
+            >
+              {/* Header: Name, Avatar, Driver, Status */}
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900">{record.company_name}</h4>
+                    {record.driver_name ? (
+                      <p className="text-xs text-gray-500 mt-0.5">{record.driver_name}</p>
+                    ) : null}
+                  </div>
+                </div>
+                <span className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
+                  {statusText}
+                </span>
+              </div>
+
+              {/* Details Section */}
+              <div className="bg-gray-50 rounded-lg p-2.5 space-y-1.5 text-xs border border-gray-100">
+                {record.details && record.details.length > 0 ? (
+                  record.details.map((d, detailIdx) => {
+                    const amount = calculateJCBTotalAmount(parseFloat(String(d.hours || '0')) || 0, d.equipment_type);
+                    return (
+                      <div key={detailIdx} className="flex justify-between items-center text-gray-800 font-medium">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-sm">🚜</span>
+                          <span>
+                            <span className="font-semibold">{String(d.hours || '')} மணி</span> • {d.equipment_type}
+                          </span>
+                        </div>
+                        <span className="text-gray-500 font-semibold">{formatCurrency(amount)}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-gray-400 italic text-center">விவரங்கள் இல்லை</div>
+                )}
+
+                {record.old_balance && (
+                  <div className="pt-1.5 border-t border-gray-200/60 mt-1 flex justify-between items-center text-xs">
+                    <span className={record.old_balance_status === 'paid' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                      பழைய பாக்கி: {record.old_balance}
+                      {record.old_balance_reason && (
+                        <span className="text-gray-400 font-normal"> ( {record.old_balance_reason} )</span>
+                      )}
+                    </span>
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${record.old_balance_status === 'paid' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                      {record.old_balance_status === 'paid' ? 'Paid' : 'Pending'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Amounts Breakdown Grid */}
+              <div className="grid grid-cols-3 gap-2 text-center bg-gray-50/50 rounded-lg p-2 border border-gray-100/50">
+                <div>
+                  <div className="text-[10px] text-gray-500 font-medium uppercase">மொத்தம்</div>
+                  <div className="text-xs font-bold text-gray-900 mt-0.5">{formatCurrency(record.total_amount || 0)}</div>
+                </div>
+                <div className="border-x border-gray-200">
+                  <div className="text-[10px] text-gray-500 font-medium uppercase">பெறப்பட்டது</div>
+                  <div className="text-xs font-bold text-green-600 mt-0.5">{formatCurrency(receivedAmount)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-gray-500 font-medium uppercase">நிலுவை</div>
+                  <div className={`text-xs font-bold mt-0.5 ${pendingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    {formatCurrency(pendingAmount)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                {/* Mobile call button — temporarily commented out
+                {record.mobile_number ? (
+                  <button
+                    onClick={() => window.open(`tel:${record.mobile_number}`, '_self')}
+                    className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer text-xs font-semibold"
+                    title="அழைக்க"
+                  >
+                    <span>📞</span>
+                    <span>{record.mobile_number}</span>
+                  </button>
+                ) : (
+                  <div className="text-xs text-gray-400 italic">மொபைல் எண் இல்லை</div>
+                )}
+                */}
+                <div />
+
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => onEdit(record)}
+                    className="inline-flex items-center text-orange-500 hover:text-orange-700 cursor-pointer"
+                    title="Edit"
+                  >
+                    <Pencil className="w-4.5 h-4.5" />
+                  </button>
+                  <button
+                    onClick={() => onDelete(record)}
+                    className="inline-flex items-center text-red-600 hover:text-red-800 cursor-pointer"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4.5 h-4.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

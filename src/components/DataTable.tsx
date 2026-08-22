@@ -54,7 +54,9 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 opacity-60"></div>
           <h3 data-testid="table-title" className="text-lg font-bold text-gray-900 text-center relative bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-sm">வாடகை பதிவுகள்</h3>
         </div>
-        <div data-testid="table-scroll-container" className="overflow-x-auto max-h-[60vh]">
+        
+        {/* Desktop View */}
+        <div data-testid="table-scroll-container" className="hidden md:block overflow-x-auto max-h-[60vh]">
           <table data-testid="rental-table" className="min-w-full border border-gray-300 table-fixed">
             <colgroup>
               <col style={{ width: '15%' }} />
@@ -164,6 +166,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                         <span data-testid={`status-badge-${idx}`} className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
                           {statusText}
                         </span>
+                        {/* Mobile call button — temporarily commented out
                         {record.mobile_number && (
                           <button
                             data-testid={`mobile-call-button-${idx}`}
@@ -174,6 +177,7 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
                             📞 {record.mobile_number}
                           </button>
                         )}
+                        */}
                       </div>
                     </td>
                     <td data-testid={`actions-cell-${idx}`} className="px-3 py-2 whitespace-nowrap text-center">
@@ -191,6 +195,154 @@ export function DataTable({ records, onEdit, onDelete }: DataTableProps) {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile View */}
+        <div data-testid="mobile-cards-container" className="block md:hidden overflow-y-auto max-h-[60vh] p-4 space-y-4 bg-gray-50/50">
+          {records.map((record, idx) => {
+            const { amount: pendingAmount, isPaid } = getRentalPending(record);
+            const statusText = isPaid ? 'பெறப்பட்டது' : 'நிலுவையில்';
+            const statusClass = isPaid ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800';
+
+            return (
+              <div
+                key={record.id}
+                data-testid={`mobile-card-${idx}`}
+                className="bg-white rounded-xl shadow-md border border-gray-150 p-4 space-y-3 relative hover:shadow-lg transition-shadow"
+              >
+                {/* Header: Name, Avatar, Date, Status */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      data-testid={`user-avatar-${idx}`}
+                      onClick={(e) => handlePersonIconClick(record, e)}
+                      className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors cursor-pointer"
+                      title="விவரங்களைப் பார்க்க"
+                    >
+                      <User data-testid={`user-icon-${idx}`} className="h-5 w-5 text-blue-600" />
+                    </button>
+                    <div>
+                      <h4 data-testid={`customer-name-${idx}`} className="text-sm font-bold text-gray-900">{record.name}</h4>
+                      <p data-testid={`date-added-${idx}`} className="text-xs text-gray-500 mt-0.5">
+                        {new Date(record.created_at).toLocaleDateString('en-GB', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <span data-testid={`status-badge-${idx}`} className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${statusClass}`}>
+                    {statusText}
+                  </span>
+                </div>
+
+                {/* Details Section */}
+                <div data-testid={`details-content-${idx}`} className="bg-gray-50 rounded-lg p-2.5 space-y-1.5 text-xs border border-gray-100">
+                  {record.details && record.details.length > 0 ? (
+                    record.details.map((d, detailIdx) => {
+                      let amount = 0;
+                      if (d.equipment_type === 'Dipper') {
+                        amount = 500 * (parseInt(String(d.nadai || '0')) || 0);
+                      } else {
+                        amount = calculateTotalAmount(
+                          parseFloat(String(d.acres || '0')) || 0,
+                          parseFloat(String(d.rounds || '0')) || 0,
+                          d.equipment_type
+                        );
+                      }
+                      return (
+                        <div key={detailIdx} data-testid={`detail-item-${idx}-${detailIdx}`} className="flex justify-between items-center text-gray-800 font-medium">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-sm">🚜</span>
+                            <span>
+                              {d.equipment_type === 'Dipper' ? (
+                                <><span className="font-semibold">{String(d.nadai || '')} நடை</span> • Dipper</>
+                              ) : (
+                                <><span className="font-semibold">{String(d.acres || '')} மா</span> • <span className="font-semibold">{String(d.rounds || '')} சால்</span> • {d.equipment_type}</>
+                              )}
+                            </span>
+                          </div>
+                          <span className="text-gray-500 font-semibold">{formatCurrency(amount)}</span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-gray-400 italic text-center">விவரங்கள் இல்லை</div>
+                  )}
+
+                  {record.old_balance && (
+                    <div data-testid={`old-balance-${idx}`} className="pt-1.5 border-t border-gray-200/60 mt-1 flex justify-between items-center text-xs">
+                      <span className={record.old_balance_status === 'paid' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                        பழைய பாக்கி: {record.old_balance}
+                        {record.old_balance_reason && (
+                          <span className="text-gray-400 font-normal"> ( {record.old_balance_reason} )</span>
+                        )}
+                      </span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold ${record.old_balance_status === 'paid' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                        {record.old_balance_status === 'paid' ? 'Paid' : 'Pending'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Amounts Breakdown Grid */}
+                <div className="grid grid-cols-3 gap-2 text-center bg-gray-50/50 rounded-lg p-2 border border-gray-100/50">
+                  <div>
+                    <div className="text-[10px] text-gray-500 font-medium uppercase">மொத்தம்</div>
+                    <div data-testid={`total-cell-${idx}`} className="text-xs font-bold text-gray-900 mt-0.5">{formatCurrency(record.total_amount)}</div>
+                  </div>
+                  <div className="border-x border-gray-200">
+                    <div className="text-[10px] text-gray-500 font-medium uppercase">பெறப்பட்டது</div>
+                    <div data-testid={`received-cell-${idx}`} className="text-xs font-bold text-green-600 mt-0.5">{formatCurrency(record.received_amount)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-500 font-medium uppercase">நிலுவை</div>
+                    <div data-testid={`pending-cell-${idx}`} className={`text-xs font-bold mt-0.5 ${pendingAmount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      {formatCurrency(pendingAmount)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions Footer */}
+                <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+                  {/* Mobile call button — temporarily commented out
+                  {record.mobile_number ? (
+                    <button
+                      data-testid={`mobile-call-button-${idx}`}
+                      onClick={() => window.open(`tel:${record.mobile_number}`, '_self')}
+                      className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer text-xs font-semibold"
+                      title="அழைக்க"
+                    >
+                      <span>📞</span>
+                      <span>{record.mobile_number}</span>
+                    </button>
+                  ) : (
+                    <div className="text-xs text-gray-400 italic">மொபைல் எண் இல்லை</div>
+                  )}
+                  */}
+
+                  <button
+                    data-testid={`edit-button-${idx}`}
+                    onClick={() => onEdit && onEdit(record)}
+                    className="inline-flex items-center justify-center text-orange-500 hover:text-orange-700 cursor-pointer"
+                    title="Edit"
+                  >
+                    <Pencil className="w-5 h-5" />
+                  </button>
+                  <div className="w-px h-5 bg-gray-200" aria-hidden="true" />
+                  <button
+                    data-testid={`delete-button-${idx}`}
+                    onClick={() => onDelete && onDelete(record)}
+                    className="inline-flex items-center justify-center text-red-600 hover:text-red-800 cursor-pointer"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
       

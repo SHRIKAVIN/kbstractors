@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Save, X, Calculator, Phone } from 'lucide-react';
+import { Save, X, Calculator } from 'lucide-react';
+// Phone icon was only used by the mobile number field, temporarily commented out below.
 import { rentalService } from '../lib/supabase';
 import { calculateTotalAmount, formatCurrency, EQUIPMENT_RATES } from '../utils/calculations';
 import type { RentalRecord, RentalDetail } from '../types/rental';
@@ -130,16 +131,18 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
     }));
   };
 
-  const handleMobileNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-    if (value.length <= 10) {
-      setFormData(prev => ({ ...prev, mobile_number: value }));
-      // Clear mobile number errors when user types
-      if (errors.mobile_number) {
-        setErrors(prev => ({ ...prev, mobile_number: '' }));
-      }
-    }
-  };
+  // Mobile number field is temporarily commented out below (see JSX), so its
+  // change handler is unused for now.
+  // const handleMobileNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+  //   if (value.length <= 10) {
+  //     setFormData(prev => ({ ...prev, mobile_number: value }));
+  //     // Clear mobile number errors when user types
+  //     if (errors.mobile_number) {
+  //       setErrors(prev => ({ ...prev, mobile_number: '' }));
+  //     }
+  //   }
+  // };
 
   const validateMobileNumber = (mobileNumber: string): boolean => {
     if (!mobileNumber || mobileNumber.trim() === '') {
@@ -225,11 +228,11 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   };
 
   return (
-    <div data-testid="rental-form-container" className="min-h-screen bg-gray-50 py-8 px-2 sm:px-4">
-      <div data-testid="rental-form-wrapper" className="max-w-2xl mx-auto">
-        <div data-testid="rental-form-card" className="bg-white rounded-lg shadow-lg">
+    <div data-testid="rental-form-container" className="min-h-screen bg-gray-50 md:py-8 px-0 sm:px-4">
+      <div data-testid="rental-form-wrapper" className="max-w-2xl mx-auto h-full min-h-screen md:min-h-0">
+        <div data-testid="rental-form-card" className="bg-white rounded-none md:rounded-2xl shadow-none md:shadow-2xl min-h-screen md:min-h-0 flex flex-col">
           {/* Header */}
-          <div data-testid="rental-form-header" className="bg-blue-600 text-white p-4 sm:p-6 rounded-t-lg">
+          <div data-testid="rental-form-header" className="bg-blue-600 text-white p-4 sm:p-6 rounded-none md:rounded-t-2xl sticky top-0 z-20 shadow-md">
             <div data-testid="header-content" className="flex items-center justify-between">
               <div data-testid="header-text">
                 <h2 data-testid="form-title" className="text-lg sm:text-xl font-bold">
@@ -243,47 +246,72 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
               <button
                 data-testid="close-button"
                 onClick={onClose}
-                className="text-white hover:bg-blue-700 p-2 rounded-lg transition-colors"
+                className="text-white hover:bg-blue-700 p-2 rounded-lg transition-colors cursor-pointer"
               >
                 <X data-testid="close-icon" className="w-6 h-6" />
               </button>
             </div>
           </div>
 
-          <form data-testid="rental-form" onSubmit={handleSubmit} className="p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-x-auto">
-            {/* Old Balance Only Checkbox */}
-            <div data-testid="old-balance-only-container" className="mb-2 sm:mb-4 flex items-center">
+          <form data-testid="rental-form" onSubmit={handleSubmit} className="flex-1 p-4 sm:p-6 space-y-5 pb-24 md:pb-6">
+            {/* Old Balance Only Toggle (Segmented Control) */}
+            <div data-testid="old-balance-only-container" className="flex bg-gray-150 p-1 rounded-xl w-full max-w-md mx-auto shadow-inner border border-gray-200">
               <input
                 data-testid="old-balance-only-checkbox"
                 type="checkbox"
                 id="oldBalanceOnly"
                 checked={oldBalanceOnly}
                 onChange={e => setOldBalanceOnly(e.target.checked)}
-                disabled={!!initialData && oldBalanceOnly} // Disable if editing old balance only
-                className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                disabled={!!initialData && oldBalanceOnly}
+                className="hidden"
               />
-              <label data-testid="old-balance-only-label" htmlFor="oldBalanceOnly" className="text-xs sm:text-sm font-medium text-gray-700 select-none">பழைய பாக்கி மட்டும்</label>
+              <button
+                type="button"
+                onClick={() => setOldBalanceOnly(false)}
+                disabled={!!initialData && oldBalanceOnly}
+                className={`flex-1 text-center py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
+                  !oldBalanceOnly
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+                }`}
+              >
+                வாடகை பதிவு
+              </button>
+              <button
+                type="button"
+                onClick={() => setOldBalanceOnly(true)}
+                disabled={!!initialData && !oldBalanceOnly}
+                className={`flex-1 text-center py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
+                  oldBalanceOnly
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
+                }`}
+              >
+                பழைய பாக்கி மட்டும்
+              </button>
+              <label data-testid="old-balance-only-label" htmlFor="oldBalanceOnly" className="hidden">பழைய பாக்கி மட்டும்</label>
             </div>
 
             {oldBalanceOnly ? (
-              <>
+              <div className="space-y-4">
                 {/* Name Field */}
-                <div data-testid="name-field-container">
-                  <label data-testid="name-label" htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பெயர் *</label>
+                <div data-testid="name-field-container" className="space-y-1">
+                  <label data-testid="name-label" htmlFor="name" className="block text-xs sm:text-sm font-semibold text-gray-700">பெயர் *</label>
                   <input
                     data-testid="name-input"
                     type="text"
                     id="name"
                     value={formData.name}
                     onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                    className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-sm`}
                     placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
-                  {errors.name && <p data-testid="name-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p data-testid="name-error" className="text-red-500 text-xs mt-1 font-medium">{errors.name}</p>}
                 </div>
-                {/* Mobile Number Field */}
-                <div data-testid="mobile-number-field-container" className="mt-2 sm:mt-4">
-                  <label data-testid="mobile-number-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மொபைல் எண்</label>
+                
+                {/* Mobile Number Field — temporarily commented out
+                <div data-testid="mobile-number-field-container" className="space-y-1">
+                  <label data-testid="mobile-number-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-semibold text-gray-700">மொபைல் எண்</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Phone className="h-4 w-4 text-gray-400" />
@@ -295,7 +323,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                       value={formData.mobile_number}
                       onChange={handleMobileNumberChange}
                       onFocus={() => errors.mobile_number && setErrors(prev => ({ ...prev, mobile_number: '' }))}
-                      className={`w-full pl-10 pr-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.mobile_number ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                      className={`w-full pl-9 pr-12 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.mobile_number ? 'border-red-500' : 'border-gray-300'} text-sm`}
                       placeholder="மொபைல் எண் (10 இலக்கங்கள்)"
                       maxLength={10}
                       pattern="[0-9]{10}"
@@ -304,56 +332,78 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                       <span className="text-xs text-gray-400">{formData.mobile_number.length}/10</span>
                     </div>
                   </div>
-                  {errors.mobile_number && <p data-testid="mobile-number-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.mobile_number}</p>}
+                  {errors.mobile_number && <p data-testid="mobile-number-error" className="text-red-500 text-xs mt-1 font-medium">{errors.mobile_number}</p>}
                 </div>
+                */}
+
                 {/* Old Balance Field */}
-                <div data-testid="old-balance-field-container" className="mt-2 sm:mt-4">
-                  <label data-testid="old-balance-label" htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
+                <div data-testid="old-balance-field-container" className="space-y-1">
+                  <label data-testid="old-balance-label" htmlFor="old_balance" className="block text-xs sm:text-sm font-semibold text-gray-700">பழைய பாக்கி *</label>
                   <input
                     data-testid="old-balance-input"
-                    type="text"
+                    type="number"
                     id="old_balance"
                     value={formData.old_balance || ''}
                     onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
-                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
-                    placeholder="பழைய பாக்கி"
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-sm"
+                    placeholder="பழைய பாக்கி தொகை (₹)"
                     autoComplete="off"
                   />
                 </div>
-                {/* Old Balance Status Dropdown */}
-                <div data-testid="old-balance-status-container" className="mt-2 sm:mt-4">
-                  <label data-testid="old-balance-status-label" htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
+
+                {/* Old Balance Status Selection */}
+                <div data-testid="old-balance-status-container" className="space-y-1.5">
+                  <label data-testid="old-balance-status-label" htmlFor="old_balance_status" className="block text-xs sm:text-sm font-semibold text-gray-700">நிலை *</label>
                   <select
                     data-testid="old-balance-status-select"
                     id="old_balance_status"
                     value={oldBalanceStatus}
                     onChange={e => setOldBalanceStatus(e.target.value as 'paid' | 'pending')}
-                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
+                    className="hidden"
                   >
                     <option value="pending">நிலுவையில்</option>
                     <option value="paid">முழுமையாக பெறப்பட்டது</option>
                   </select>
+                  <div className="flex gap-3">
+                    {(['pending', 'paid'] as const).map(status => (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => setOldBalanceStatus(status)}
+                        className={`flex-1 text-center py-2.5 text-xs sm:text-sm font-bold rounded-lg border transition-all cursor-pointer ${
+                          oldBalanceStatus === status
+                            ? status === 'paid'
+                              ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                              : 'bg-orange-500 text-white border-orange-500 shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {status === 'pending' ? 'நிலுவையில்' : 'முழுமையாக பெறப்பட்டது'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
                 {/* Old Balance Reason Field */}
-                <div data-testid="old-balance-reason-container" className="mt-2 sm:mt-4">
-                  <label data-testid="old-balance-reason-label" htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
+                <div data-testid="old-balance-reason-container" className="space-y-1">
+                  <label data-testid="old-balance-reason-label" htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-semibold text-gray-700">காரணம் (விவரம்)</label>
                   <input
                     data-testid="old-balance-reason-input"
                     type="text"
                     id="old_balance_reason"
                     value={formData.old_balance_reason || ''}
                     onChange={e => setFormData(prev => ({ ...prev, old_balance_reason: e.target.value }))}
-                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
-                    placeholder="காரணம்"
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-sm"
+                    placeholder="காரணம் (எ.கா: ஆடி மாதம் உழவு)"
                     autoComplete="off"
                   />
                 </div>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="space-y-5">
                 {/* Customer Name */}
-                <div data-testid="customer-name-container">
-                  <label data-testid="customer-name-label" htmlFor="name" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                <div data-testid="customer-name-container" className="space-y-1">
+                  <label data-testid="customer-name-label" htmlFor="name" className="block text-xs sm:text-sm font-semibold text-gray-700">
                     பெயர் *
                   </label>
                   <input
@@ -362,15 +412,15 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                    className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'} text-sm`}
                     placeholder="வாடகை பெறுபவரின் பெயர்"
                   />
-                  {errors.name && <p data-testid="customer-name-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p data-testid="customer-name-error" className="text-red-500 text-xs mt-1 font-medium">{errors.name}</p>}
                 </div>
 
-                {/* Customer Mobile Number */}
-                <div data-testid="customer-mobile-container">
-                  <label data-testid="customer-mobile-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                {/* Customer Mobile Number — temporarily commented out
+                <div data-testid="customer-mobile-container" className="space-y-1">
+                  <label data-testid="customer-mobile-label" htmlFor="mobile_number" className="block text-xs sm:text-sm font-semibold text-gray-700">
                     மொபைல் எண்
                   </label>
                   <div className="relative">
@@ -384,11 +434,11 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                       value={formData.mobile_number}
                       onChange={handleMobileNumberChange}
                       onFocus={() => errors.mobile_number && setErrors(prev => ({ ...prev, mobile_number: '' }))}
-                      className={`w-full pl-10 pr-12 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.mobile_number ? 'border-red-500' : 
-                        formData.mobile_number.length === 10 && validateMobileNumber(formData.mobile_number) ? 'border-green-500' : 
+                      className={`w-full pl-9 pr-12 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.mobile_number ? 'border-red-500' :
+                        formData.mobile_number.length === 10 && validateMobileNumber(formData.mobile_number) ? 'border-green-500' :
                         'border-gray-300'
-                      } text-xs sm:text-base`}
+                      } text-sm`}
                       placeholder="மொபைல் எண் (10 இலக்கங்கள்)"
                       maxLength={10}
                       pattern="[0-9]{10}"
@@ -399,169 +449,198 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                       </span>
                     </div>
                   </div>
-                  {errors.mobile_number && <p data-testid="customer-mobile-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.mobile_number}</p>}
+                  {errors.mobile_number && <p data-testid="customer-mobile-error" className="text-red-500 text-xs mt-1 font-medium">{errors.mobile_number}</p>}
                 </div>
+                */}
 
                 {/* Details Sets */}
-                <div data-testid="details-sets-container" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div data-testid="details-sets-container" className="space-y-4">
+                  <h3 className="text-sm font-bold text-gray-800 border-b pb-1.5 flex justify-between items-center">
+                    <span>வாடகை விவரங்கள்</span>
+                    <button
+                      type="button"
+                      onClick={handleAddDetail}
+                      className="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1.5 rounded-lg hover:bg-blue-100 font-bold transition-colors cursor-pointer"
+                    >
+                      + உழவு சேர்க்க
+                    </button>
+                  </h3>
+                  
                   {formData.details.map((d, i) => {
                     const isDipper = d.equipment_type === 'Dipper';
                     return (
-                      <div key={i} data-testid={`detail-set-${i}`} className="relative border-2 border-blue-200 bg-blue-50 rounded-xl p-4 mb-2 shadow-md hover:shadow-lg transition-shadow">
-                        {formData.details.length > 1 && (
-                          <span data-testid={`detail-set-number-${i}`} className="absolute -top-3 left-3 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow">{i + 1}</span>
-                        )}
-                        {/* Action buttons in top right corner */}
-                        <div data-testid={`detail-actions-${i}`} className="absolute top-2 right-2 flex gap-1">
-                          {formData.details.length > 1 && (
-                            <button 
-                              data-testid={`remove-detail-button-${i}`} 
-                              type="button" 
-                              onClick={() => handleRemoveDetail(i)} 
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 text-lg font-bold w-6 h-6 rounded-full flex items-center justify-center transition-colors"
-                              title="Remove this item"
-                            >
-                              ×
-                            </button>
-                          )}
-                          {i === formData.details.length - 1 && (
-                            <button 
-                              data-testid={`add-detail-button-${i}`} 
-                              type="button" 
-                              onClick={handleAddDetail} 
-                              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 text-lg font-bold w-6 h-6 rounded-full flex items-center justify-center transition-colors"
-                              title="Add new item"
-                            >
-                              +
-                            </button>
-                          )}
+                      <div key={i} data-testid={`detail-set-${i}`} className="relative border border-blue-100 bg-gradient-to-br from-blue-50/60 to-indigo-50/20 rounded-xl p-4 shadow-sm hover:shadow-md transition-all space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span data-testid={`detail-set-number-${i}`} className="bg-blue-600 text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
+                            உழவு {i + 1}
+                          </span>
+                          <div data-testid={`detail-actions-${i}`} className="flex items-center space-x-1">
+                            {formData.details.length > 1 && (
+                              <button 
+                                data-testid={`remove-detail-button-${i}`} 
+                                type="button" 
+                                onClick={() => handleRemoveDetail(i)} 
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs font-bold px-2 py-1 rounded-md transition-colors cursor-pointer border border-red-200/50 bg-white"
+                                title="Remove item"
+                              >
+                                நீக்கு
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        {/* Always show type dropdown */}
-                        <div data-testid={`equipment-type-container-${i}`} className="sm:border-l sm:border-gray-300 sm:pl-4">
-                          <label data-testid={`equipment-type-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">வகை *</label>
+
+                        {/* Equipment Type - clickable chips */}
+                        <div data-testid={`equipment-type-container-${i}`} className="space-y-1.5">
+                          <label data-testid={`equipment-type-label-${i}`} className="block text-xs font-bold text-gray-600">வகை *</label>
                           <select
                             data-testid={`equipment-type-select-${i}`}
                             value={d.equipment_type}
                             onChange={e => handleDetailChange(i, 'equipment_type', e.target.value)}
-                            className="w-full px-2 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-base"
+                            className="hidden"
                           >
-                            <option value="Cage Wheel">Cage Wheel (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                            <option value="புழுதி">புழுதி (₹{EQUIPMENT_RATES['Cage Wheel']}/சால்)</option>
-                            <option value="Rotavator">Rotavator (₹{EQUIPMENT_RATES['Rotavator']}/சால்)</option>
-                            <option value="Mini">Mini (₹{EQUIPMENT_RATES['Mini']}/சால்)</option>
-                            <option value="Dipper">Dipper (₹500)</option>
+                            <option value="Cage Wheel">Cage Wheel</option>
+                            <option value="புழுதி">புழுதி</option>
+                            <option value="Rotavator">Rotavator</option>
+                            <option value="Mini">Mini</option>
+                            <option value="Dipper">Dipper</option>
                           </select>
+                          
+                          <div className="flex flex-wrap gap-1.5">
+                            {(['Cage Wheel', 'புழுதி', 'Rotavator', 'Mini', 'Dipper'] as const).map(type => (
+                              <button
+                                key={type}
+                                type="button"
+                                onClick={() => handleDetailChange(i, 'equipment_type', type)}
+                                className={`px-2.5 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                                  d.equipment_type === type
+                                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                {type === 'Cage Wheel' && 'Cage Wheel 🚜'}
+                                {type === 'புழுதி' && 'புழுதி 🚜'}
+                                {type === 'Rotavator' && 'Rotavator 🚜'}
+                                {type === 'Mini' && 'Mini 🚜'}
+                                {type === 'Dipper' && 'Dipper 🚚'}
+                              </button>
+                            ))}
+                          </div>
                         </div>
+
                         {/* Type-specific fields */}
                         {isDipper ? (
-                          <>
-                            <div data-testid={`dipper-fields-${i}`} className="sm:col-span-2">
-                              <label data-testid={`nadai-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நடை *</label>
+                          <div data-testid={`dipper-fields-${i}`} className="grid grid-cols-2 gap-3 pt-1">
+                            <div className="space-y-1">
+                              <label data-testid={`nadai-label-${i}`} className="block text-xs font-semibold text-gray-700">நடை *</label>
                               <input
                                 data-testid={`nadai-input-${i}`}
                                 type="number"
                                 value={d.nadai}
                                 onChange={e => handleDetailChange(i, 'nadai', e.target.value)}
-                                className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`nadai_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`nadai_${i}`] ? 'border-red-500' : 'border-gray-300'} text-sm`}
                                 placeholder="நடை எண்ணிக்கை"
                                 min="1"
                                 step="1"
                               />
-                              {errors[`nadai_${i}`] && <p data-testid={`nadai-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`nadai_${i}`]}</p>}
+                              {errors[`nadai_${i}`] && <p data-testid={`nadai-error-${i}`} className="text-red-500 text-xs mt-1 font-medium">{errors[`nadai_${i}`]}</p>}
                             </div>
-                            <div data-testid={`dipper-amount-${i}`} className="sm:col-span-2 mt-2">
-                              <label data-testid={`dipper-amount-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">தொகை</label>
+                            <div data-testid={`dipper-amount-${i}`} className="space-y-1">
+                              <label data-testid={`dipper-amount-label-${i}`} className="block text-xs font-semibold text-gray-700">ஒரு நடை வீதம்</label>
                               <input
                                 data-testid={`dipper-amount-input-${i}`}
-                                type="number"
-                                value={500}
+                                type="text"
+                                value="₹500"
                                 readOnly
-                                className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg bg-gray-100 text-xs sm:text-base"
+                                className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm font-medium text-gray-600"
                               />
                             </div>
-                          </>
+                          </div>
                         ) : (
-                          <>
-                            <div data-testid={`acres-container-${i}`}>
-                              <label data-testid={`acres-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">மா *</label>
+                          <div className="grid grid-cols-2 gap-3 pt-1">
+                            <div data-testid={`acres-container-${i}`} className="space-y-1">
+                              <label data-testid={`acres-label-${i}`} className="block text-xs font-semibold text-gray-700">மா (Acres) *</label>
                               <input
                                 data-testid={`acres-input-${i}`}
                                 type="number"
                                 value={d.acres}
                                 onChange={e => handleDetailChange(i, 'acres', e.target.value)}
-                                className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                                placeholder="மா எண்ணிக்கை (எ.கா: 1.03, 1.30)"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`acres_${i}`] ? 'border-red-500' : 'border-gray-300'} text-sm`}
+                                placeholder="எ.கா: 1.03"
                                 min="0"
                                 step="0.01"
                               />
-                              {errors[`acres_${i}`] && <p data-testid={`acres-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`acres_${i}`]}</p>}
+                              {errors[`acres_${i}`] && <p data-testid={`acres-error-${i}`} className="text-red-500 text-xs mt-1 font-medium">{errors[`acres_${i}`]}</p>}
                             </div>
-                            <div data-testid={`rounds-container-${i}`} className="col-span-1 sm:col-span-2 mt-2 flex items-center gap-2">
-                              <div data-testid={`rounds-field-${i}`} className="flex-1">
-                                <label data-testid={`rounds-label-${i}`} className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">சால் *</label>
-                                <input
-                                  data-testid={`rounds-input-${i}`}
-                                  type="number"
-                                  value={d.rounds}
-                                  onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
-                                  className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                                  placeholder="சால் எண்ணிக்கை"
-                                  min="0"
-                                  step="1"
-                                />
-                                {errors[`rounds_${i}`] && <p data-testid={`rounds-error-${i}`} className="text-red-500 text-xs sm:text-sm mt-1">{errors[`rounds_${i}`]}</p>}
-                              </div>
+                            <div data-testid={`rounds-container-${i}`} className="space-y-1">
+                              <label data-testid={`rounds-label-${i}`} className="block text-xs font-semibold text-gray-700">சால் (Rounds) *</label>
+                              <input
+                                data-testid={`rounds-input-${i}`}
+                                type="number"
+                                value={d.rounds}
+                                onChange={e => handleDetailChange(i, 'rounds', e.target.value)}
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors[`rounds_${i}`] ? 'border-red-500' : 'border-gray-300'} text-sm`}
+                                placeholder="சால் எண்ணிக்கை"
+                                min="0"
+                                step="1"
+                              />
+                              {errors[`rounds_${i}`] && <p data-testid={`rounds-error-${i}`} className="text-red-500 text-xs mt-1 font-medium">{errors[`rounds_${i}`]}</p>}
                             </div>
-                          </>
+                          </div>
                         )}
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Calculation Display */}
-                <div data-testid="calculation-display" className="bg-green-50 border border-green-200 rounded-lg p-2 sm:p-4">
-                  <div data-testid="calculation-header" className="flex items-center mb-2 sm:mb-3">
-                    <Calculator data-testid="calculator-icon" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
-                    <h3 data-testid="calculation-title" className="text-xs sm:text-sm font-medium text-blue-900">தானியங்கி கணக்கீடு</h3>
+                {/* Calculation Display (Receipt-style) */}
+                <div data-testid="calculation-display" className="bg-gradient-to-br from-green-50 to-emerald-50/50 border border-green-200 rounded-xl p-4 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-green-500/5 rounded-full -mr-4 -mt-4"></div>
+                  <div data-testid="calculation-header" className="flex items-center mb-3">
+                    <Calculator data-testid="calculator-icon" className="w-5 h-5 text-emerald-600 mr-2" />
+                    <h3 data-testid="calculation-title" className="text-sm font-bold text-emerald-950">தானியங்கி கணக்கீடு</h3>
                   </div>
-                  <div data-testid="calculation-items" className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
+                  
+                  <div data-testid="calculation-items" className="space-y-2 text-xs sm:text-sm border-b border-dashed border-green-200 pb-3">
                     {formData.details.map((d, i) => {
                       let amount = 0;
                       let summary = '';
                       if (d.equipment_type === 'Dipper') {
                         amount = 500 * (parseInt(String(d.nadai)) || 0);
-                        summary = `${String(d.nadai)} நடை . Dipper`;
+                        summary = `${String(d.nadai)} நடை • Dipper`;
                       } else {
                         amount = calculateTotalAmount(
                           parseFloat(d.acres) || 0,
                           parseFloat(d.rounds) || 0,
-                          d.equipment_type as 'Cage Wheel' | 'Rotavator' | 'புழுதி' | 'Mini'
+                          d.equipment_type as any
                         );
-                        summary = `${d.acres} மா . ${d.rounds} சால் . ${d.equipment_type}`;
+                        summary = `${d.acres} மா • ${d.rounds} சால் • ${d.equipment_type}`;
                       }
                       return (
-                        <div key={i} data-testid={`calculation-item-${i}`} className="flex items-center gap-2 text-xs sm:text-sm">
-                          <span data-testid={`calculation-summary-${i}`}>{summary} - ₹{amount}</span>
+                        <div key={i} data-testid={`calculation-item-${i}`} className="flex justify-between items-center text-emerald-900 font-medium">
+                          <span data-testid={`calculation-summary-${i}`}>{summary}</span>
+                          <span className="font-semibold">{formatCurrency(amount)}</span>
                         </div>
                       );
                     })}
                     {!oldBalanceOnly && showOldBalanceSection && formData.old_balance && (
-                      <div data-testid="old-balance-calculation" className="flex items-center gap-2 text-xs sm:text-sm">
-                        <span data-testid="old-balance-calculation-text">பழைய பாக்கி - ₹{formData.old_balance}</span>
+                      <div data-testid="old-balance-calculation" className="flex justify-between items-center text-emerald-900 font-medium pt-1">
+                        <span data-testid="old-balance-calculation-text">பழைய பாக்கி</span>
+                        <span className="font-semibold">{formatCurrency(parseFloat(formData.old_balance) || 0)}</span>
                       </div>
                     )}
                   </div>
-                  <div data-testid="total-calculation" className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-blue-200">
-                    <p data-testid="total-amount-display" className="text-base sm:text-lg font-bold text-blue-900">
-                      மொத்த தொகை: {formatCurrency(totalAmount)}
+                  
+                  <div data-testid="total-calculation" className="mt-3 flex justify-between items-center">
+                    <span className="text-sm font-bold text-emerald-950">மொத்த தொகை:</span>
+                    <p data-testid="total-amount-display" className="text-lg sm:text-xl font-extrabold text-emerald-700">
+                      {formatCurrency(totalAmount)}
                     </p>
                   </div>
                 </div>
 
                 {/* Received Amount */}
-                <div data-testid="received-amount-container" className="mt-2 sm:mt-4">
-                  <label data-testid="received-amount-label" htmlFor="received_amount" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                <div data-testid="received-amount-container" className="space-y-1">
+                  <label data-testid="received-amount-label" htmlFor="received_amount" className="block text-xs sm:text-sm font-semibold text-gray-700">
                     பெறப்பட்ட தொகை (₹) *
                   </label>
                   <input
@@ -570,34 +649,35 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     id="received_amount"
                     value={formData.received_amount}
                     onChange={e => setFormData(prev => ({ ...prev, received_amount: e.target.value }))}
-                    className={`w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.received_amount ? 'border-red-500' : 'border-gray-300'} text-xs sm:text-base`}
-                    placeholder="பெறப்பட்ட தொகை (எ.கா: 1500.50)"
+                    className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.received_amount ? 'border-red-500' : 'border-gray-300'} text-sm`}
+                    placeholder="பெறப்பட்ட தொகை (எ.கா: 1500.00)"
                     min="0"
                     step="0.01"
                   />
-                  {errors.received_amount && <p data-testid="received-amount-error" className="text-red-500 text-xs sm:text-sm mt-1">{errors.received_amount}</p>}
+                  {errors.received_amount && <p data-testid="received-amount-error" className="text-red-500 text-xs mt-1 font-medium">{errors.received_amount}</p>}
                 </div>
+
                 {!oldBalanceOnly && (
-                  <div data-testid="old-balance-toggle-container" className="flex items-center mt-2">
+                  <div data-testid="old-balance-toggle-container" className="flex items-center pt-1">
                     {!showOldBalanceSection ? (
                       <button
                         data-testid="add-old-balance-button"
                         type="button"
                         onClick={() => setShowOldBalanceSection(true)}
-                        className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        className="flex items-center text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-bold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-150 transition-colors cursor-pointer"
                       >
-                        <span data-testid="add-old-balance-icon" className="text-lg font-bold mr-1">+</span>
-                        <span data-testid="add-old-balance-text">பழைய பாக்கி இருந்தால்</span>
+                        <span data-testid="add-old-balance-icon" className="text-base mr-1">+</span>
+                        <span data-testid="add-old-balance-text">பழைய பாக்கி சேர்க்க</span>
                       </button>
                     ) : null}
                   </div>
                 )}
-              </>
+              </div>
             )}
 
             {/* Show old balance fields in full form if showOldBalanceSection is true */}
             {!oldBalanceOnly && showOldBalanceSection && (
-              <div data-testid="old-balance-section" className="mt-2 sm:mt-4 border p-3 pt-7 rounded-lg bg-gray-50 relative">
+              <div data-testid="old-balance-section" className="mt-4 border border-gray-200 p-4 pt-8 rounded-xl bg-gray-50/50 relative space-y-4 shadow-inner">
                 <button
                   data-testid="remove-old-balance-button"
                   type="button"
@@ -605,52 +685,78 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                     setShowOldBalanceSection(false);
                     setFormData(prev => ({ ...prev, old_balance: '', old_balance_status: '', old_balance_reason: '' }));
                   }}
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-xl font-bold px-2 py-1 rounded-full z-10"
-                  title="பழைய பாக்கி நீக்கு"
+                  className="absolute top-2.5 right-2.5 text-red-500 hover:text-red-700 text-sm font-bold border border-red-200 bg-white hover:bg-red-50 rounded-md px-2 py-0.5 shadow-sm transition-colors cursor-pointer"
+                  title="Remove old balance"
                 >
-                  ×
+                  நீக்கு ×
                 </button>
-                <label data-testid="full-form-old-balance-label" htmlFor="old_balance" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">பழைய பாக்கி *</label>
-                <input
-                  data-testid="full-form-old-balance-input"
-                  type="text"
-                  id="old_balance"
-                  value={formData.old_balance || ''}
-                  onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
-                  className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
-                  placeholder="பழைய பாக்கி"
-                  autoComplete="off"
-                />
-                <div data-testid="full-form-old-balance-status-container" className="mt-2">
-                  <label data-testid="full-form-old-balance-status-label" htmlFor="old_balance_status" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">நிலை *</label>
+                
+                <div className="space-y-1">
+                  <label data-testid="full-form-old-balance-label" htmlFor="old_balance" className="block text-xs sm:text-sm font-semibold text-gray-700">பழைய பாக்கி *</label>
+                  <input
+                    data-testid="full-form-old-balance-input"
+                    type="number"
+                    id="old_balance"
+                    value={formData.old_balance || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, old_balance: e.target.value }))}
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-sm"
+                    placeholder="பழைய பாக்கி தொகை (₹)"
+                    autoComplete="off"
+                  />
+                </div>
+                
+                <div data-testid="full-form-old-balance-status-container" className="space-y-1.5">
+                  <label data-testid="full-form-old-balance-status-label" htmlFor="old_balance_status" className="block text-xs sm:text-sm font-semibold text-gray-700">நிலை *</label>
                   <select
                     data-testid="full-form-old-balance-status-select"
                     id="old_balance_status"
                     value={oldBalanceStatus}
                     onChange={e => setOldBalanceStatus(e.target.value as 'paid' | 'pending')}
-                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
+                    className="hidden"
                   >
                     <option value="pending">நிலுவையில்</option>
                     <option value="paid">முழுமையாக பெறப்பட்டது</option>
                   </select>
+                  <div className="flex gap-3">
+                    {(['pending', 'paid'] as const).map(status => (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => setOldBalanceStatus(status)}
+                        className={`flex-1 text-center py-2.5 text-xs sm:text-sm font-bold rounded-lg border transition-all cursor-pointer ${
+                          oldBalanceStatus === status
+                            ? status === 'paid'
+                              ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                              : 'bg-orange-500 text-white border-orange-500 shadow-sm'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {status === 'pending' ? 'நிலுவையில் (Pending)' : 'பெறப்பட்டது (Paid)'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
                 {/* Old Balance Reason Field */}
-                <div data-testid="full-form-old-balance-reason-container" className="mt-2 sm:mt-4">
-                  <label data-testid="full-form-old-balance-reason-label" htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">காரணம் (விவரம்)</label>
+                <div data-testid="full-form-old-balance-reason-container" className="space-y-1">
+                  <label data-testid="full-form-old-balance-reason-label" htmlFor="old_balance_reason" className="block text-xs sm:text-sm font-semibold text-gray-700">காரணம் (விவரம்)</label>
                   <input
                     data-testid="full-form-old-balance-reason-input"
                     type="text"
                     id="old_balance_reason"
                     value={formData.old_balance_reason || ''}
                     onChange={e => setFormData(prev => ({ ...prev, old_balance_reason: e.target.value }))}
-                    className="w-full px-2 sm:px-4 py-2 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-xs sm:text-base"
-                    placeholder="காரணம்"
+                    className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent border-gray-300 text-sm"
+                    placeholder="காரணம் (விவரம்)"
                     autoComplete="off"
                   />
                 </div>
                 {formData.old_balance && (
-                  <div data-testid="old-balance-display" className="mt-2 text-sm font-bold" style={{ color: oldBalanceStatus === 'paid' ? 'green' : 'red' }}>
-                    <span data-testid="old-balance-display-text">பழைய பாக்கி: ₹{formData.old_balance}</span>
+                  <div data-testid="old-balance-display" className="mt-1 text-xs font-extrabold flex items-center justify-between">
+                    <span data-testid="old-balance-display-text">விவரம்: பழைய பாக்கி ₹{formData.old_balance}</span>
+                    <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${oldBalanceStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {oldBalanceStatus === 'paid' ? 'Paid' : 'Pending'}
+                    </span>
                   </div>
                 )}
               </div>
@@ -659,35 +765,36 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
             {/* Submit Error */}
             {errors.submit && (
               <div data-testid="submit-error" className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p data-testid="submit-error-message" className="text-red-600 text-sm">{errors.submit}</p>
+                <p data-testid="submit-error-message" className="text-red-600 text-sm font-semibold">{errors.submit}</p>
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div data-testid="action-buttons" className="flex flex-col sm:flex-row gap-3 pt-6">
+            {/* Action Buttons (Fixed Footer on Mobile) */}
+            <div data-testid="action-buttons" className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200/80 p-4 flex gap-3 z-30 md:static md:border-none md:p-0 md:mt-8 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] md:shadow-none">
+              <button
+                data-testid="cancel-button"
+                type="button"
+                onClick={onClose}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center cursor-pointer text-sm"
+              >
+                <X data-testid="cancel-icon" className="w-4 h-4 mr-2" />
+                <span data-testid="cancel-button-text">ரத்து செய்</span>
+              </button>
+              
               <button
                 data-testid="save-button"
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3.5 px-4 rounded-xl transition-all flex items-center justify-center cursor-pointer shadow-md shadow-blue-500/20 text-sm"
               >
                 {loading ? (
                   <div data-testid="save-loading-spinner" className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
-                    <Save data-testid="save-icon" className="w-5 h-5 mr-2" />
+                    <Save data-testid="save-icon" className="w-4 h-4 mr-2" />
                     <span data-testid="save-button-text">சேமிக்கவும்</span>
                   </>
                 )}
-              </button>
-              <button
-                data-testid="cancel-button"
-                type="button"
-                onClick={onClose}
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
-              >
-                <X data-testid="cancel-icon" className="w-5 h-5 mr-2" />
-                <span data-testid="cancel-button-text">ரத்து செய்</span>
               </button>
             </div>
           </form>
