@@ -33,9 +33,10 @@ async function notifyTeams(params: {
   const webhookUrl = normalizeEnv(process.env.TEAMS_WEBHOOK_URL);
   if (!webhookUrl) return { sent: false, reason: 'TEAMS_WEBHOOK_URL not set' };
 
-  const logoUrl = 'https://kbstractors.vercel.app/icons/kbs-tractors-192.png';
+  const logoUrl =
+    'https://raw.githubusercontent.com/SHRIKAVIN/kbstractors/main/public/icons/kbs-tractors-192.png';
   const facts = [
-    { name: 'Project Name', value: 'KBS TRACTORS' },
+    { name: 'Project Name', value: 'KBS Tractors' },
     { name: 'Job Status', value: params.success ? 'Success ✅' : 'Failed ❌' },
     { name: 'Timestamp', value: params.timestamp },
     { name: 'Source', value: 'Vercel Cron' },
@@ -54,7 +55,7 @@ async function notifyTeams(params: {
     title: 'Supabase Keep-Alive Notification',
     sections: [
       {
-        activityTitle: 'KBS TRACTORS',
+        activityTitle: 'KBS Tractors',
         activitySubtitle: 'Vercel Cron keep-alive result',
         activityImage: logoUrl,
         facts,

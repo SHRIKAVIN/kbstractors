@@ -48,7 +48,7 @@ jobs:
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         run: |
-          LOGO_URL="https://kbstractors.vercel.app/icons/kbs-tractors-192.png"
+          LOGO_URL="https://raw.githubusercontent.com/SHRIKAVIN/kbstractors/main/public/icons/kbs-tractors-192.png"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           payload=$(cat <<EOF
           {
@@ -59,11 +59,11 @@ jobs:
             "title": "Supabase Keep-Alive Notification",
             "sections": [
               {
-                "activityTitle": "KBS TRACTORS",
+                "activityTitle": "KBS Tractors",
                 "activitySubtitle": "Keep-alive workflow result",
                 "activityImage": "${LOGO_URL}",
                 "facts": [
-                  { "name": "Project Name", "value": "KBS TRACTORS" },
+                  { "name": "Project Name", "value": "KBS Tractors" },
                   { "name": "Job Status", "value": "Success ✅" },
                   { "name": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")" },
                   { "name": "Action", "value": "${{ github.workflow }}" },
@@ -94,7 +94,7 @@ jobs:
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         run: |
-          LOGO_URL="https://kbstractors.vercel.app/icons/kbs-tractors-192.png"
+          LOGO_URL="https://raw.githubusercontent.com/SHRIKAVIN/kbstractors/main/public/icons/kbs-tractors-192.png"
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           payload=$(cat <<EOF
           {
@@ -105,11 +105,11 @@ jobs:
             "title": "Supabase Keep-Alive Notification",
             "sections": [
               {
-                "activityTitle": "KBS TRACTORS",
+                "activityTitle": "KBS Tractors",
                 "activitySubtitle": "Keep-alive workflow result",
                 "activityImage": "${LOGO_URL}",
                 "facts": [
-                  { "name": "Project Name", "value": "KBS TRACTORS" },
+                  { "name": "Project Name", "value": "KBS Tractors" },
                   { "name": "Job Status", "value": "Failed ❌" },
                   { "name": "Timestamp", "value": "$(date -u +"%Y-%m-%d %H:%M:%S UTC")" },
                   { "name": "Action", "value": "${{ github.workflow }}" },
