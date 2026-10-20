@@ -230,10 +230,10 @@ export interface DailySummaryData {
 export function dailySummary(d: DailySummaryData): NotificationMessage {
   const title =
     d.netCollected > 0
-      ? `📊 Today · ${money(d.netCollected)} collected`
+      ? `💰 Today · ${money(d.netCollected)} collected`
       : d.netCollected < 0
-        ? `📊 Today · ⚠️ ${money(-d.netCollected)} reversed`
-        : '📊 Today · No collections';
+        ? `💰 Today · ⚠️ ${money(-d.netCollected)} reversed`
+        : '💰 Today · No collections';
   return {
     title,
     body: parts(
