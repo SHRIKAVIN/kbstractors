@@ -92,6 +92,7 @@ export function Dashboard() {
   // the list's scroll offset. Open each screen at the top and put the list back
   // where it was on return.
   const listScrollY = useRef(0);
+  const [scrolled, setScrolled] = useState(false);
   const onList = currentView === 'tractor' && !showForm;
   useLayoutEffect(() => {
     if (!onList) {
@@ -101,7 +102,9 @@ export function Dashboard() {
     window.scrollTo(0, listScrollY.current);
     const remember = () => {
       listScrollY.current = window.scrollY;
+      setScrolled(window.scrollY > 0);
     };
+    remember();
     window.addEventListener('scroll', remember, { passive: true });
     return () => window.removeEventListener('scroll', remember);
   }, [onList]);
@@ -405,7 +408,12 @@ export function Dashboard() {
         </header>
 
         {/* Search + status — sticks under the status bar */}
-        <div className="fixed inset-x-0 top-0 z-40 h-[env(safe-area-inset-top)] bg-night-950" />
+        {/* Hides the list behind the status bar once scrolled; off at the top so the glow shows through. */}
+        <div
+          className={`fixed inset-x-0 top-0 z-40 h-[env(safe-area-inset-top)] bg-night-950 transition-opacity duration-200 ${
+            scrolled ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
         <div ref={stickySentinel} className="h-6" />
         <div
           className={`sticky top-[env(safe-area-inset-top)] z-30 transition-colors duration-300 ${
