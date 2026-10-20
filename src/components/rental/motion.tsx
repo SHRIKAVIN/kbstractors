@@ -82,6 +82,10 @@ export function ProgressRing({ percent, size, stroke, tone = 'mixed', children }
   );
 }
 
+export function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
 export function haptic(ms = 8) {
   try {
     navigator.vibrate?.(ms);

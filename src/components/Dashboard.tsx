@@ -12,8 +12,8 @@ import { CollectSheet } from './rental/CollectSheet';
 import { BottomSheet } from './rental/BottomSheet';
 import { FilterSheet } from './rental/FilterSheet';
 import { EMPTY_FILTERS, filterRentals, type RentalFilters } from './rental/rentalFilters';
-import { ProgressRing, haptic, useCountUp } from './rental/motion';
-import { FormMorph, MORPH_SWAP_MS, prefersReducedMotion, type MorphOrigin, type MorphPhase } from './rental/FormMorph';
+import { ProgressRing, haptic, prefersReducedMotion, useCountUp } from './rental/motion';
+import { FormSheet } from './rental/FormSheet';
 import { PullToRefresh } from './rental/PullToRefresh';
 import { useFlip } from './rental/useFlip';
 import { dayLabel, rentalStatus } from './rental/rentalDisplay';
@@ -109,12 +109,12 @@ export function Dashboard() {
 
   usePageChrome(currentView === 'jcb' && canReadJcb ? 'jcb' : 'app');
 
-  // The form and other screens replace the list in place, so the window keeps
-  // the list's scroll offset. Open each screen at the top and put the list back
-  // where it was on return.
+  // JCB / User control replace the list in place, so the window keeps the
+  // list's scroll offset. Open those at the top and put the list back where it
+  // was on return. (The entry form is a sheet over the list, so it doesn't count.)
   const listScrollY = useRef(0);
   const [scrolled, setScrolled] = useState(false);
-  const onList = currentView === 'tractor' && !showForm;
+  const onList = currentView === 'tractor';
   useLayoutEffect(() => {
     if (!onList) {
       window.scrollTo(0, 0);
@@ -301,35 +301,14 @@ export function Dashboard() {
   const advancedFilterCount = (filters.equipment ? 1 : 0) + (filters.oldBalanceStatus ? 1 : 0);
   const tabIndex = STATUS_TABS.findIndex((t) => t.value === filters.status);
 
-  // ── Form open / close transition (see FormMorph) ──────────────────────────
-  const [morph, setMorph] = useState<{ phase: MorphPhase; origin: MorphOrigin } | null>(null);
-  const lastTap = useRef<MorphOrigin>({ x: window.innerWidth / 2, y: window.innerHeight - 60, size: 44 });
+  // ── Entry form: slides up as a sheet over the list (see FormSheet) ────────
+  const [sheetClosing, setSheetClosing] = useState(false);
 
-  // Remember where the last tap landed so "Edit" grows out of the button pressed.
-  useEffect(() => {
-    const onDown = (e: PointerEvent) => {
-      lastTap.current = { x: e.clientX, y: e.clientY, size: 40 };
-    };
-    window.addEventListener('pointerdown', onDown, { passive: true });
-    return () => window.removeEventListener('pointerdown', onDown);
-  }, []);
-
-  const swapTimer = useRef<ReturnType<typeof setTimeout>>();
-  useEffect(() => () => clearTimeout(swapTimer.current), []);
-
-  const openForm = (record: RentalRecord | null, origin: MorphOrigin = lastTap.current) => {
-    if (morph) return;
+  const openForm = (record: RentalRecord | null) => {
+    if (showForm) return;
     setEditRecord(record);
-    if (prefersReducedMotion()) {
-      setShowForm(true);
-      return;
-    }
-    haptic(8);
-    setMorph({ phase: 'expand', origin });
-    // Mount the form under the circle while it's still growing, so its content
-    // is already sliding in by the time the cover fades — no blank frame.
-    clearTimeout(swapTimer.current);
-    swapTimer.current = setTimeout(() => setShowForm(true), MORPH_SWAP_MS);
+    setSheetClosing(false);
+    setShowForm(true);
   };
 
   // Stable across renders so memoised rows don't redraw when the dashboard does.
@@ -337,38 +316,13 @@ export function Dashboard() {
   openFormRef.current = openForm;
   const editRow = useCallback((r: RentalRecord) => openFormRef.current(r), []);
 
-  const finishCloseForm = () => {
+  const closeForm = () => setSheetClosing(true);
+
+  const onSheetExited = () => {
     setShowForm(false);
+    setSheetClosing(false);
     setEditRecord(null);
   };
-
-  const closeForm = () => {
-    if (prefersReducedMotion()) {
-      finishCloseForm();
-      return;
-    }
-    setMorph((m) => m ?? { phase: 'conceal', origin: lastTap.current });
-  };
-
-  const onMorphDone = () => {
-    if (!morph) return;
-    switch (morph.phase) {
-      case 'expand':
-        setShowForm(true); // normally already mounted by the swap timer
-        setMorph(null);
-        break;
-      case 'conceal':
-        finishCloseForm();
-        setMorph({ ...morph, phase: 'collapse' });
-        break;
-      default:
-        setMorph(null);
-    }
-  };
-
-  // Always rendered as the FIRST child of whichever fragment Dashboard returns
-  // (list or form), so React keeps the same layer alive across the swap.
-  const morphLayer = morph ? <FormMorph phase={morph.phase} origin={morph.origin} onDone={onMorphDone} /> : null;
 
   const confirmDelete = () => {
     const record = deleteRecord;
@@ -443,30 +397,10 @@ export function Dashboard() {
     );
   }
 
-  if (showForm) {
-    return (
-      <>
-        {morphLayer}
-        <RentalForm
-          initialData={editRecord ?? undefined}
-          leaving={morph?.phase === 'conceal'}
-          onClose={closeForm}
-          onSave={(saved) => {
-            setRecords((prev) => (editRecord ? prev.map((r) => (r.id === saved.id ? saved : r)) : [saved, ...prev]));
-            showToast(editRecord ? 'பதிவு புதுப்பிக்கப்பட்டது' : 'புதிய பதிவு சேர்க்கப்பட்டது');
-            flashRow(saved.id, 'saved');
-            closeForm();
-          }}
-        />
-      </>
-    );
-  }
-
   let rowIndex = 0;
 
   return (
     <>
-      {morphLayer}
       <SEO
         title="KBS Tractors - Dashboard"
         description="KBS Tractors - Professional tractor rental and sales management dashboard. Manage equipment, track rentals, and monitor business performance efficiently."
@@ -475,7 +409,7 @@ export function Dashboard() {
       />
       <PullToRefresh
         onRefresh={() => loadRecords({ silent: true })}
-        disabled={!!morph || showFilters || !!collectRecord || !!deleteRecord || menuOpen}
+        disabled={showForm || showFilters || !!collectRecord || !!deleteRecord || menuOpen}
       />
       <div data-testid="dashboard-container" className="kbs-app kbs-grain relative min-h-screen overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {/* Ambient glow */}
@@ -738,10 +672,7 @@ export function Dashboard() {
         <button
           type="button"
           data-testid="add-record-button"
-          onClick={(e) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            openForm(null, { x: r.left + r.width / 2, y: r.top + r.height / 2, size: r.height });
-          }}
+          onClick={() => openForm(null)}
           className="kbs-press fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] left-1/2 z-50 inline-flex h-[60px] -translate-x-1/2 items-center gap-2.5 rounded-full bg-brand pl-5 pr-7 text-[15px] font-semibold text-brand-fg shadow-[0_0_0_6px_rgb(var(--brand)/0.1),0_16px_40px_-8px_rgb(var(--brand)/0.55)] hover:bg-brand-hover"
         >
           <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-fg text-brand">
@@ -780,6 +711,21 @@ export function Dashboard() {
           </div>
         )}
       </div>
+
+      {showForm && (
+        <FormSheet closing={sheetClosing} onExited={onSheetExited}>
+          <RentalForm
+            initialData={editRecord ?? undefined}
+            onClose={closeForm}
+            onSave={(saved) => {
+              setRecords((prev) => (editRecord ? prev.map((r) => (r.id === saved.id ? saved : r)) : [saved, ...prev]));
+              showToast(editRecord ? 'பதிவு புதுப்பிக்கப்பட்டது' : 'புதிய பதிவு சேர்க்கப்பட்டது');
+              flashRow(saved.id, 'saved');
+              closeForm();
+            }}
+          />
+        </FormSheet>
+      )}
 
       <CollectSheet
         record={collectRecord}

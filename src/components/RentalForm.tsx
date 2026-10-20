@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronLeft, Plus, Save, Trash2, History, X } from 'lucide-react';
 // Phone icon was only used by the mobile number field, temporarily commented out below.
 import { rentalService } from '../lib/supabase';
@@ -7,8 +7,6 @@ import type { RentalRecord, RentalDetail } from '../types/rental';
 
 interface RentalFormProps {
   onClose: () => void;
-  /** True while the close transition runs — plays the form's exit animation. */
-  leaving?: boolean;
   onSave: (record: RentalRecord) => void;
   initialData?: RentalRecord;
 }
@@ -71,7 +69,7 @@ function FieldError({ message, testId }: { message?: string; testId?: string }) 
   return <p data-testid={testId} className="mt-1.5 text-[12.5px] font-medium text-coral-400">{message}</p>;
 }
 
-export function RentalForm({ onClose, onSave, initialData, leaving = false }: RentalFormProps) {
+export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     mobile_number: initialData?.mobile_number || '',
@@ -98,11 +96,6 @@ export function RentalForm({ onClose, onSave, initialData, leaving = false }: Re
   const [showOldBalanceSection, setShowOldBalanceSection] = useState(
     !!(initialData && initialData.old_balance && !oldBalanceOnly),
   );
-
-  // Opened from a scrolled list — start the form at the top.
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   const oldBalanceValue = parseFloat(formData.old_balance) || 0;
   const includeOldBalance = !oldBalanceOnly && showOldBalanceSection && !!formData.old_balance && oldBalanceStatus === 'pending';
@@ -319,7 +312,7 @@ export function RentalForm({ onClose, onSave, initialData, leaving = false }: Re
   return (
     <div
       data-testid="rental-form-container"
-      className={`kbs-app kbs-grain relative min-h-screen overflow-x-clip ${leaving ? 'kbs-form-out' : 'kbs-form-in'}`}
+      className="kbs-app kbs-grain relative min-h-screen overflow-x-clip"
     >
       <header data-testid="rental-form-header" className="sticky top-0 z-30 bg-night-950/75 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-2xl items-center gap-2 px-3 py-3 sm:px-5">

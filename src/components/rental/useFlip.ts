@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react';
-import { prefersReducedMotion } from './FormMorph';
+import { prefersReducedMotion } from './motion';
 
 /**
  * FLIP: when the list re-renders, every element marked `data-flip="<key>"`
