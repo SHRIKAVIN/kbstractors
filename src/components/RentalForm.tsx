@@ -7,6 +7,8 @@ import type { RentalRecord, RentalDetail } from '../types/rental';
 
 interface RentalFormProps {
   onClose: () => void;
+  /** True while the close transition runs — plays the form's exit animation. */
+  leaving?: boolean;
   onSave: (record: RentalRecord) => void;
   initialData?: RentalRecord;
 }
@@ -69,7 +71,7 @@ function FieldError({ message, testId }: { message?: string; testId?: string }) 
   return <p data-testid={testId} className="mt-1.5 text-[12.5px] font-medium text-coral-400">{message}</p>;
 }
 
-export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
+export function RentalForm({ onClose, onSave, initialData, leaving = false }: RentalFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     mobile_number: initialData?.mobile_number || '',
@@ -315,7 +317,10 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   );
 
   return (
-    <div data-testid="rental-form-container" className="kbs-app kbs-grain relative min-h-screen overflow-x-clip">
+    <div
+      data-testid="rental-form-container"
+      className={`kbs-app kbs-grain relative min-h-screen overflow-x-clip ${leaving ? 'kbs-form-out' : 'kbs-form-in'}`}
+    >
       <header data-testid="rental-form-header" className="sticky top-0 z-30 bg-night-950/75 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-2xl items-center gap-2 px-3 py-3 sm:px-5">
           <button

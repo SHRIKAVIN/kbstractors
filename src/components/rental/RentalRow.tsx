@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { memo, useState, type CSSProperties } from 'react';
 import { ArrowUpRight, Check, ChevronDown, History, Pencil, Trash2 } from 'lucide-react';
 import type { RentalRecord } from '../../types/rental';
 import { formatCurrency } from '../../utils/calculations';
-import { ProgressRing } from './motion';
+import { Burst, ProgressRing, useCountUp } from './motion';
 import { detailAmount, initials, paidPercent, rentalStatus } from './rentalDisplay';
 
 interface RentalRowProps {
@@ -12,6 +12,12 @@ interface RentalRowProps {
   onCollect?: (record: RentalRecord) => void;
   onEdit?: (record: RentalRecord) => void;
   onDelete?: (record: RentalRecord) => void;
+  /** Glow briefly: just saved from the form (after its close transition) or just collected. */
+  highlight?: 'saved' | 'collected' | null;
+  /** Changes on every new highlight, so the same row can glow again. */
+  highlightKey?: number;
+  /** Just became fully paid — pop the badge with a burst. */
+  celebrate?: boolean;
 }
 
 function summary(record: RentalRecord): string {
@@ -21,19 +27,36 @@ function summary(record: RentalRecord): string {
   return `${details.length} உழவு · ${types.join(', ')}`;
 }
 
-export function RentalRow({ record, index, onCollect, onEdit, onDelete }: RentalRowProps) {
+/**
+ * Memoised: the dashboard re-renders on every tap (opening the form, sheets,
+ * toasts); rows only redraw when their own record or highlight changes, so
+ * transitions start without waiting on the whole list.
+ */
+export const RentalRow = memo(function RentalRow({ record, index, onCollect, onEdit, onDelete, highlight = null, highlightKey, celebrate = false }: RentalRowProps) {
   const [open, setOpen] = useState(false);
   const { status, pending } = rentalStatus(record);
   const percent = paidPercent(record);
   const details = record.details ?? [];
   const isPaid = status === 'paid';
+  // Counts down when a collection lands, but doesn't count up on first load.
+  const shownPending = useCountUp(pending, 800, false);
 
   return (
     <article
       data-testid={`rental-card-${index}`}
+      data-flip={`row-${record.id}`}
       className={`kbs-surface group relative animate-rise-in overflow-hidden rounded-[26px] transition-colors ${open ? 'bg-night-800' : ''}`}
       style={{ animationDelay: `${Math.min(index, 10) * 45}ms` }}
     >
+      {highlight && (
+        // Separate layer, so the glow never restarts the row's own entrance animation.
+        <span
+          key={highlightKey}
+          aria-hidden="true"
+          className="kbs-row-flash pointer-events-none absolute inset-0 z-10 rounded-[26px]"
+          style={{ '--flash-delay': highlight === 'saved' ? '480ms' : '0ms' } as CSSProperties}
+        />
+      )}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -53,13 +76,18 @@ export function RentalRow({ record, index, onCollect, onEdit, onDelete }: Rental
 
         <div className="shrink-0 text-right">
           {isPaid ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-pos/10 px-2.5 py-1 text-[12px] font-semibold text-pos">
+            <span
+              className={`relative inline-flex items-center gap-1 rounded-full bg-pos/10 px-2.5 py-1 text-[12px] font-semibold text-pos ${
+                celebrate ? 'kbs-pop' : ''
+              }`}
+            >
+              {celebrate && <Burst key={highlightKey} />}
               <Check className="h-3.5 w-3.5" strokeWidth={3} />
               பெறப்பட்டது
             </span>
           ) : (
             <p data-testid={`pending-cell-${index}`} className="text-[17px] font-semibold leading-tight tracking-tight text-coral-400">
-              {formatCurrency(pending)}
+              {formatCurrency(shownPending)}
             </p>
           )}
           <p className="mt-1 text-[12px] text-fog/35">{formatCurrency(record.total_amount)}</p>
@@ -151,4 +179,4 @@ export function RentalRow({ record, index, onCollect, onEdit, onDelete }: Rental
       </div>
     </article>
   );
-}
+});

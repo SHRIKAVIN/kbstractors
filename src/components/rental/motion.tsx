@@ -1,9 +1,12 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 
-/** Eases a number from its previous value to `target` (counts up on first render). */
-export function useCountUp(target: number, durationMs = 900): number {
-  const [value, setValue] = useState(0);
-  const fromRef = useRef(0);
+/**
+ * Eases a number from its previous value to `target`. Counts up from 0 on
+ * first render unless `fromZero` is false (then it only animates changes).
+ */
+export function useCountUp(target: number, durationMs = 900, fromZero = true): number {
+  const [value, setValue] = useState(fromZero ? 0 : target);
+  const fromRef = useRef(fromZero ? 0 : target);
 
   useEffect(() => {
     const from = fromRef.current;
@@ -86,3 +89,32 @@ export function haptic(ms = 8) {
     /* unsupported */
   }
 }
+
+const BURST_COLORS = ['rgb(var(--pos))', 'rgb(var(--brand))', 'rgb(var(--coral-400))', '#f5c542'];
+
+/** Small celebratory particle burst (e.g. an entry just became fully paid). */
+export function Burst({ count = 10 }: { count?: number }) {
+  return (
+    <span aria-hidden="true" className="pointer-events-none absolute inset-0 grid place-items-center">
+      {Array.from({ length: count }, (_, i) => {
+        const angle = (i / count) * Math.PI * 2;
+        const distance = 26 + (i % 3) * 8;
+        return (
+          <span
+            key={i}
+            className="kbs-burst absolute h-1.5 w-1.5 rounded-full"
+            style={
+              {
+                background: BURST_COLORS[i % BURST_COLORS.length],
+                '--bx': `${Math.cos(angle) * distance}px`,
+                '--by': `${Math.sin(angle) * distance}px`,
+                animationDelay: `${(i % 4) * 18}ms`,
+              } as CSSProperties
+            }
+          />
+        );
+      })}
+    </span>
+  );
+}
+

@@ -130,3 +130,109 @@ html {
     display: none;
   }
 }
+
+/*
+  New-entry form transition (pairs with src/components/rental/FormMorph.tsx).
+  Only transform/opacity are animated — GPU-composited, so it stays smooth in
+  the installed app on iOS and Android. Never put a transform on the form's
+  root: that would turn its position:fixed save bar into an absolutely placed
+  one and send it to the bottom of the page.
+*/
+@keyframes kbs-form-drop {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes kbs-form-rise {
+  from { opacity: 0; transform: translateY(22px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes kbs-form-bar {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The form mounts under the still-growing circle, so these run while it's
+     covered and are mostly settled by the time the cover fades — short
+     delays only, or the screen would look empty for a beat. */
+  .kbs-form-in > header {
+    animation: kbs-form-drop 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .kbs-form-in form > * {
+    animation: kbs-form-rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 200ms;
+  }
+  .kbs-form-in form > *:nth-child(1) { animation-delay: 40ms; }
+  .kbs-form-in form > *:nth-child(2) { animation-delay: 70ms; }
+  .kbs-form-in form > *:nth-child(3) { animation-delay: 100ms; }
+  .kbs-form-in form > *:nth-child(4) { animation-delay: 130ms; }
+  .kbs-form-in form > *:nth-child(5) { animation-delay: 160ms; }
+
+  /* The save bar is fixed to the bottom — slide it up rather than rise in. */
+  .kbs-form-in form > [data-testid='action-buttons'] {
+    animation: kbs-form-bar 480ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
+  }
+
+  .kbs-form-out {
+    opacity: 0;
+    transition: opacity 120ms ease-in;
+  }
+  .kbs-form-out > header {
+    transform: translateY(-10px);
+    transition: transform 120ms ease-in;
+  }
+  .kbs-form-out form > [data-testid='action-buttons'] {
+    transform: translateY(105%);
+    transition: transform 120ms cubic-bezier(0.4, 0, 1, 1);
+  }
+}
+
+/* ── List motion: pull-to-refresh, row highlight, paid burst, row exit ────── */
+
+@keyframes kbs-spin {
+  to { transform: rotate(360deg); }
+}
+
+.kbs-ptr-spin {
+  animation: kbs-spin 700ms linear infinite;
+}
+
+@keyframes kbs-row-flash {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes kbs-burst {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(0.4); }
+}
+
+@keyframes kbs-pop {
+  0% { transform: scale(0.6); }
+  55% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Glow ring + tint on an overlay; only opacity animates (cheap on phones). */
+  .kbs-row-flash {
+    box-shadow: inset 0 0 0 2px rgb(var(--pos) / 0.7);
+    background: radial-gradient(120% 140% at 50% 0%, rgb(var(--pos) / 0.16), transparent 70%);
+    animation: kbs-row-flash 1500ms cubic-bezier(0.22, 1, 0.36, 1) var(--flash-delay, 0ms) both;
+  }
+  .kbs-burst {
+    animation: kbs-burst 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .kbs-pop {
+    animation: kbs-pop 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kbs-burst { display: none; }
+}
+

@@ -12,7 +12,10 @@ import { CollectSheet } from './rental/CollectSheet';
 import { BottomSheet } from './rental/BottomSheet';
 import { FilterSheet } from './rental/FilterSheet';
 import { EMPTY_FILTERS, filterRentals, type RentalFilters } from './rental/rentalFilters';
-import { ProgressRing, useCountUp } from './rental/motion';
+import { ProgressRing, haptic, useCountUp } from './rental/motion';
+import { FormMorph, MORPH_SWAP_MS, prefersReducedMotion, type MorphOrigin, type MorphPhase } from './rental/FormMorph';
+import { PullToRefresh } from './rental/PullToRefresh';
+import { useFlip } from './rental/useFlip';
 import { dayLabel, rentalStatus } from './rental/rentalDisplay';
 import type { RentalRecord } from '../types/rental';
 import { exportToExcel, exportToPDF } from '../utils/export';
@@ -70,6 +73,12 @@ function usePageChrome(mode: 'app' | 'jcb') {
   }, [mode]);
 }
 
+type ToastState = {
+  message: string;
+  tone?: 'ok' | 'delete';
+  action?: { label: string; onClick: () => void };
+};
+
 export function Dashboard() {
   const [currentView, setCurrentView] = useState<'tractor' | 'jcb' | 'users'>('tractor');
   const [records, setRecords] = useState<RentalRecord[]>([]);
@@ -82,8 +91,7 @@ export function Dashboard() {
   const [editRecord, setEditRecord] = useState<RentalRecord | null>(null);
   const [collectRecord, setCollectRecord] = useState<RentalRecord | null>(null);
   const [deleteRecord, setDeleteRecord] = useState<RentalRecord | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
   const stickySentinel = useRef<HTMLDivElement>(null);
   const [stuck, setStuck] = useState(false);
@@ -133,11 +141,88 @@ export function Dashboard() {
     return () => io.disconnect();
   }, [currentView, showForm]);
 
-  const showToast = useCallback((message: string) => {
-    setToast(message);
+  const showToast = useCallback((message: string, opts: Omit<ToastState, 'message'> & { duration?: number } = {}) => {
+    const { duration = 2600, ...rest } = opts;
+    setToast({ message, ...rest });
     clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 2600);
+    toastTimer.current = setTimeout(() => setToast(null), duration);
   }, []);
+
+  // ── Row highlight after save / collect / undo ────────────────────────────
+  const [flash, setFlash] = useState<{ id: string; kind: 'saved' | 'collected'; celebrate: boolean; nonce: number } | null>(null);
+  const flashTimer = useRef<ReturnType<typeof setTimeout>>();
+  const flashRow = useCallback((id: string, kind: 'saved' | 'collected', celebrate = false) => {
+    clearTimeout(flashTimer.current);
+    setFlash({ id, kind, celebrate, nonce: Date.now() });
+    flashTimer.current = setTimeout(() => setFlash(null), 2600);
+  }, []);
+
+  // ── Delete with a 5-second Undo ──────────────────────────────────────────
+  // The row leaves the list straight away; the real delete (and its push
+  // notification) only happens once the Undo window has passed.
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => new Set());
+  const pendingDelete = useRef<{ record: RentalRecord; timer: ReturnType<typeof setTimeout> } | null>(null);
+
+  const unhide = useCallback((id: string) => {
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const commitDelete = useCallback(
+    async (record: RentalRecord) => {
+      try {
+        await rentalService.delete(record);
+        setRecords((prev) => prev.filter((r) => r.id !== record.id));
+      } catch (error) {
+        console.error(error);
+        showToast('நீக்க முடியவில்லை — மீண்டும் முயற்சிக்கவும்');
+      } finally {
+        unhide(record.id);
+      }
+    },
+    [showToast, unhide],
+  );
+
+  const flushPendingDelete = useCallback(() => {
+    const pending = pendingDelete.current;
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    pendingDelete.current = null;
+    void commitDelete(pending.record);
+  }, [commitDelete]);
+
+  // Leaving the screen (or closing the app) mid-window still deletes.
+  const flushRef = useRef(flushPendingDelete);
+  flushRef.current = flushPendingDelete;
+  useEffect(() => () => flushRef.current(), []);
+
+  const undoDelete = useCallback(() => {
+    const pending = pendingDelete.current;
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    pendingDelete.current = null;
+    unhide(pending.record.id);
+    setToast(null);
+    haptic(8);
+    flashRow(pending.record.id, 'collected');
+  }, [unhide, flashRow]);
+
+  // A collection is applied to the list only once its sheet has slid away, so
+  // the row's ring filling and amount counting down actually happen on screen.
+  const pendingCollect = useRef<RentalRecord | null>(null);
+  const closeCollect = () => {
+    setCollectRecord(null);
+    const updated = pendingCollect.current;
+    pendingCollect.current = null;
+    if (!updated) return;
+    setTimeout(() => {
+      setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      flashRow(updated.id, 'collected', rentalStatus(updated).status === 'paid');
+    }, 280);
+  };
 
   const loadRecords = async (opts?: { silent?: boolean }) => {
     if (!opts?.silent) setRefreshing(true);
@@ -168,7 +253,11 @@ export function Dashboard() {
   }, []);
 
   // Everything except the paid/pending status — so the status tabs can show counts.
-  const baseFiltered = useMemo(() => filterRentals(records, { ...filters, status: '' }), [records, filters]);
+  const visibleRecords = useMemo(
+    () => (hiddenIds.size ? records.filter((r) => !hiddenIds.has(r.id)) : records),
+    [records, hiddenIds],
+  );
+  const baseFiltered = useMemo(() => filterRentals(visibleRecords, { ...filters, status: '' }), [visibleRecords, filters]);
 
   const statusCounts = useMemo(() => {
     let paid = 0;
@@ -176,7 +265,11 @@ export function Dashboard() {
     return { '': baseFiltered.length, paid, pending: baseFiltered.length - paid } as Record<string, number>;
   }, [baseFiltered]);
 
-  const filteredRecords = useMemo(() => filterRentals(records, filters), [records, filters]);
+  const filteredRecords = useMemo(() => filterRentals(visibleRecords, filters), [visibleRecords, filters]);
+
+  // Rows glide to their new spots when the list changes (delete, filter, tab).
+  const listRef = useRef<HTMLDivElement>(null);
+  useFlip(listRef, [filteredRecords]);
 
   const groups = useMemo(() => {
     const out: { label: string; items: RentalRecord[] }[] = [];
@@ -208,25 +301,104 @@ export function Dashboard() {
   const advancedFilterCount = (filters.equipment ? 1 : 0) + (filters.oldBalanceStatus ? 1 : 0);
   const tabIndex = STATUS_TABS.findIndex((t) => t.value === filters.status);
 
-  const closeForm = () => {
+  // ── Form open / close transition (see FormMorph) ──────────────────────────
+  const [morph, setMorph] = useState<{ phase: MorphPhase; origin: MorphOrigin } | null>(null);
+  const lastTap = useRef<MorphOrigin>({ x: window.innerWidth / 2, y: window.innerHeight - 60, size: 44 });
+
+  // Remember where the last tap landed so "Edit" grows out of the button pressed.
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      lastTap.current = { x: e.clientX, y: e.clientY, size: 40 };
+    };
+    window.addEventListener('pointerdown', onDown, { passive: true });
+    return () => window.removeEventListener('pointerdown', onDown);
+  }, []);
+
+  const swapTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(swapTimer.current), []);
+
+  const openForm = (record: RentalRecord | null, origin: MorphOrigin = lastTap.current) => {
+    if (morph) return;
+    setEditRecord(record);
+    if (prefersReducedMotion()) {
+      setShowForm(true);
+      return;
+    }
+    haptic(8);
+    setMorph({ phase: 'expand', origin });
+    // Mount the form under the circle while it's still growing, so its content
+    // is already sliding in by the time the cover fades — no blank frame.
+    clearTimeout(swapTimer.current);
+    swapTimer.current = setTimeout(() => setShowForm(true), MORPH_SWAP_MS);
+  };
+
+  // Stable across renders so memoised rows don't redraw when the dashboard does.
+  const openFormRef = useRef(openForm);
+  openFormRef.current = openForm;
+  const editRow = useCallback((r: RentalRecord) => openFormRef.current(r), []);
+
+  const finishCloseForm = () => {
     setShowForm(false);
     setEditRecord(null);
   };
 
-  const confirmDelete = async () => {
-    if (!deleteRecord) return;
-    setDeleting(true);
-    try {
-      await rentalService.delete(deleteRecord);
-      setRecords((prev) => prev.filter((r) => r.id !== deleteRecord.id));
-      setDeleteRecord(null);
-      showToast('பதிவு நீக்கப்பட்டது');
-    } catch (error) {
-      console.error(error);
-      showToast('நீக்க முடியவில்லை — மீண்டும் முயற்சிக்கவும்');
-    } finally {
-      setDeleting(false);
+  const closeForm = () => {
+    if (prefersReducedMotion()) {
+      finishCloseForm();
+      return;
     }
+    setMorph((m) => m ?? { phase: 'conceal', origin: lastTap.current });
+  };
+
+  const onMorphDone = () => {
+    if (!morph) return;
+    switch (morph.phase) {
+      case 'expand':
+        setShowForm(true); // normally already mounted by the swap timer
+        setMorph(null);
+        break;
+      case 'conceal':
+        finishCloseForm();
+        setMorph({ ...morph, phase: 'collapse' });
+        break;
+      default:
+        setMorph(null);
+    }
+  };
+
+  // Always rendered as the FIRST child of whichever fragment Dashboard returns
+  // (list or form), so React keeps the same layer alive across the swap.
+  const morphLayer = morph ? <FormMorph phase={morph.phase} origin={morph.origin} onDone={onMorphDone} /> : null;
+
+  const confirmDelete = () => {
+    const record = deleteRecord;
+    if (!record) return;
+    flushPendingDelete();
+    setDeleteRecord(null);
+    // Let the sheet slide away, then sweep the row out of the list.
+    setTimeout(() => {
+      const hide = () => setHiddenIds((prev) => new Set(prev).add(record.id));
+      const row = document.querySelector<HTMLElement>(`[data-flip="row-${record.id}"]`);
+      if (row && !prefersReducedMotion()) {
+        const sweep = row.animate(
+          [
+            { opacity: 1, transform: 'none' },
+            { opacity: 0, transform: 'translateX(-32px) scale(0.96)' },
+          ],
+          { duration: 260, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' },
+        );
+        sweep.onfinish = hide;
+      } else {
+        hide();
+      }
+      haptic(12);
+      pendingDelete.current = { record, timer: setTimeout(() => flushRef.current(), 5000) };
+      showToast(`${record.name} நீக்கப்பட்டது`, {
+        tone: 'delete',
+        duration: 5000,
+        action: { label: 'Undo', onClick: undoDelete },
+      });
+    }, 240);
   };
 
   if (currentView === 'jcb' && canReadJcb) {
@@ -273,15 +445,20 @@ export function Dashboard() {
 
   if (showForm) {
     return (
-      <RentalForm
-        initialData={editRecord ?? undefined}
-        onClose={closeForm}
-        onSave={(saved) => {
-          setRecords((prev) => (editRecord ? prev.map((r) => (r.id === saved.id ? saved : r)) : [saved, ...prev]));
-          showToast(editRecord ? 'பதிவு புதுப்பிக்கப்பட்டது' : 'புதிய பதிவு சேர்க்கப்பட்டது');
-          closeForm();
-        }}
-      />
+      <>
+        {morphLayer}
+        <RentalForm
+          initialData={editRecord ?? undefined}
+          leaving={morph?.phase === 'conceal'}
+          onClose={closeForm}
+          onSave={(saved) => {
+            setRecords((prev) => (editRecord ? prev.map((r) => (r.id === saved.id ? saved : r)) : [saved, ...prev]));
+            showToast(editRecord ? 'பதிவு புதுப்பிக்கப்பட்டது' : 'புதிய பதிவு சேர்க்கப்பட்டது');
+            flashRow(saved.id, 'saved');
+            closeForm();
+          }}
+        />
+      </>
     );
   }
 
@@ -289,11 +466,16 @@ export function Dashboard() {
 
   return (
     <>
+      {morphLayer}
       <SEO
         title="KBS Tractors - Dashboard"
         description="KBS Tractors - Professional tractor rental and sales management dashboard. Manage equipment, track rentals, and monitor business performance efficiently."
         keywords="KBS Tractors dashboard, KBS management, tractor rental management, equipment tracking, business administration, KBS equipment"
         canonical="https://kbstractors.vercel.app/"
+      />
+      <PullToRefresh
+        onRefresh={() => loadRecords({ silent: true })}
+        disabled={!!morph || showFilters || !!collectRecord || !!deleteRecord || menuOpen}
       />
       <div data-testid="dashboard-container" className="kbs-app kbs-grain relative min-h-screen overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {/* Ambient glow */}
@@ -521,10 +703,10 @@ export function Dashboard() {
               )}
             </div>
           ) : (
-            <div data-testid="rental-list">
+            <div data-testid="rental-list" ref={listRef}>
               {groups.map((group) => (
                 <section key={group.label}>
-                  <h2 className="flex items-center gap-3 pb-3 pt-6 text-[12px] font-medium uppercase tracking-[0.14em] text-fog/40">
+                  <h2 data-flip={`group-${group.label}`} className="flex items-center gap-3 pb-3 pt-6 text-[12px] font-medium uppercase tracking-[0.14em] text-fog/40">
                     {group.label}
                     <span className="h-px flex-1 bg-gradient-to-r from-line/10 to-transparent" />
                     <span className="normal-case tracking-normal text-fog/30">{group.items.length}</span>
@@ -536,15 +718,11 @@ export function Dashboard() {
                         record={record}
                         index={rowIndex++}
                         onCollect={can('tractor', 'collect') || can('tractor', 'update') ? setCollectRecord : undefined}
-                        onEdit={
-                          can('tractor', 'update')
-                            ? (r) => {
-                                setEditRecord(r);
-                                setShowForm(true);
-                              }
-                            : undefined
-                        }
+                        onEdit={can('tractor', 'update') ? editRow : undefined}
                         onDelete={can('tractor', 'delete') ? setDeleteRecord : undefined}
+                        highlight={flash?.id === record.id ? flash.kind : null}
+                        highlightKey={flash?.id === record.id ? flash.nonce : undefined}
+                        celebrate={flash?.id === record.id && flash.celebrate}
                       />
                     ))}
                   </div>
@@ -560,9 +738,9 @@ export function Dashboard() {
         <button
           type="button"
           data-testid="add-record-button"
-          onClick={() => {
-            setEditRecord(null);
-            setShowForm(true);
+          onClick={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            openForm(null, { x: r.left + r.width / 2, y: r.top + r.height / 2, size: r.height });
           }}
           className="kbs-press fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] left-1/2 z-50 inline-flex h-[60px] -translate-x-1/2 items-center gap-2.5 rounded-full bg-brand pl-5 pr-7 text-[15px] font-semibold text-brand-fg shadow-[0_0_0_6px_rgb(var(--brand)/0.1),0_16px_40px_-8px_rgb(var(--brand)/0.55)] hover:bg-brand-hover"
         >
@@ -576,21 +754,38 @@ export function Dashboard() {
         {toast && (
           <div
             role="status"
-            className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-[70] flex -translate-x-1/2 animate-toast-in items-center gap-2.5 whitespace-nowrap rounded-full bg-night-700/95 py-2.5 pl-2.5 pr-4 text-[13.5px] font-medium text-fog shadow-[0_20px_50px_-10px_rgb(var(--shade)/var(--shade-a))] ring-1 ring-line/10 backdrop-blur-xl"
+            key={toast.message}
+            className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-[70] flex max-w-[calc(100vw-2rem)] -translate-x-1/2 animate-toast-in items-center gap-2.5 whitespace-nowrap rounded-full bg-night-700/95 py-2 pl-2.5 pr-2 text-[13.5px] font-medium text-fog shadow-[0_20px_50px_-10px_rgb(var(--shade)/var(--shade-a))] ring-1 ring-line/10 backdrop-blur-xl"
           >
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-brand text-brand-fg">
-              <Check className="h-3.5 w-3.5" strokeWidth={3} />
-            </span>
-            {toast}
+            {toast.tone === 'delete' ? (
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-coral-500 text-white">
+                <Trash2 className="h-3.5 w-3.5" strokeWidth={2.5} />
+              </span>
+            ) : (
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand text-brand-fg">
+                <Check className="h-3.5 w-3.5" strokeWidth={3} />
+              </span>
+            )}
+            <span className="min-w-0 truncate pr-1.5">{toast.message}</span>
+            {toast.action && (
+              <button
+                type="button"
+                data-testid="toast-action"
+                onClick={toast.action.onClick}
+                className="kbs-press shrink-0 rounded-full bg-line/[0.08] px-3.5 py-1.5 text-[13px] font-semibold text-pos ring-1 ring-inset ring-line/10"
+              >
+                {toast.action.label}
+              </button>
+            )}
           </div>
         )}
       </div>
 
       <CollectSheet
         record={collectRecord}
-        onClose={() => setCollectRecord(null)}
+        onClose={closeCollect}
         onCollected={(updated) => {
-          setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+          pendingCollect.current = updated;
         }}
       />
 
@@ -599,20 +794,19 @@ export function Dashboard() {
         onClose={() => setShowFilters(false)}
         filters={filters}
         onApply={setFilters}
-        records={records}
+        records={visibleRecords}
         onExportExcel={exportToExcel}
         onExportPdf={exportToPDF}
       />
 
       <BottomSheet
         open={!!deleteRecord}
-        onClose={() => !deleting && setDeleteRecord(null)}
+        onClose={() => setDeleteRecord(null)}
         footer={
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setDeleteRecord(null)}
-              disabled={deleting}
               className="kbs-press flex-1 rounded-2xl bg-line/[0.06] py-4 text-[14px] font-medium text-fog/75"
             >
               வேண்டாம்
@@ -620,18 +814,11 @@ export function Dashboard() {
             <button
               type="button"
               data-testid="confirm-delete-button"
-              onClick={() => void confirmDelete()}
-              disabled={deleting}
-              className="kbs-press flex flex-1 items-center justify-center gap-2 rounded-2xl bg-coral-500 py-4 text-[14px] font-semibold text-white disabled:opacity-60"
+              onClick={confirmDelete}
+              className="kbs-press flex flex-1 items-center justify-center gap-2 rounded-2xl bg-coral-500 py-4 text-[14px] font-semibold text-white"
             >
-              {deleting ? (
-                <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4" />
-                  நீக்கு
-                </>
-              )}
+              <Trash2 className="h-4 w-4" />
+              நீக்கு
             </button>
           </div>
         }
@@ -646,7 +833,7 @@ export function Dashboard() {
               {deleteRecord.name} · {formatCurrency(deleteRecord.total_amount)}
             </p>
           )}
-          <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-fog/40">இந்தப் பதிவு நிரந்தரமாக நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</p>
+          <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-fog/40">நீக்கிய பின் 5 விநாடிகளுக்குள் Undo அழுத்தி திரும்பப் பெறலாம்.</p>
         </div>
       </BottomSheet>
     </>
