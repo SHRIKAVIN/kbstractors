@@ -10,12 +10,14 @@ import type { JCBRecord } from '../types/jcb';
 import { formatCurrency } from '../utils/jcb-calculations';
 import { getJCBPending } from '../utils/pending';
 import { RECORDS_CHANGED_EVENT } from '../lib/liveEvents';
+import { useAuth } from '../hooks/useAuth';
 
 interface JCBDashboardProps {
   onBackToTractor: () => void;
 }
 
 export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
+  const { can } = useAuth();
   const [records, setRecords] = useState<JCBRecord[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<JCBRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -231,6 +233,7 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
                   <RefreshCw data-testid="jcb-refresh-icon" className="w-5 h-5" />
                 )}
               </button>
+              {can('jcb', 'create') && (
               <button
                 data-testid="jcb-add-record-button"
                 onClick={() => setShowForm(true)}
@@ -239,6 +242,7 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
                 <Plus data-testid="jcb-add-icon" className="w-4 h-4 mr-2" />
                 <span data-testid="jcb-add-button-text">புதிய JCB பதிவு</span>
               </button>
+              )}
             </div>
           </div>
         </div>
@@ -360,7 +364,11 @@ export function JCBDashboard({ onBackToTractor }: JCBDashboardProps) {
         </div>
 
         {/* JCB Data Table */}
-        <JCBDataTable records={filteredRecords} onEdit={handleEdit} onDelete={handleDelete} />
+        <JCBDataTable
+          records={filteredRecords}
+          onEdit={can('jcb', 'update') ? handleEdit : undefined}
+          onDelete={can('jcb', 'delete') ? handleDelete : undefined}
+        />
       </div>
     </div>
 

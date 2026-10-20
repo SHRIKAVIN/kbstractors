@@ -14,14 +14,23 @@ function headerValue(headers: Record<string, unknown> | undefined, name: string)
   return '';
 }
 
-function readJsonBody(req: { body?: unknown }): { title?: string; body?: string; notification_id?: string } {
+type PushRequestBody = {
+  title?: string;
+  body?: string;
+  notification_id?: string;
+  kind?: string | null;
+  actor_id?: string | null;
+  exclude_endpoint?: string | null;
+};
+
+function readJsonBody(req: { body?: unknown }): PushRequestBody {
   const raw = req.body;
   if (raw && typeof raw === 'object' && !Buffer.isBuffer(raw)) {
-    return raw as { title?: string; body?: string; notification_id?: string };
+    return raw as PushRequestBody;
   }
   if (typeof raw === 'string') {
     try {
-      return JSON.parse(raw) as { title?: string; body?: string; notification_id?: string };
+      return JSON.parse(raw) as PushRequestBody;
     } catch {
       return {};
     }
@@ -63,6 +72,8 @@ export default async function handler(req: any, res: any) {
 
   const pushSecret = headerValue(req.headers, 'x-push-secret');
   const webhookOk = Boolean(webhookSecret && pushSecret && pushSecret === webhookSecret);
+  // A signed-in caller (the "send test" button) only ever reaches their own devices.
+  let callerId: string | undefined;
 
   if (!webhookOk) {
     if (!supabaseAnonKey) {
@@ -79,16 +90,30 @@ export default async function handler(req: any, res: any) {
     if (userErr || !userData?.user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+    callerId = userData.user.id;
   }
 
-  const { title, body, notification_id } = readJsonBody(req);
+  const { title, body, notification_id, kind, actor_id, exclude_endpoint } = readJsonBody(req);
   if (!title || !body) {
     return res.status(400).json({ error: 'title and body are required.' });
   }
 
   try {
     const admin = createClient(supabaseUrl, serviceRoleKey);
-    const result = await sendPushToAllSubscriptions(admin, vapid, title, body, notification_id);
+    const result = await sendPushToAllSubscriptions(
+      admin,
+      vapid,
+      title,
+      body,
+      notification_id,
+      callerId
+        ? { onlyUserId: callerId }
+        : {
+            kind: kind || undefined,
+            excludeUserId: actor_id || undefined,
+            excludeEndpoint: exclude_endpoint || undefined,
+          },
+    );
     return res.status(200).json({ ok: true, ...result });
   } catch (err: any) {
     return res.status(500).json({ error: err?.message || 'Failed to send push.' });

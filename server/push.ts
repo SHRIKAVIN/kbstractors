@@ -1,5 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import webpush from 'web-push';
+import {
+  NOTIFICATION_SETTINGS_KEY,
+  notificationTypeForKind,
+  resolveNotificationSettings,
+  sanitizeNotifications,
+  type NotificationSettings,
+} from '../src/lib/userAccess.js';
 
 export type VapidConfig = {
   publicKey: string;
@@ -57,21 +64,90 @@ async function attemptSend(
   }
 }
 
+export type PushTargeting = {
+  /** Skip this one device (the one that caused the notification). */
+  excludeEndpoint?: string;
+  /** Skip every device of the user who caused the notification. */
+  excludeUserId?: string;
+  /** app_notifications.kind — decides which per-user switch applies. */
+  kind?: string;
+  /** Only this user's devices, ignoring every switch (test push). */
+  onlyUserId?: string;
+};
+
+/** Business-wide switches; both on if the row is missing or unreadable. */
+export async function loadNotificationSettings(admin: SupabaseClient): Promise<NotificationSettings> {
+  const { data, error } = await admin
+    .from('app_settings')
+    .select('value')
+    .eq('key', NOTIFICATION_SETTINGS_KEY)
+    .maybeSingle();
+  // Before the user-control migration runs the table doesn't exist — keep notifying.
+  if (error) return resolveNotificationSettings(null);
+  return resolveNotificationSettings(data?.value);
+}
+
+type PushRecipient = { loginEnabled: boolean; notifications: Set<string> };
+
+/** null when app_users can't be read (migration not applied yet) — then nobody is filtered out. */
+async function loadPushRecipients(admin: SupabaseClient): Promise<Map<string, PushRecipient> | null> {
+  const { data, error } = await admin.from('app_users').select('id, login_enabled, notifications');
+  if (error) {
+    console.warn('Could not load app_users for push targeting:', error.message);
+    return null;
+  }
+  return new Map(
+    ((data ?? []) as { id: string; login_enabled: boolean | null; notifications: unknown }[]).map((row) => [
+      row.id,
+      { loginEnabled: row.login_enabled !== false, notifications: new Set<string>(sanitizeNotifications(row.notifications)) },
+    ]),
+  );
+}
+
 export async function sendPushToAllSubscriptions(
   admin: SupabaseClient,
   vapid: VapidConfig,
   title: string,
   body: string,
   notificationId?: string,
-): Promise<{ sent: number; total: number; results: SendOutcome[] }> {
+  options?: PushTargeting,
+): Promise<{ sent: number; total: number; results: SendOutcome[]; skipped?: string }> {
   webpush.setVapidDetails(vapid.subject, vapid.publicKey, vapid.privateKey);
 
-  const { data: subs, error } = await admin
+  const { data: allSubs, error } = await admin
     .from('push_subscriptions')
-    .select('endpoint, p256dh, auth');
+    .select('endpoint, p256dh, auth, user_id');
 
   if (error) throw error;
-  if (!subs?.length) return { sent: 0, total: 0, results: [] };
+
+  let subs = allSubs ?? [];
+  if (options?.onlyUserId) {
+    // A test push goes to the caller's own devices, whatever the switches say.
+    subs = subs.filter((sub) => sub.user_id === options.onlyUserId);
+  } else {
+    const settings = await loadNotificationSettings(admin);
+    const type = notificationTypeForKind(options?.kind);
+    if (!settings.push) return { sent: 0, total: 0, results: [], skipped: 'push turned off' };
+    if (type === 'reminders' && !settings.reminders) {
+      return { sent: 0, total: 0, results: [], skipped: 'reminders turned off' };
+    }
+    const users = await loadPushRecipients(admin);
+    subs = subs.filter((sub) => {
+      // The device that made the change already knows about it.
+      if (options?.excludeEndpoint && sub.endpoint === options.excludeEndpoint) return false;
+      // Subscriptions saved before User control existed have no user yet;
+      // they get one the next time that device opens the app.
+      if (!sub.user_id) return true;
+      // Never push someone their own change, on any of their devices.
+      if (options?.excludeUserId && sub.user_id === options.excludeUserId) return false;
+      if (!users) return true;
+      const user = users.get(sub.user_id as string);
+      if (!user || !user.loginEnabled) return false;
+      if (type && !user.notifications.has(type)) return false;
+      return true;
+    });
+  }
+  if (!subs.length) return { sent: 0, total: 0, results: [] };
 
   const payload = JSON.stringify({
     id: notificationId,

@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'node:crypto';
-import { readVapidConfig } from '../server/push.js';
+import { loadNotificationSettings, readVapidConfig } from '../server/push.js';
 import { getRentalPending, getJCBPending } from '../src/utils/pending.js';
 import { formatCurrency } from '../src/utils/calculations.js';
 
@@ -63,6 +63,14 @@ export default async function handler(req: any, res: any) {
   }
 
   const admin = createClient(supabaseUrl, serviceRoleKey);
+
+  // Switched off on User control: skip entirely, so nothing is marked as sent
+  // and no backlog piles up for when it's switched back on.
+  const settings = await loadNotificationSettings(admin);
+  if (!settings.push || !settings.reminders) {
+    return res.status(200).json({ ok: true, skipped: 'Pending reminders are turned off.' });
+  }
+
   const now = new Date();
   const cutoff = new Date(now.getTime() - DEADLINE_DAYS * 86400000).toISOString();
 

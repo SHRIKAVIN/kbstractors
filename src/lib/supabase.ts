@@ -84,6 +84,31 @@ export const rentalService = {
     return data;
   },
 
+  // Record a payment against an entry: adds to received_amount (capped at
+  // what's still pending). Paying off an old-balance-only entry also flips
+  // its old_balance_status, matching what the form saves for a paid one.
+  async collect(record: RentalRecord, amount: number) {
+    const { amount: pending } = getRentalPending(record);
+    const collected = Math.min(Math.max(amount, 0), pending);
+    const received = (record.received_amount || 0) + collected;
+    const updates: Partial<RentalRecord> = { received_amount: received };
+    const isOldBalanceOnly = (!record.details || record.details.length === 0) && !!record.old_balance;
+    if (isOldBalanceOnly && received >= record.total_amount) {
+      updates.old_balance_status = 'paid';
+    }
+
+    const { data, error } = await supabase
+      .from('rental_records')
+      .update(updates)
+      .eq('id', record.id)
+      .select()
+      .single();
+    if (error) throw error;
+    const { amount: stillPending } = getRentalPending(data);
+    notifyCrud('collected', 'rental', data.name, data.total_amount, stillPending, collected);
+    return data as RentalRecord;
+  },
+
   // Delete a rental record
   async delete(record: RentalRecord) {
     const { error } = await supabase

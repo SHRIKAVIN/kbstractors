@@ -1,3 +1,123 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+  Tractor-screen palette (space-separated RGB for Tailwind opacity modifiers).
+  Light by default; follows the device into dark mode. Brand green is taken
+  from the KBS logo (#1E4A3C), lifted a little in dark mode so it still reads
+  on near-black.
+*/
+:root {
+  --night-950: 241 244 240;
+  --night-900: 255 255 255;
+  --night-850: 255 255 255;
+  --night-800: 247 249 246;
+  --night-700: 255 255 255;
+  --night-600: 226 231 225;
+  --fog: 14 27 23;
+  --line: 14 27 23;
+  --brand: 30 74 60;
+  --brand-hover: 22 58 47;
+  --brand-fg: 255 255 255;
+  --pos: 28 112 82;
+  --coral-300: 184 66 22;
+  --coral-400: 204 78 28;
+  --coral-500: 222 92 40;
+  --shade: 14 27 23;
+  --shade-a: 0.16;
+  --card-shadow: 0 1px 2px rgb(14 27 23 / 0.04), 0 10px 30px -14px rgb(14 27 23 / 0.16);
+  --grain-opacity: 0.035;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --night-950: 7 14 12;
+    --night-900: 12 22 19;
+    --night-850: 16 28 24;
+    --night-800: 21 35 30;
+    --night-700: 28 45 39;
+    --night-600: 40 60 52;
+    --fog: 233 240 236;
+    --line: 255 255 255;
+    --brand: 38 96 77;
+    --brand-hover: 46 112 90;
+    --brand-fg: 255 255 255;
+    --pos: 126 208 168;
+    --coral-300: 255 179 143;
+    --coral-400: 255 145 97;
+    --coral-500: 240 108 62;
+    --shade: 0 0 0;
+    --shade-a: 0.8;
+    --card-shadow: none;
+    --grain-opacity: 0.05;
+  }
+}
+
+@layer components {
+  /* Scoped to the tractor screens so the JCB screens keep their current look. */
+  .kbs-app {
+    @apply bg-night-950 font-app text-fog antialiased;
+    color-scheme: light dark;
+    font-variant-numeric: tabular-nums;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Film-grain overlay — keeps the flat blacks from looking digital. */
+  .kbs-grain::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .kbs-app input[type='number']::-webkit-outer-spin-button,
+  .kbs-app input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .kbs-app input[type='number'] {
+    -moz-appearance: textfield;
+  }
+
+  .kbs-surface {
+    @apply bg-night-850 ring-1 ring-inset ring-line/[0.06];
+    box-shadow: var(--card-shadow);
+  }
+
+  .kbs-field {
+    @apply w-full rounded-2xl bg-line/[0.04] px-4 py-3.5 text-[15px] font-medium text-fog ring-1 ring-inset ring-line/10
+      placeholder:font-normal placeholder:text-fog/30 outline-none transition
+      focus:bg-line/[0.06] focus:ring-2 focus:ring-pos/60;
+  }
+
+  .kbs-field-error {
+    @apply ring-coral-500/70 focus:ring-coral-500/70;
+  }
+
+  .kbs-label {
+    @apply mb-2 block text-[12.5px] font-medium tracking-wide text-fog/50;
+  }
+
+  .kbs-press {
+    @apply transition duration-150 active:scale-[0.96];
+  }
+
+  .kbs-shimmer-text {
+    @apply animate-shimmer bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, rgb(var(--fog) / 0.4) 0%, rgb(var(--fog) / 0.4) 40%, rgb(var(--fog)) 50%, rgb(var(--fog) / 0.4) 60%, rgb(var(--fog) / 0.4) 100%);
+    background-size: 200% 100%;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

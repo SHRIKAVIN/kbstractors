@@ -1,8 +1,9 @@
 import { formatCurrency } from '../utils/calculations';
 import { insertAppNotification } from './appNotify';
 import { broadcastAlert } from './alertBus';
+import { getCurrentPushEndpoint } from './webPush';
 
-export type CrudAction = 'created' | 'updated' | 'deleted';
+export type CrudAction = 'created' | 'updated' | 'deleted' | 'collected';
 export type CrudEntity = 'rental' | 'jcb';
 
 const ENTITY_LABEL: Record<CrudEntity, string> = {
@@ -16,10 +17,22 @@ function buildMessage(
   payerName: string,
   totalAmount: number,
   pendingAmount: number,
+  collectedAmount = 0,
 ): { title: string; body: string; kind: string } {
   const label = ENTITY_LABEL[entity];
   const name = payerName || 'Unknown';
   const kind = `${entity}_${action}`;
+
+  if (action === 'collected') {
+    return {
+      title: 'Payment collected',
+      body:
+        pendingAmount > 0
+          ? `${name} — ${formatCurrency(collectedAmount)} collected, ${formatCurrency(pendingAmount)} still pending`
+          : `${name} — ${formatCurrency(collectedAmount)} collected, fully paid`,
+      kind,
+    };
+  }
 
   if (action === 'deleted') {
     return {
@@ -48,7 +61,9 @@ function buildMessage(
  * /api/send-push server-to-server via pg_net, which reaches every device in
  * push_subscriptions — reliable even if this client closes immediately after
  * the insert, unlike a client-side fetch (same pattern as expense-manager's
- * partner_notification_push trigger: "do not also invoke here"). Realtime
+ * partner_notification_push trigger: "do not also invoke here"). This
+ * device's own push endpoint is stored on the row so the server skips it —
+ * you aren't alerted about your own change. Realtime
  * Broadcast + the local CustomEvent just refresh other open dashboards live;
  * they don't show a notification themselves.
  */
@@ -58,6 +73,7 @@ export function notifyCrud(
   payerName: string,
   totalAmount: number,
   pendingAmount: number,
+  collectedAmount?: number,
 ): void {
   void (async () => {
     try {
@@ -68,9 +84,11 @@ export function notifyCrud(
         payerName,
         totalAmount,
         pendingAmount,
+        collectedAmount,
       );
 
-      const row = await insertAppNotification({ id, title, body, kind });
+      const originEndpoint = await getCurrentPushEndpoint();
+      const row = await insertAppNotification({ id, title, body, kind, originEndpoint });
       const alertId = row?.id ?? id;
 
       broadcastAlert({ id: alertId, title, body });

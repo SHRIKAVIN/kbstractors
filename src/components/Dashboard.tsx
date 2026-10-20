@@ -1,47 +1,120 @@
-import { useState, useEffect, useRef } from 'react';
-import { Plus, Download,LogOut, RefreshCw, Truck, Construction } from 'lucide-react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { Plus, LogOut, RefreshCw, Construction, Search, SlidersHorizontal, Tractor, X, Trash2, Check, MoreHorizontal, UserCog, Lock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
 import { RentalForm } from './RentalForm';
-import { DataTable } from './DataTable';
-import { ConfirmDialog } from './ConfirmDialog';
 import { SEO } from './SEO';
 import { JCBDashboard } from './JCBDashboard';
 import { PushToggleButton } from './PushToggleButton';
+import { UserControlScreen } from './userControl/UserControlScreen';
+import { RentalRow } from './rental/RentalRow';
+import { CollectSheet } from './rental/CollectSheet';
+import { BottomSheet } from './rental/BottomSheet';
+import { FilterSheet } from './rental/FilterSheet';
+import { EMPTY_FILTERS, filterRentals, type RentalFilters } from './rental/rentalFilters';
+import { ProgressRing, useCountUp } from './rental/motion';
+import { dayLabel, rentalStatus } from './rental/rentalDisplay';
 import type { RentalRecord } from '../types/rental';
 import { exportToExcel, exportToPDF } from '../utils/export';
 import { formatCurrency } from '../utils/calculations';
 import { getRentalPending } from '../utils/pending';
 import { RECORDS_CHANGED_EVENT } from '../lib/liveEvents';
 
+
+const STATUS_TABS = [
+  { value: '', label: 'அனைத்தும்' },
+  { value: 'pending', label: 'நிலுவை' },
+  { value: 'paid', label: 'பெறப்பட்டது' },
+] as const;
+
+const iconButton =
+  'kbs-press grid h-10 w-10 place-items-center rounded-full bg-line/[0.06] text-fog/80 ring-1 ring-inset ring-line/10 hover:bg-line/10 hover:text-fog';
+
+/**
+ * Paints the browser chrome / overscroll area with the tractor screens' page
+ * colour, re-reading it when the device switches between light and dark.
+ */
+function usePageChrome(active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const prevMeta = meta?.content;
+    const prevBg = document.documentElement.style.backgroundColor;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const apply = () => {
+      const rgb = getComputedStyle(document.documentElement).getPropertyValue('--night-950').trim();
+      const color = `rgb(${rgb.split(/\s+/).join(', ')})`;
+      if (meta) meta.content = color;
+      document.documentElement.style.backgroundColor = color;
+    };
+    apply();
+    media.addEventListener('change', apply);
+    return () => {
+      media.removeEventListener('change', apply);
+      if (meta && prevMeta) meta.content = prevMeta;
+      document.documentElement.style.backgroundColor = prevBg;
+    };
+  }, [active]);
+}
+
 export function Dashboard() {
-  const [currentView, setCurrentView] = useState<'tractor' | 'jcb'>('tractor');
+  const [currentView, setCurrentView] = useState<'tractor' | 'jcb' | 'users'>('tractor');
   const [records, setRecords] = useState<RentalRecord[]>([]);
-  const [filteredRecords, setFilteredRecords] = useState<RentalRecord[]>([]);
-  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({
-    equipment: '',
-    dateFrom: '',
-    dateTo: '',
-    name: '',
-    status: '',
-    oldBalanceStatus: '',
-  });
-  const [editRecord, setEditRecord] = useState<RentalRecord | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filters, setFilters] = useState<RentalFilters>(EMPTY_FILTERS);
   const [showFilters, setShowFilters] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; record: RentalRecord | null }>({ isOpen: false, record: null });
-  const { signOut } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editRecord, setEditRecord] = useState<RentalRecord | null>(null);
+  const [collectRecord, setCollectRecord] = useState<RentalRecord | null>(null);
+  const [deleteRecord, setDeleteRecord] = useState<RentalRecord | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+  const stickySentinel = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+  const { signOut, can, profile } = useAuth();
+  const canReadTractor = can('tractor', 'read');
+  const canReadJcb = can('jcb', 'read');
+
+  // A JCB-only login lands straight on JCB.
+  const routedRef = useRef(false);
+  useEffect(() => {
+    if (routedRef.current || !profile) return;
+    routedRef.current = true;
+    if (!canReadTractor && canReadJcb) setCurrentView('jcb');
+  }, [profile, canReadTractor, canReadJcb]);
+
+  usePageChrome(currentView === 'tractor');
+
+  // The search bar only gets its frosted background once it is pinned to the top.
+  useEffect(() => {
+    const el = stickySentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
+      rootMargin: '-60px 0px 0px 0px',
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [currentView, showForm]);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2600);
+  }, []);
 
   const loadRecords = async (opts?: { silent?: boolean }) => {
-    if (!opts?.silent) setLoading(true);
+    if (!opts?.silent) setRefreshing(true);
     try {
       const data = await rentalService.getAll();
       setRecords(data);
     } catch (error) {
       console.error('Error loading records:', error);
     } finally {
-      if (!opts?.silent) setLoading(false);
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -60,360 +133,483 @@ export function Dashboard() {
     return () => window.removeEventListener(RECORDS_CHANGED_EVENT, onChange);
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [records, filter]);
+  // Everything except the paid/pending status — so the status tabs can show counts.
+  const baseFiltered = useMemo(() => filterRentals(records, { ...filters, status: '' }), [records, filters]);
 
-  const applyFilters = () => {
-    let filtered = records;
+  const statusCounts = useMemo(() => {
+    let paid = 0;
+    for (const r of baseFiltered) if (getRentalPending(r).isPaid) paid += 1;
+    return { '': baseFiltered.length, paid, pending: baseFiltered.length - paid } as Record<string, number>;
+  }, [baseFiltered]);
 
-    if (filter.equipment) {
-      filtered = filtered.filter(record =>
-        Array.isArray(record.details) &&
-        (
-          record.details.some(d => d.equipment_type === filter.equipment) ||
-          (filter.equipment === 'Others' && record.details.some(d => !['Cage Wheel', 'Rotavator', 'புழுதி', 'Mini', 'Dipper'].includes(d.equipment_type)))
-        )
-      );
+  const filteredRecords = useMemo(() => filterRentals(records, filters), [records, filters]);
+
+  const groups = useMemo(() => {
+    const out: { label: string; items: RentalRecord[] }[] = [];
+    for (const r of filteredRecords) {
+      const label = dayLabel(r.created_at);
+      const last = out[out.length - 1];
+      if (last?.label === label) last.items.push(r);
+      else out.push({ label, items: [r] });
     }
+    return out;
+  }, [filteredRecords]);
 
-    if (filter.dateFrom) {
-      filtered = filtered.filter(record => 
-        new Date(record.created_at) >= new Date(filter.dateFrom)
-      );
+  const totals = useMemo(() => {
+    let total = 0;
+    let received = 0;
+    let pending = 0;
+    for (const r of filteredRecords) {
+      total += r.total_amount;
+      received += r.received_amount || 0;
+      pending += rentalStatus(r).pending;
     }
+    return { total, received, pending, progress: total > 0 ? Math.min(100, (received / total) * 100) : 0 };
+  }, [filteredRecords]);
 
-    if (filter.dateTo) {
-      filtered = filtered.filter(record => 
-        new Date(record.created_at) <= new Date(filter.dateTo)
-      );
-    }
+  const animatedPending = useCountUp(loading ? 0 : totals.pending);
+  const animatedTotal = useCountUp(loading ? 0 : totals.total);
+  const animatedReceived = useCountUp(loading ? 0 : totals.received);
 
-    if (filter.name) {
-      filtered = filtered.filter(record => record.name.toLowerCase().includes(filter.name.toLowerCase()));
-    }
+  const advancedFilterCount = (filters.equipment ? 1 : 0) + (filters.oldBalanceStatus ? 1 : 0);
+  const tabIndex = STATUS_TABS.findIndex((t) => t.value === filters.status);
 
-    if (filter.status) {
-      filtered = filtered.filter(record => {
-        const status = getRentalPending(record).isPaid ? 'paid' : 'pending';
-        return status === filter.status;
-      });
-    }
-
-    if (filter.oldBalanceStatus) {
-      filtered = filtered.filter(record => {
-        if (!record.old_balance) return false;
-        return record.old_balance_status === filter.oldBalanceStatus;
-      });
-    }
-
-    setFilteredRecords(filtered);
-  };
-
-  const handleRecordAdded = (newRecord: RentalRecord) => {
-    setRecords(prev => [newRecord, ...prev]);
+  const closeForm = () => {
     setShowForm(false);
-  };
-
-  const handleEdit = (record: RentalRecord) => {
-    setEditRecord(record);
-    setShowForm(true);
-  };
-
-  const handleDelete = async (record: RentalRecord) => {
-    setDeleteDialog({ isOpen: true, record });
+    setEditRecord(null);
   };
 
   const confirmDelete = async () => {
-    if (!deleteDialog.record) return;
-    
+    if (!deleteRecord) return;
+    setDeleting(true);
     try {
-      await rentalService.delete(deleteDialog.record);
-      setRecords(prev => prev.filter(r => r.id !== deleteDialog.record!.id));
-      setDeleteDialog({ isOpen: false, record: null });
+      await rentalService.delete(deleteRecord);
+      setRecords((prev) => prev.filter((r) => r.id !== deleteRecord.id));
+      setDeleteRecord(null);
+      showToast('பதிவு நீக்கப்பட்டது');
     } catch (error) {
-      alert('Failed to delete record from database.');
       console.error(error);
+      showToast('நீக்க முடியவில்லை — மீண்டும் முயற்சிக்கவும்');
+    } finally {
+      setDeleting(false);
     }
   };
 
-  const handleClearFilters = () => {
-    setFilter({ equipment: '', dateFrom: '', dateTo: '', name: '', status: '', oldBalanceStatus: '' });
-  };
-
-  const totalAmount = filteredRecords.reduce((sum, record) => sum + record.total_amount, 0);
-  const totalReceived = filteredRecords.reduce((sum, record) => sum + record.received_amount, 0);
-  const pendingAmount = totalAmount - totalReceived;
-
-  const handleLogout = async () => {
-    await signOut();
-  };
-
-  if (loading) {
-    return (
-      <>
-        <SEO 
-          title="KBS Tractors - Loading Dashboard"
-          description="KBS Tractors - Professional tractor rental and sales management system. Loading your dashboard..."
-        />
-      <div data-testid="dashboard-loading-screen" className="min-h-screen bg-white flex items-center justify-center">
-        <div data-testid="dashboard-loading-content" className="text-center transform hover:scale-105 transition-transform duration-300">
-          <div data-testid="dashboard-loading-spinner" className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4 shadow-2xl"></div>
-          <p data-testid="dashboard-loading-text" className="text-gray-600 font-medium">தகவல்களை ஏற்றுகிறது...</p>
-        </div>
-      </div>
-      </>
-    );
-  }
-
-  // Show JCB Dashboard if current view is JCB
-  if (currentView === 'jcb') {
+  if (currentView === 'jcb' && canReadJcb) {
     return <JCBDashboard onBackToTractor={() => setCurrentView('tractor')} />;
   }
 
-  if (showForm && editRecord) {
-    return <RentalForm onClose={() => { setShowForm(false); setEditRecord(null); }} onSave={async (updated) => {
-      try {
-        // Refetch the updated record from DB (optional, for consistency)
-        setRecords(prev => prev.map(r => r.id === updated.id ? updated : r));
-      } catch (error) {
-        alert('Failed to update record from database.');
-        console.error(error);
-      }
-      setShowForm(false);
-      setEditRecord(null);
-    }} initialData={editRecord} />;
+  if (currentView === 'users' && profile?.isOwner) {
+    return <UserControlScreen onBack={() => setCurrentView('tractor')} />;
   }
+
+  if (!canReadTractor) {
+    return (
+      <div className="kbs-app kbs-grain relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
+        <div className="grid h-20 w-20 place-items-center rounded-full bg-line/[0.05] ring-1 ring-line/10">
+          <Lock className="h-8 w-8 text-fog/40" strokeWidth={1.6} />
+        </div>
+        <h1 className="mt-6 text-[20px] font-semibold tracking-tight">அனுமதி இல்லை</h1>
+        <p className="mt-2 max-w-xs text-[14px] text-fog/50">
+          {profile?.name ? `${profile.name}, ` : ''}இந்தப் பகுதியைப் பார்க்க உங்களுக்கு அனுமதி இல்லை. உரிமையாளரைத் தொடர்பு கொள்ளவும்.
+        </p>
+        <div className="mt-8 flex gap-3">
+          {canReadJcb && (
+            <button
+              type="button"
+              onClick={() => setCurrentView('jcb')}
+              className="kbs-press inline-flex h-12 items-center gap-2 rounded-full bg-brand px-5 text-[14px] font-semibold text-brand-fg"
+            >
+              <Construction className="h-4 w-4" />
+              JCB
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="kbs-press inline-flex h-12 items-center gap-2 rounded-full bg-line/[0.06] px-5 text-[14px] font-medium text-fog/80 ring-1 ring-inset ring-line/10"
+          >
+            <LogOut className="h-4 w-4" />
+            வெளியேறு
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (showForm) {
-    return <RentalForm onClose={() => setShowForm(false)} onSave={handleRecordAdded} />;
+    return (
+      <RentalForm
+        initialData={editRecord ?? undefined}
+        onClose={closeForm}
+        onSave={(saved) => {
+          setRecords((prev) => (editRecord ? prev.map((r) => (r.id === saved.id ? saved : r)) : [saved, ...prev]));
+          showToast(editRecord ? 'பதிவு புதுப்பிக்கப்பட்டது' : 'புதிய பதிவு சேர்க்கப்பட்டது');
+          closeForm();
+        }}
+      />
+    );
   }
+
+  let rowIndex = 0;
 
   return (
     <>
-      <SEO 
+      <SEO
         title="KBS Tractors - Dashboard"
         description="KBS Tractors - Professional tractor rental and sales management dashboard. Manage equipment, track rentals, and monitor business performance efficiently."
         keywords="KBS Tractors dashboard, KBS management, tractor rental management, equipment tracking, business administration, KBS equipment"
         canonical="https://kbstractors.vercel.app/"
       />
-    <div data-testid="dashboard-container" className="min-h-screen bg-white">
-      {/* Header with 3D Effects */}
-      <header data-testid="dashboard-header" className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 shadow-2xl transform-gpu">
-        <div data-testid="header-content" className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-6">
-          <div data-testid="header-main" className="flex flex-col items-center relative">
-            {/* Push Notifications Toggle - Top Left */}
-            <PushToggleButton className="absolute top-0 left-0" />
+      <div data-testid="dashboard-container" className="kbs-app kbs-grain relative min-h-screen overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute -left-32 -top-40 h-[420px] w-[420px] rounded-full bg-pos/[0.13] blur-[100px]" />
+        <div className="pointer-events-none absolute -right-40 top-24 h-[360px] w-[360px] rounded-full bg-coral-500/[0.08] blur-[110px]" />
 
-            {/* JCB Button - Top Right */}
+        <header data-testid="dashboard-header" className="relative z-10 mx-auto max-w-5xl px-5 pt-[calc(1rem+env(safe-area-inset-top))] sm:px-8">
+          <div className="flex items-center gap-3">
+            <img
+              data-testid="header-logo"
+              src="/icons/kbs-tractors-96.png"
+              alt="KBS Tractors"
+              className="h-10 w-10 rounded-full ring-1 ring-line/15"
+            />
+            <div className="min-w-0 flex-1">
+              <h1 data-testid="header-title" className="truncate text-[16px] font-semibold tracking-tight">KBS Tractors</h1>
+              <p className="text-[12px] text-fog/45">வாடகை கணக்கு</p>
+            </div>
+            <PushToggleButton className="!rounded-full !p-[11px] !bg-line/[0.06] !border-line/10 !text-fog/80 hover:!scale-100" />
             <button
-              data-testid="jcb-switch-button"
-              onClick={() => setCurrentView('jcb')}
-              className="absolute top-0 right-0 text-white hover:text-blue-100 bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all duration-200 transform hover:scale-110 hover:shadow-lg backdrop-blur-md border border-white/20"
-              aria-label="Switch to JCB"
+              type="button"
+              data-testid="refresh-button"
+              onClick={() => void loadRecords()}
+              disabled={refreshing}
+              className={iconButton}
+              aria-label="Refresh"
             >
-              <Construction className="w-4 h-4" />
+              <RefreshCw className={`h-[18px] w-[18px] ${refreshing ? 'animate-spin' : ''}`} />
             </button>
-            
-            {/* Logo with 3D Effect */}
-            <div className="relative transform hover:scale-110 transition-all duration-300 hover:rotate-3">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-xl opacity-60 transform scale-110"></div>
-              <img data-testid="header-logo" src="/icons/kbs-tractors-96.png" alt="KBS Tractors Logo" className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-2xl border-4 border-white/20 backdrop-blur-sm" />
+            <div className="relative">
+              <button type="button" onClick={() => setMenuOpen((v) => !v)} className={iconButton} aria-label="More" aria-expanded={menuOpen}>
+                <MoreHorizontal className="h-[18px] w-[18px]" />
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 top-12 z-50 w-56 origin-top-right animate-pop-in overflow-hidden rounded-2xl bg-night-800/95 p-1.5 shadow-[0_20px_60px_-10px_rgb(var(--shade)/var(--shade-a))] ring-1 ring-line/10 backdrop-blur-xl">
+                    {profile && (
+                      <div className="mb-1 border-b border-line/[0.06] px-3 pb-2.5 pt-2">
+                        <p className="truncate text-[14px] font-semibold">{profile.name}</p>
+                        <p className="truncate text-[12px] text-fog/45">@{profile.username}</p>
+                      </div>
+                    )}
+                    {profile?.isOwner && (
+                      <button
+                        type="button"
+                        data-testid="user-control-button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setCurrentView('users');
+                        }}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-fog/85 hover:bg-line/[0.06]"
+                      >
+                        <UserCog className="h-4 w-4 text-fog/50" />
+                        User control
+                      </button>
+                    )}
+                    {canReadJcb && (
+                    <button
+                      type="button"
+                      data-testid="jcb-switch-button"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        setCurrentView('jcb');
+                      }}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-fog/85 hover:bg-line/[0.06]"
+                    >
+                      <Construction className="h-4 w-4 text-fog/50" />
+                      JCB
+                    </button>
+                    )}
+                    <button
+                      type="button"
+                      data-testid="logout-button"
+                      onClick={() => void signOut()}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] text-coral-300 hover:bg-coral-500/10"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      வெளியேறு
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
-            
-            {/* Title with 3D Text Effect */}
-            <div className="mt-3 text-center">
-              <h1 data-testid="header-title" className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-2xl transform hover:scale-105 transition-transform duration-300">
-                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">KBS Tractors</span>
-              </h1>
-              <p data-testid="header-subtitle" className="text-xs sm:text-sm lg:text-base text-blue-100 mt-1 font-medium drop-shadow-lg">நிர்வாக பேனல்</p>
+          </div>
+
+          {/* Hero */}
+          <section className="mt-9 flex items-end justify-between gap-4">
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 text-[13px] text-fog/50">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral-400 opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-coral-400" />
+                </span>
+                மொத்த நிலுவை
+                {refreshing && <RefreshCw className="h-3.5 w-3.5 animate-spin text-fog/40" />}
+              </p>
+              <p data-testid="pending-amount-value" className="mt-3 flex items-baseline font-semibold leading-none tracking-[-0.045em]">
+                <span className="mr-1 text-[28px] font-light text-fog/35">₹</span>
+                <span className="bg-gradient-to-b from-fog to-fog/60 bg-clip-text text-[clamp(44px,13vw,64px)] text-transparent">
+                  {animatedPending.toLocaleString('en-IN')}
+                </span>
+              </p>
             </div>
-            
-            {/* Action Buttons with 3D Card Effect */}
-            <div data-testid="header-actions" className="mt-4 flex flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-xs sm:max-w-sm bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-2 sm:p-3 transform hover:scale-105 transition-all duration-300">
+            <ProgressRing percent={loading ? 0 : totals.progress} size={84} stroke={6}>
+              <div className="text-center leading-none">
+                <p className="text-[19px] font-semibold tracking-tight">{Math.round(totals.progress)}<span className="text-[12px] text-fog/50">%</span></p>
+                <p className="mt-1 text-[9.5px] uppercase tracking-[0.12em] text-fog/40">வசூல்</p>
+              </div>
+            </ProgressRing>
+          </section>
+
+          <dl data-testid="stats-cards" className="mt-8 grid grid-cols-3 gap-px overflow-hidden rounded-3xl bg-line/[0.06] ring-1 ring-inset ring-line/[0.06]">
+            {[
+              { label: 'பதிவுகள்', value: String(filteredRecords.length), testId: 'total-records-value', tone: 'text-fog' },
+              { label: 'மொத்தம்', value: formatCurrency(animatedTotal), testId: 'total-amount-value', tone: 'text-fog' },
+              { label: 'பெறப்பட்டது', value: formatCurrency(animatedReceived), testId: 'total-received-value', tone: 'text-pos' },
+            ].map((s) => (
+              <div key={s.label} className="bg-night-900/80 px-4 py-4 backdrop-blur">
+                <dt className="text-[11.5px] text-fog/45">{s.label}</dt>
+                <dd data-testid={s.testId} className={`mt-1.5 truncate text-[16px] font-semibold tracking-tight ${s.tone}`}>{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </header>
+
+        {/* Search + status — sticks under the status bar */}
+        <div className="fixed inset-x-0 top-0 z-40 h-[env(safe-area-inset-top)] bg-night-950" />
+        <div ref={stickySentinel} className="h-6" />
+        <div
+          className={`sticky top-[env(safe-area-inset-top)] z-30 transition-colors duration-300 ${
+            stuck ? 'bg-night-950/80 shadow-[0_1px_0_rgb(var(--line)/0.08)] backdrop-blur-2xl' : ''
+          }`}
+        >
+          <div className="mx-auto max-w-5xl px-5 pb-3 pt-3 sm:px-8">
+            <div className="flex gap-2">
+              <label className="flex h-12 flex-1 items-center gap-2.5 rounded-full bg-line/[0.05] px-4 ring-1 ring-inset ring-line/[0.08] transition focus-within:bg-line/[0.07] focus-within:ring-pos/50">
+                <Search className="h-[18px] w-[18px] shrink-0 text-fog/40" />
+                <input
+                  data-testid="name-search-input"
+                  type="search"
+                  value={filters.name}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="பெயரைத் தேடு"
+                  className="w-full bg-transparent text-[15px] text-fog outline-none placeholder:text-fog/30 [&::-webkit-search-cancel-button]:hidden"
+                />
+                {filters.name && (
+                  <button type="button" onClick={() => setFilters((prev) => ({ ...prev, name: '' }))} aria-label="Clear search">
+                    <X className="h-4 w-4 text-fog/40" />
+                  </button>
+                )}
+              </label>
               <button
-                data-testid="refresh-button"
-                onClick={() => void loadRecords()}
-                className="flex-1 text-white hover:text-blue-100 p-2 sm:py-3 rounded-xl hover:bg-white/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
-                disabled={loading}
-                aria-label="Refresh"
+                type="button"
+                data-testid="filters-button"
+                onClick={() => setShowFilters(true)}
+                className="kbs-press relative grid h-12 w-12 place-items-center rounded-full bg-line/[0.05] text-fog/70 ring-1 ring-inset ring-line/[0.08]"
+                aria-label="Filters and export"
               >
-                {loading ? (
-                  <span data-testid="refresh-loading-icon" className="animate-spin inline-block"><RefreshCw className="w-5 h-5" /></span>
-                ) : (
-                  <RefreshCw data-testid="refresh-icon" className="w-5 h-5" />
+                <SlidersHorizontal className="h-[18px] w-[18px]" />
+                {advancedFilterCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-5 w-5 place-items-center rounded-full bg-brand text-[10px] font-bold text-brand-fg ring-2 ring-night-950">
+                    {advancedFilterCount}
+                  </span>
                 )}
               </button>
-              <button
-                data-testid="add-record-button"
-                onClick={() => setShowForm(true)}
-                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-3 sm:px-4 py-2 sm:py-3 rounded-xl flex items-center justify-center font-medium text-sm sm:text-base shadow-2xl transform hover:scale-105 hover:shadow-2xl transition-all duration-200 border border-green-400/30"
-              >
-                <Plus data-testid="add-icon" className="w-4 h-4 mr-2" />
-                <span data-testid="add-button-text">புதிய பதிவு</span>
-              </button>
-              <button
-                data-testid="logout-button"
-                onClick={handleLogout}
-                className="flex-1 text-white hover:text-red-100 p-2 sm:py-3 rounded-xl hover:bg-red-500/20 flex items-center justify-center transition-all duration-200 transform hover:scale-110 hover:shadow-lg"
-                aria-label="Logout"
-              >
-                <LogOut data-testid="logout-icon" className="w-5 h-5" />
-              </button>
             </div>
-          </div>
-        </div>
-      </header>
 
-      <div data-testid="dashboard-main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10">
-        {/* Stats Cards with 3D Effects */}
-        <div data-testid="stats-cards" className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 mb-6 sm:mb-8">
-          <div data-testid="total-records-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
-            <div className="relative">
-              <p data-testid="total-records-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">மொத்த பதிவுகள்</p>
-              <p data-testid="total-records-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{filteredRecords.length}</p>
-            </div>
-          </div>
-          
-          <div data-testid="total-amount-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-green-100/50 backdrop-blur-sm relative overflow-hidden">
-            <div className="relative">
-              <p data-testid="total-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">மொத்த தொகை</p>
-              <p data-testid="total-amount-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalAmount)}</p>
-            </div>
-          </div>
-          
-          <div data-testid="total-received-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-blue-100/50 backdrop-blur-sm relative overflow-hidden">
-            <div className="relative">
-              <p data-testid="total-received-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">பெறப்பட்ட தொகை</p>
-              <p data-testid="total-received-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(totalReceived)}</p>
-            </div>
-          </div>
-          
-          <div data-testid="pending-amount-card" className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 lg:p-6 flex flex-col items-center justify-center text-center border border-orange-100/50 backdrop-blur-sm relative overflow-hidden">
-            <div className="relative">
-              <p data-testid="pending-amount-label" className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">நிலுவைத் தொகை</p>
-              <p data-testid="pending-amount-value" className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent tracking-wide drop-shadow-sm">{formatCurrency(pendingAmount)}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Toggle Button - Mobile Only */}
-        <div className="mb-4 flex justify-center md:hidden">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-200"
-          >
-            {showFilters ? (
-              <>
-                <span>Hide Filters</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                </svg>
-              </>
-            ) : (
-              <>
-                <span>Show Filters</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Filters and Export */}
-        <div data-testid="filters-section" className={`bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8 ${showFilters ? 'block' : 'hidden md:block'}`}>
-                      <div data-testid="filters-content" className="flex flex-wrap gap-3 items-center justify-between">
-            <div data-testid="filters-row" className="flex flex-wrap gap-2 sm:gap-3 w-full">
-              <select
-                data-testid="equipment-filter"
-                value={filter.equipment}
-                onChange={(e) => setFilter(prev => ({ ...prev, equipment: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
-              >
-                <option value="">அனைத்து வகைகள்</option>
-                <option value="Cage Wheel">Cage Wheel</option>
-                <option value="Rotavator">Rotavator</option>
-                <option value="Dipper">Dipper</option>
-                <option value="புழுதி">புழுதி</option>
-                <option value="Mini">Mini</option>
-              </select>
-
-              {/* Status Filter */}
-              <select
-                data-testid="status-filter"
-                value={filter.status}
-                onChange={e => setFilter(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
-              >
-                <option value="">அனைத்து நிலைகள்</option>
-                <option value="paid">முழுமையாக பெறப்பட்டது</option>
-                <option value="pending">நிலுவையில்</option>
-              </select>
-
-              {/* Old Balance Status Filter */}
-              <select
-                data-testid="old-balance-status-filter"
-                value={filter.oldBalanceStatus}
-                onChange={e => setFilter(prev => ({ ...prev, oldBalanceStatus: e.target.value }))}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[180px]"
-              >
-                <option value="">பழைய பாக்கி நிலை</option>
-                <option value="paid">பழைய பாக்கி - முழுமையாக பெறப்பட்டது</option>
-                <option value="pending">பழைய பாக்கி - நிலுவையில்</option>
-              </select>
-
-              <input
-                data-testid="name-search-input"
-                type="text"
-                value={filter.name || ''}
-                onChange={e => setFilter(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="Search rental person..."
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px]"
+            <div className="relative mt-3 grid grid-cols-3 rounded-full bg-line/[0.04] p-1 ring-1 ring-inset ring-line/[0.06]">
+              <span
+                className="absolute bottom-1 left-1 top-1 rounded-full bg-fog shadow-[0_4px_20px_-4px_rgb(var(--fog)/0.22)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                style={{ width: 'calc((100% - 0.5rem) / 3)', transform: `translateX(${tabIndex * 100}%)` }}
               />
-              <button
-                data-testid="clear-filters-button"
-                onClick={handleClearFilters}
-                className="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg min-w-[100px]"
-              >
-                Clear Filters
-              </button>
-            </div>
-            <div data-testid="export-buttons" className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-              <button
-                data-testid="export-excel-button"
-                onClick={() => exportToExcel(filteredRecords)}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
-              >
-                <Download data-testid="excel-icon" className="w-4 h-4 mr-2" />
-                <span data-testid="excel-button-text">Excel</span>
-              </button>
-              <button
-                data-testid="export-pdf-button"
-                onClick={() => exportToPDF(filteredRecords)}
-                className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center justify-center"
-              >
-                <Download data-testid="pdf-icon" className="w-4 h-4 mr-2" />
-                <span data-testid="pdf-button-text">PDF</span>
-              </button>
+              {STATUS_TABS.map((tab) => {
+                const active = filters.status === tab.value;
+                return (
+                  <button
+                    key={tab.value || 'all'}
+                    type="button"
+                    data-testid={`status-chip-${tab.value || 'all'}`}
+                    onClick={() => setFilters((prev) => ({ ...prev, status: tab.value }))}
+                    className={`relative z-10 flex items-center justify-center gap-1.5 rounded-full py-2 text-[13px] font-medium transition-colors duration-300 ${
+                      active ? 'text-night-950' : 'text-fog/55'
+                    }`}
+                  >
+                    {tab.label}
+                    <span className={`text-[11px] ${active ? 'text-night-950/50' : 'text-fog/30'}`}>{statusCounts[tab.value]}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Data Table */}
-        <DataTable records={filteredRecords} onEdit={handleEdit} onDelete={handleDelete} />
-      </div>
-    </div>
+        {/* Records */}
+        <main className="relative z-10 mx-auto max-w-5xl px-5 sm:px-8">
+          {loading ? (
+            <div className="mt-4 space-y-3">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="kbs-surface h-[104px] animate-pulse rounded-[26px]" style={{ animationDelay: `${i * 120}ms` }} />
+              ))}
+            </div>
+          ) : filteredRecords.length === 0 ? (
+            <div data-testid="empty-state" className="flex flex-col items-center px-6 py-20 text-center">
+              <div className="grid h-20 w-20 place-items-center rounded-full bg-line/[0.04] ring-1 ring-line/10">
+                <Tractor className="h-9 w-9 text-fog/40" strokeWidth={1.5} />
+              </div>
+              <h3 className="mt-5 text-[18px] font-semibold tracking-tight">பதிவுகள் இல்லை</h3>
+              <p className="mt-1.5 max-w-xs text-[14px] text-fog/45">
+                {records.length ? 'இந்த வடிகட்டிக்குப் பொருந்தும் பதிவுகள் இல்லை' : 'முதல் வாடகை பதிவைச் சேர்க்கவும்'}
+              </p>
+              {records.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setFilters(EMPTY_FILTERS)}
+                  className="kbs-press mt-6 rounded-full bg-line/[0.06] px-5 py-2.5 text-[13px] font-medium text-fog/80 ring-1 ring-inset ring-line/10"
+                >
+                  வடிகட்டிகளை அழி
+                </button>
+              )}
+            </div>
+          ) : (
+            <div data-testid="rental-list">
+              {groups.map((group) => (
+                <section key={group.label}>
+                  <h2 className="flex items-center gap-3 pb-3 pt-6 text-[12px] font-medium uppercase tracking-[0.14em] text-fog/40">
+                    {group.label}
+                    <span className="h-px flex-1 bg-gradient-to-r from-line/10 to-transparent" />
+                    <span className="normal-case tracking-normal text-fog/30">{group.items.length}</span>
+                  </h2>
+                  <div className="grid items-start gap-3 md:grid-cols-2">
+                    {group.items.map((record) => (
+                      <RentalRow
+                        key={record.id}
+                        record={record}
+                        index={rowIndex++}
+                        onCollect={can('tractor', 'collect') || can('tractor', 'update') ? setCollectRecord : undefined}
+                        onEdit={
+                          can('tractor', 'update')
+                            ? (r) => {
+                                setEditRecord(r);
+                                setShowForm(true);
+                              }
+                            : undefined
+                        }
+                        onDelete={can('tractor', 'delete') ? setDeleteRecord : undefined}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+        </main>
 
-    {/* Custom Delete Confirmation Dialog */}
-    <ConfirmDialog
-      isOpen={deleteDialog.isOpen}
-      onClose={() => setDeleteDialog({ isOpen: false, record: null })}
-      onConfirm={confirmDelete}
-      title="kbstractors"
-      message="Are you sure you want to delete this record?"
-      confirmText="Delete"
-      cancelText="Cancel"
-    />
+        {/* New entry */}
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 h-32 bg-gradient-to-t from-night-950 via-night-950/80 to-transparent" />
+        {can('tractor', 'create') && (
+        <button
+          type="button"
+          data-testid="add-record-button"
+          onClick={() => {
+            setEditRecord(null);
+            setShowForm(true);
+          }}
+          className="kbs-press fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] left-1/2 z-50 inline-flex h-[60px] -translate-x-1/2 items-center gap-2.5 rounded-full bg-brand pl-5 pr-7 text-[15px] font-semibold text-brand-fg shadow-[0_0_0_6px_rgb(var(--brand)/0.1),0_16px_40px_-8px_rgb(var(--brand)/0.55)] hover:bg-brand-hover"
+        >
+          <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-fg text-brand">
+            <Plus className="h-[18px] w-[18px]" strokeWidth={2.75} />
+          </span>
+          புதிய பதிவு
+        </button>
+        )}
+
+        {toast && (
+          <div
+            role="status"
+            className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] left-1/2 z-[70] flex -translate-x-1/2 animate-toast-in items-center gap-2.5 whitespace-nowrap rounded-full bg-night-700/95 py-2.5 pl-2.5 pr-4 text-[13.5px] font-medium text-fog shadow-[0_20px_50px_-10px_rgb(var(--shade)/var(--shade-a))] ring-1 ring-line/10 backdrop-blur-xl"
+          >
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-brand text-brand-fg">
+              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+            </span>
+            {toast}
+          </div>
+        )}
+      </div>
+
+      <CollectSheet
+        record={collectRecord}
+        onClose={() => setCollectRecord(null)}
+        onCollected={(updated) => {
+          setRecords((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+        }}
+      />
+
+      <FilterSheet
+        open={showFilters}
+        onClose={() => setShowFilters(false)}
+        filters={filters}
+        onApply={setFilters}
+        records={records}
+        onExportExcel={exportToExcel}
+        onExportPdf={exportToPDF}
+      />
+
+      <BottomSheet
+        open={!!deleteRecord}
+        onClose={() => !deleting && setDeleteRecord(null)}
+        footer={
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setDeleteRecord(null)}
+              disabled={deleting}
+              className="kbs-press flex-1 rounded-2xl bg-line/[0.06] py-4 text-[14px] font-medium text-fog/75"
+            >
+              வேண்டாம்
+            </button>
+            <button
+              type="button"
+              data-testid="confirm-delete-button"
+              onClick={() => void confirmDelete()}
+              disabled={deleting}
+              className="kbs-press flex flex-1 items-center justify-center gap-2 rounded-2xl bg-coral-500 py-4 text-[14px] font-semibold text-white disabled:opacity-60"
+            >
+              {deleting ? (
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  நீக்கு
+                </>
+              )}
+            </button>
+          </div>
+        }
+      >
+        <div className="flex flex-col items-center pb-2 pt-4 text-center">
+          <div className="grid h-16 w-16 place-items-center rounded-full bg-coral-500/10 ring-1 ring-coral-500/25">
+            <Trash2 className="h-7 w-7 text-coral-400" />
+          </div>
+          <h2 className="mt-5 text-[19px] font-semibold tracking-tight">பதிவை நீக்கவா?</h2>
+          {deleteRecord && (
+            <p className="mt-1.5 text-[14px] text-fog/55">
+              {deleteRecord.name} · {formatCurrency(deleteRecord.total_amount)}
+            </p>
+          )}
+          <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-fog/40">இந்தப் பதிவு நிரந்தரமாக நீக்கப்படும். இதைத் திரும்பப் பெற முடியாது.</p>
+        </div>
+      </BottomSheet>
     </>
   );
 }

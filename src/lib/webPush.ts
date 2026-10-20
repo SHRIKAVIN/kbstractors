@@ -69,6 +69,21 @@ function waitForServiceWorker(timeoutMs = 15000): Promise<ServiceWorkerRegistrat
   });
 }
 
+/**
+ * This device's current Web Push endpoint, or null when it isn't subscribed.
+ * Lets the server skip pushing an alert back to the device that caused it.
+ */
+export async function getCurrentPushEndpoint(): Promise<string | null> {
+  try {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return null;
+    const reg = await navigator.serviceWorker.getRegistration();
+    const sub = await reg?.pushManager?.getSubscription();
+    return sub?.endpoint ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Subscribe this device for Web Push (VAPID) and persist in Supabase. */
 export async function registerWebPushSubscription(userId: string): Promise<void> {
   if (!isSupabaseEnabled()) throw new Error('Supabase is not configured.');

@@ -11,6 +11,7 @@ type PushBody = {
   title?: string;
   body?: string;
   notification_id?: string;
+  exclude_endpoint?: string | null;
 };
 
 async function sendPushToAllSubscriptions(input: {
@@ -19,13 +20,17 @@ async function sendPushToAllSubscriptions(input: {
   title: string;
   body: string;
   notificationId?: string;
+  excludeEndpoint?: string | null;
 }) {
   const admin = createClient(input.supabaseUrl, input.serviceRole);
-  const { data: subs, error } = await admin
+  const { data: allSubs, error } = await admin
     .from("push_subscriptions")
     .select("endpoint, p256dh, auth");
 
   if (error) throw error;
+  const subs = input.excludeEndpoint
+    ? allSubs?.filter((sub) => sub.endpoint !== input.excludeEndpoint)
+    : allSubs;
   if (!subs?.length) {
     return { sent: 0, total: 0, reason: "no subscriptions" as const };
   }
@@ -129,6 +134,7 @@ Deno.serve(async (req) => {
       title,
       body,
       notificationId: payload.notification_id,
+      excludeEndpoint: payload.exclude_endpoint,
     });
 
     return new Response(JSON.stringify(result), {
