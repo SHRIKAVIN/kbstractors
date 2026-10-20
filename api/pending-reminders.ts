@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'node:crypto';
 import { loadNotificationSettings, readVapidConfig } from '../server/push.js';
 import { getRentalPending, getJCBPending } from '../src/utils/pending.js';
-import { formatCurrency } from '../src/utils/calculations.js';
+import { pendingDigest } from '../src/lib/notificationTemplates.js';
 
 function normalizeEnv(value?: string) {
   if (!value) return '';
@@ -13,7 +13,7 @@ const DEADLINE_DAYS = 10;
 // After the first nudge at 10 days overdue, re-nudge weekly (not daily) for as
 // long as the record stays unpaid.
 const REMINDER_INTERVAL_DAYS = 7;
-const DIGEST_LIST_LIMIT = 6;
+const DIGEST_LIST_LIMIT = 4;
 
 type Overdue = {
   id: string;
@@ -142,23 +142,17 @@ export default async function handler(req: any, res: any) {
     dueToday.sort((a, b) => b.daysOld - a.daysOld);
 
     const totalPending = dueToday.reduce((sum, o) => sum + o.amount, 0);
-    const shown = dueToday.slice(0, DIGEST_LIST_LIMIT);
-    const more = dueToday.length - shown.length;
-
-    const lines = shown.map((o) => {
-      const tag = o.label === 'JCB' ? '[JCB] ' : '';
-      return `${tag}${o.payer} ${formatCurrency(o.amount)} (${o.daysOld}d)`;
-    });
-    if (more > 0) lines.push(`+${more} more`);
-
-    const title = `⏰ ${dueToday.length} pending payment${dueToday.length === 1 ? '' : 's'} — 10+ days overdue`;
-    const body = `${lines.join(' • ')} — Total ${formatCurrency(totalPending)}`;
+    const { title, body } = pendingDigest(
+      dueToday.map((o) => ({ entity: o.label === 'JCB' ? 'jcb' : 'rental', name: o.payer, amount: o.amount, daysOld: o.daysOld })),
+      totalPending,
+      DIGEST_LIST_LIMIT,
+    );
 
     const notificationId = randomUUID();
 
     // Insert only — the AFTER INSERT trigger on app_notifications delivers the
     // background Web Push (see 20260813130000_background_push_trigger.sql),
-    // same pattern as notifyCrud(). Also sending it directly here would fire
+    // same pattern as notify() in pushNotify.ts. Also sending it directly here would fire
     // both, delivering two separate push messages for one digest.
     const { error: liveErr } = await admin.from('app_notifications').insert({
       id: notificationId,

@@ -86,7 +86,7 @@ const { error: rowErr } = await admin.from('app_users').upsert({
     tractor: ['read', 'create', 'update', 'delete', 'collect'],
     jcb: ['read', 'create', 'update', 'delete'],
   },
-  notifications: ['tractor', 'collection', 'jcb', 'reminders', 'session'],
+  notifications: ['tractor', 'collection', 'jcb', 'reminders', 'summary', 'session'],
 });
 if (rowErr) {
   console.error('Could not save the owner row — did you apply the user-control migration?', rowErr.message);

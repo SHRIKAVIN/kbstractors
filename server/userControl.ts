@@ -1,7 +1,7 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from 'node:crypto';
 import {
-  ALL_NOTIFICATIONS,
+  DEFAULT_USER_NOTIFICATIONS,
   FULL_ACCESS,
   NOTIFICATION_SETTINGS_KEY,
   USERNAME_RULE,
@@ -15,6 +15,7 @@ import {
   type NotificationType,
   type UserAccess,
 } from '../src/lib/userAccess.js';
+import { sessionEvent } from '../src/lib/notificationTemplates.js';
 import { loadNotificationSettings } from './push.js';
 
 // Logins created here never see their email — they sign in with a username,
@@ -292,7 +293,7 @@ export async function createUser(
     name,
     phone: input.phone?.trim() || null,
     access: sanitizeAccess(input.access),
-    notifications: input.notifications === undefined ? ALL_NOTIFICATIONS : sanitizeNotifications(input.notifications),
+    notifications: input.notifications === undefined ? DEFAULT_USER_NOTIFICATIONS : sanitizeNotifications(input.notifications),
   });
   if (rowErr) {
     await admin.auth.admin.deleteUser(data.user.id);
@@ -429,14 +430,12 @@ export async function recordSession(
   const { data: me } = await admin.from('app_users').select('id, name').eq('id', authUser.id).maybeSingle();
   if (!me) return;
   const device = parseDeviceLabel(userAgent);
-  const verb = event === 'login' ? 'signed in' : 'signed out';
   await audit(admin, { id: me.id, name: me.name }, event === 'login' ? 'LOGIN' : 'LOGOUT', { id: me.id, name: me.name }, { device });
+  const message = sessionEvent(me.name, event, device);
   const { error } = await admin.from('app_notifications').insert({
     actor_name: me.name,
     actor_id: me.id,
-    title: `${me.name} ${verb}`,
-    body: `${me.name} ${verb} on ${device}`,
-    kind: `session_${event}`,
+    ...message,
   });
   if (error) console.warn('Session notification insert failed:', error.message);
 }

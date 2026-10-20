@@ -131,6 +131,9 @@ export async function sendPushToAllSubscriptions(
     if (type === 'reminders' && !settings.reminders) {
       return { sent: 0, total: 0, results: [], skipped: 'reminders turned off' };
     }
+    if (type === 'summary' && !settings.summary) {
+      return { sent: 0, total: 0, results: [], skipped: 'daily summary turned off' };
+    }
     const users = await loadPushRecipients(admin);
     subs = subs.filter((sub) => {
       // The device that made the change already knows about it.

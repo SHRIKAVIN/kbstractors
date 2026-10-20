@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 import type { JCBRecord } from '../types/jcb';
-import { notifyCrud } from './pushNotify';
-import { getJCBPending } from '../utils/pending';
+import { currentActor, jcbSnapshot, notify } from './pushNotify';
+import { entryCreated, entryDeleted, entryEdited } from './notificationTemplates';
 
 // Database operations using Supabase for JCB
 export const jcbService = {
@@ -13,8 +13,7 @@ export const jcbService = {
       .single();
 
     if (error) throw error;
-    const { amount } = getJCBPending(data);
-    notifyCrud('created', 'jcb', data.driver_name || data.company_name, data.total_amount, amount);
+    notify(entryCreated(jcbSnapshot(data), currentActor()));
     return data;
   },
 
@@ -53,6 +52,8 @@ export const jcbService = {
 
   // Update a JCB record by id
   async update(id: string, updates: Partial<JCBRecord>) {
+    // The "before" copy lets the notification say exactly what changed.
+    const { data: before } = await supabase.from('jcb_records').select('*').eq('id', id).maybeSingle();
     const { data, error } = await supabase
       .from('jcb_records')
       .update(updates)
@@ -60,8 +61,7 @@ export const jcbService = {
       .select()
       .single();
     if (error) throw error;
-    const { amount } = getJCBPending(data);
-    notifyCrud('updated', 'jcb', data.driver_name || data.company_name, data.total_amount, amount);
+    notify(before ? entryEdited(jcbSnapshot(before), jcbSnapshot(data), currentActor()) : null);
     return data;
   },
 
@@ -72,8 +72,7 @@ export const jcbService = {
       .delete()
       .eq('id', record.id);
     if (error) throw error;
-    const { amount } = getJCBPending(record);
-    notifyCrud('deleted', 'jcb', record.driver_name || record.company_name, record.total_amount, amount);
+    notify(entryDeleted(jcbSnapshot(record), currentActor()));
     return true;
   }
 };

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, createContext, useContext, ReactNode 
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 import { recordSessionEvent } from '../lib/userControlApi';
+import { setNotificationActor } from '../lib/pushNotify';
 import {
   FULL_ACCESS,
   isValidUsername,
@@ -113,6 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
+    setNotificationActor(null);
   }, []);
 
   useEffect(() => {
@@ -149,6 +151,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
       setProfile(next);
+      setNotificationActor(next?.name ?? null);
       setLoading(false);
     };
 

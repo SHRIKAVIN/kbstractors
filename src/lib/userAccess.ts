@@ -38,9 +38,10 @@ export const FULL_ACCESS: UserAccess = {
 
 export const NOTIFICATION_TYPES = [
   { id: 'tractor', label: 'Tractor entries', help: 'Added, edited or deleted' },
-  { id: 'collection', label: 'Collections', help: 'Payment collected on a tractor entry' },
+  { id: 'collection', label: 'Collections', help: 'Payment collected or reduced on a tractor entry' },
   { id: 'jcb', label: 'JCB entries', help: 'Added, edited or deleted' },
   { id: 'reminders', label: 'Pending reminders', help: 'Daily digest of entries pending 10+ days' },
+  { id: 'summary', label: 'Daily summary', help: "9:30 PM wrap-up: today's collections, new entries, pending" },
   { id: 'session', label: 'Sign in / sign out', help: 'When any user signs in or out' },
 ] as const;
 
@@ -48,10 +49,14 @@ export type NotificationType = (typeof NOTIFICATION_TYPES)[number]['id'];
 
 export const ALL_NOTIFICATIONS: NotificationType[] = NOTIFICATION_TYPES.map((n) => n.id);
 
+/** New logins start with everything except the business-wide daily summary (owner opts them in). */
+export const DEFAULT_USER_NOTIFICATIONS: NotificationType[] = ALL_NOTIFICATIONS.filter((id) => id !== 'summary');
+
 /** Maps an app_notifications.kind to the per-user notification switch that governs it. */
 export function notificationTypeForKind(kind: string | null | undefined): NotificationType | null {
   if (!kind) return null;
-  if (kind === 'rental_collected') return 'collection';
+  if (kind === 'rental_collected' || kind === 'rental_payment_reduced') return 'collection';
+  if (kind === 'daily_summary') return 'summary';
   if (kind.startsWith('rental_')) return 'tractor';
   if (kind.startsWith('jcb_')) return 'jcb';
   if (kind === 'pending_digest') return 'reminders';
@@ -65,11 +70,13 @@ export interface NotificationSettings {
   push: boolean;
   /** The daily pending-payment digest. */
   reminders: boolean;
+  /** The 9:30 PM daily summary. */
+  summary: boolean;
 }
 
 export const NOTIFICATION_SETTINGS_KEY = 'notifications.global';
 
-export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = { push: true, reminders: true };
+export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = { push: true, reminders: true, summary: true };
 
 /**
  * Anything missing or unreadable resolves to ON — a corrupted row must never
@@ -81,6 +88,7 @@ export function resolveNotificationSettings(value: unknown): NotificationSetting
   return {
     push: typeof v.push === 'boolean' ? v.push : DEFAULT_NOTIFICATION_SETTINGS.push,
     reminders: typeof v.reminders === 'boolean' ? v.reminders : DEFAULT_NOTIFICATION_SETTINGS.reminders,
+    summary: typeof v.summary === 'boolean' ? v.summary : DEFAULT_NOTIFICATION_SETTINGS.summary,
   };
 }
 

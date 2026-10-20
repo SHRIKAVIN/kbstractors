@@ -5,7 +5,7 @@ import { Toggle } from './Toggle';
 import {
   ACCESS_SECTIONS,
   ACTION_LABEL,
-  ALL_NOTIFICATIONS,
+  DEFAULT_USER_NOTIFICATIONS,
   NOTIFICATION_TYPES,
   SECTION_ACTIONS,
   isValidUsername,
@@ -73,7 +73,7 @@ export function UserSheet({ target, sessions, isSelf, onClose, onSaved }: UserSh
     setPassword('');
     setShowPassword(false);
     setAccess(row ? row.access : DEFAULT_NEW_ACCESS);
-    setNotifications(row ? row.notifications : ALL_NOTIFICATIONS);
+    setNotifications(row ? row.notifications : DEFAULT_USER_NOTIFICATIONS);
     setLoginEnabled(row?.loginEnabled ?? true);
     setStored(undefined);
     setBusy(null);

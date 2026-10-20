@@ -16,6 +16,10 @@ const SETTINGS_COPY: Record<keyof NotificationSettings, { label: string; help: s
     label: 'All notifications',
     help: 'Master switch. Off silences every push, for every user, whatever their own settings say.',
   },
+  summary: {
+    label: 'Daily summary · 9:30 PM',
+    help: "Today's collections, new entries and total pending.",
+  },
   reminders: {
     label: 'Daily pending reminders',
     help: 'The morning digest of entries pending 10+ days.',
@@ -59,7 +63,8 @@ function describeAudit(row: AuditRow): string {
       return `signed ${target} out everywhere`;
     case 'NOTIFICATION_SETTINGS': {
       const d = row.details ?? {};
-      return `turned notifications ${d.push === false ? 'off' : 'on'}${d.push !== false ? `, reminders ${d.reminders === false ? 'off' : 'on'}` : ''}`;
+      if (d.push === false) return 'turned all notifications off';
+      return `turned notifications on · summary ${d.summary === false ? 'off' : 'on'} · reminders ${d.reminders === false ? 'off' : 'on'}`;
     }
     case 'LOGIN':
       return `signed in${row.details?.device ? ` on ${row.details.device}` : ''}`;
@@ -199,18 +204,23 @@ export function UserControlScreen({ onBack }: UserControlScreenProps) {
                     label={SETTINGS_COPY.push.label}
                   />
                 </div>
-                <div className={`mt-4 flex items-center justify-between gap-4 border-t border-line/[0.06] pt-4 ${data.settings.push ? '' : 'opacity-40'}`}>
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-medium">{SETTINGS_COPY.reminders.label}</p>
-                    <p className="mt-0.5 text-[12px] text-fog/45">{SETTINGS_COPY.reminders.help}</p>
+                {(['summary', 'reminders'] as const).map((key) => (
+                  <div
+                    key={key}
+                    className={`mt-4 flex items-center justify-between gap-4 border-t border-line/[0.06] pt-4 ${data.settings.push ? '' : 'opacity-40'}`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-medium">{SETTINGS_COPY[key].label}</p>
+                      <p className="mt-0.5 text-[12px] text-fog/45">{SETTINGS_COPY[key].help}</p>
+                    </div>
+                    <Toggle
+                      checked={data.settings[key]}
+                      onChange={(v) => void toggleSetting(key, v)}
+                      disabled={savingSetting !== null || !data.settings.push}
+                      label={SETTINGS_COPY[key].label}
+                    />
                   </div>
-                  <Toggle
-                    checked={data.settings.reminders}
-                    onChange={(v) => void toggleSetting('reminders', v)}
-                    disabled={savingSetting !== null || !data.settings.push}
-                    label={SETTINGS_COPY.reminders.label}
-                  />
-                </div>
+                ))}
               </div>
             </section>
 
