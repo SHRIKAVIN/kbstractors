@@ -54,6 +54,15 @@
   }
 }
 
+/*
+  The page itself carries the app colour, so screens outside the dashboard
+  (login, loading) never leave a white background for iOS to fade under the
+  status bar. Dashboard's usePageChrome switches this to white for JCB.
+*/
+html {
+  background-color: rgb(var(--night-950));
+}
+
 @layer components {
   /* Scoped to the tractor screens so the JCB screens keep their current look. */
   .kbs-app {

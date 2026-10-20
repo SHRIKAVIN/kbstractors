@@ -9,7 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Anek+Tamil:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
-    <meta name="theme-color" content="#1a2e1a" />
+    <!-- Matches --night-950 in src/index.css so iOS tints the status bar correctly from the first frame. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f1f4f0" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#070e0c" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="KBS TRACTORS" />

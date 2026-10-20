@@ -31,30 +31,43 @@ const iconButton =
   'kbs-press grid h-10 w-10 place-items-center rounded-full bg-line/[0.06] text-fog/80 ring-1 ring-inset ring-line/10 hover:bg-line/10 hover:text-fog';
 
 /**
- * Paints the browser chrome / overscroll area with the tractor screens' page
- * colour, re-reading it when the device switches between light and dark.
+ * Paints the browser chrome (theme-color, overscroll and the area under the
+ * iOS status bar) to match the screen. iOS home-screen apps draw a blurred
+ * fade under the status bar from the page background — if that's left white
+ * on any screen, you get a light smear above the header. Every screen uses
+ * the app colour (following light/dark), except JCB, which keeps its own
+ * white page.
  */
-function usePageChrome(active: boolean) {
+function usePageChrome(mode: 'app' | 'jcb') {
   useEffect(() => {
-    if (!active) return;
-    const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-    const prevMeta = meta?.content;
-    const prevBg = document.documentElement.style.backgroundColor;
+    const root = document.documentElement;
+    const metas = [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')];
+    const prevMetas = metas.map((m) => m.content);
+    const prevBg = root.style.backgroundColor;
+    const restore = () => {
+      metas.forEach((m, i) => (m.content = prevMetas[i]));
+      root.style.backgroundColor = prevBg;
+    };
+
+    if (mode === 'jcb') {
+      root.style.backgroundColor = '#ffffff';
+      return restore;
+    }
+
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => {
-      const rgb = getComputedStyle(document.documentElement).getPropertyValue('--night-950').trim();
+      const rgb = getComputedStyle(root).getPropertyValue('--night-950').trim();
       const color = `rgb(${rgb.split(/\s+/).join(', ')})`;
-      if (meta) meta.content = color;
-      document.documentElement.style.backgroundColor = color;
+      metas.forEach((m) => (m.content = color));
+      root.style.backgroundColor = color;
     };
     apply();
     media.addEventListener('change', apply);
     return () => {
       media.removeEventListener('change', apply);
-      if (meta && prevMeta) meta.content = prevMeta;
-      document.documentElement.style.backgroundColor = prevBg;
+      restore();
     };
-  }, [active]);
+  }, [mode]);
 }
 
 export function Dashboard() {
@@ -86,7 +99,7 @@ export function Dashboard() {
     if (!canReadTractor && canReadJcb) setCurrentView('jcb');
   }, [profile, canReadTractor, canReadJcb]);
 
-  usePageChrome(currentView === 'tractor');
+  usePageChrome(currentView === 'jcb' && canReadJcb ? 'jcb' : 'app');
 
   // The form and other screens replace the list in place, so the window keeps
   // the list's scroll offset. Open each screen at the top and put the list back

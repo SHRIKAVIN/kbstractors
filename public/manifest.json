@@ -4,8 +4,8 @@
   "description": "KBS Tractors Admin Panel",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a2e1a",
-  "theme_color": "#1a2e1a",
+  "background_color": "#070e0c",
+  "theme_color": "#070e0c",
   "icons": [
     {
       "src": "/icons/kbs-tractors-96.png",
