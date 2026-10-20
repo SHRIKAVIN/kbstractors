@@ -317,7 +317,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   return (
     <div data-testid="rental-form-container" className="kbs-app kbs-grain relative min-h-screen overflow-x-clip">
       <div className="fixed inset-x-0 top-0 z-40 h-[env(safe-area-inset-top)] bg-night-950" />
-      <header data-testid="rental-form-header" className="sticky top-[env(safe-area-inset-top)] z-30 bg-night-950/75 backdrop-blur-2xl">
+      <header data-testid="rental-form-header" className="sticky top-0 z-30 bg-night-950/75 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-2xl items-center gap-2 px-3 py-3 sm:px-5">
           <button
             type="button"
