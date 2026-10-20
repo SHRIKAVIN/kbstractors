@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, LogOut, RefreshCw, Construction, Search, SlidersHorizontal, Tractor, X, Trash2, Check, MoreHorizontal, UserCog, Lock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { rentalService } from '../lib/supabase';
@@ -87,6 +87,24 @@ export function Dashboard() {
   }, [profile, canReadTractor, canReadJcb]);
 
   usePageChrome(currentView === 'tractor');
+
+  // The form and other screens replace the list in place, so the window keeps
+  // the list's scroll offset. Open each screen at the top and put the list back
+  // where it was on return.
+  const listScrollY = useRef(0);
+  const onList = currentView === 'tractor' && !showForm;
+  useLayoutEffect(() => {
+    if (!onList) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    window.scrollTo(0, listScrollY.current);
+    const remember = () => {
+      listScrollY.current = window.scrollY;
+    };
+    window.addEventListener('scroll', remember, { passive: true });
+    return () => window.removeEventListener('scroll', remember);
+  }, [onList]);
 
   // The search bar only gets its frosted background once it is pinned to the top.
   useEffect(() => {
