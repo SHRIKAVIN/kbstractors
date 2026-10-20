@@ -81,7 +81,8 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
           nadai: d.equipment_type === 'Dipper' ? String(d.nadai ?? '') : '',
         }))
       : [{ acres: '', equipment_type: 'Cage Wheel', rounds: '', nadai: '' } as RentalDetailDraft],
-    received_amount: initialData ? String(initialData.received_amount) : '',
+    // New entries start at ₹0 received; most are entered before any payment.
+    received_amount: initialData ? String(initialData.received_amount) : '0',
     old_balance: initialData?.old_balance || '',
     old_balance_reason: initialData?.old_balance_reason || '',
   });
@@ -607,6 +608,8 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                   type="number"
                   inputMode="decimal"
                   id="received_amount"
+                  // Select the value on focus so typing replaces the default 0 (no "05000").
+                  onFocus={(e) => e.currentTarget.select()}
                   value={formData.received_amount}
                   onChange={(e) => {
                     setFormData((prev) => ({ ...prev, received_amount: e.target.value }));

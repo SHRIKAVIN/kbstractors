@@ -7,6 +7,8 @@ interface FormSheetProps {
   closing: boolean;
   onExited: () => void;
   children: ReactNode;
+  /** Shown over the form (e.g. the "saved" confirmation); slides away with the sheet. */
+  overlay?: ReactNode;
 }
 
 // iOS's own sheet curve: quick start, long soft settle.
@@ -25,7 +27,7 @@ const OUT_MS = 320;
  * (backdrop-filter) surfaces inside are switched off while it moves, since
  * re-blurring every frame is what makes iOS drop frames.
  */
-export function FormSheet({ closing, onExited, children }: FormSheetProps) {
+export function FormSheet({ closing, onExited, children, overlay }: FormSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const dimRef = useRef<HTMLDivElement>(null);
   const exitedRef = useRef(onExited);
@@ -100,6 +102,7 @@ export function FormSheet({ closing, onExited, children }: FormSheetProps) {
           both, the form's fixed save bar would scroll away with the content. */}
       <div ref={sheetRef} data-testid="form-sheet" className="kbs-app absolute inset-0">
         <div className="absolute inset-0 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">{children}</div>
+        {overlay}
       </div>
     </div>,
     document.body,

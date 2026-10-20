@@ -14,6 +14,7 @@ import { FilterSheet } from './rental/FilterSheet';
 import { EMPTY_FILTERS, filterRentals, type RentalFilters } from './rental/rentalFilters';
 import { ProgressRing, haptic, prefersReducedMotion, useCountUp } from './rental/motion';
 import { FormSheet } from './rental/FormSheet';
+import { EntrySuccess } from './rental/EntrySuccess';
 import { PullToRefresh } from './rental/PullToRefresh';
 import { useFlip } from './rental/useFlip';
 import { dayLabel, rentalStatus } from './rental/rentalDisplay';
@@ -149,12 +150,14 @@ export function Dashboard() {
   }, []);
 
   // ── Row highlight after save / collect / undo ────────────────────────────
-  const [flash, setFlash] = useState<{ id: string; kind: 'saved' | 'collected'; celebrate: boolean; nonce: number } | null>(null);
+  type FlashKind = 'saved' | 'created' | 'collected';
+  const [flash, setFlash] = useState<{ id: string; kind: FlashKind; celebrate: boolean; nonce: number } | null>(null);
   const flashTimer = useRef<ReturnType<typeof setTimeout>>();
-  const flashRow = useCallback((id: string, kind: 'saved' | 'collected', celebrate = false) => {
+  const flashRow = useCallback((id: string, kind: FlashKind, celebrate = false) => {
     clearTimeout(flashTimer.current);
     setFlash({ id, kind, celebrate, nonce: Date.now() });
-    flashTimer.current = setTimeout(() => setFlash(null), 2600);
+    // A brand-new entry keeps its "New" badge a little longer.
+    flashTimer.current = setTimeout(() => setFlash(null), kind === 'created' ? 4000 : 2600);
   }, []);
 
   // ── Delete with a 5-second Undo ──────────────────────────────────────────
@@ -303,6 +306,18 @@ export function Dashboard() {
 
   // ── Entry form: slides up as a sheet over the list (see FormSheet) ────────
   const [sheetClosing, setSheetClosing] = useState(false);
+  // A NEW entry gets a confirmation inside the sheet first; once the sheet has
+  // gone (and the page can scroll again) the list returns to the top, where
+  // the new entry lands with a glow and a "New" badge.
+  const [createdRecord, setCreatedRecord] = useState<RentalRecord | null>(null);
+  const announceAfterSheet = useRef<string | null>(null);
+  useEffect(() => {
+    if (showForm || !announceAfterSheet.current) return;
+    const id = announceAfterSheet.current;
+    announceAfterSheet.current = null;
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    flashRow(id, 'created');
+  }, [showForm, flashRow]);
 
   const openForm = (record: RentalRecord | null) => {
     if (showForm) return;
@@ -319,6 +334,7 @@ export function Dashboard() {
   const closeForm = () => setSheetClosing(true);
 
   const onSheetExited = () => {
+    setCreatedRecord(null);
     setShowForm(false);
     setSheetClosing(false);
     setEditRecord(null);
@@ -713,15 +729,25 @@ export function Dashboard() {
       </div>
 
       {showForm && (
-        <FormSheet closing={sheetClosing} onExited={onSheetExited}>
+        <FormSheet
+          closing={sheetClosing}
+          onExited={onSheetExited}
+          overlay={createdRecord && <EntrySuccess record={createdRecord} onDone={closeForm} />}
+        >
           <RentalForm
             initialData={editRecord ?? undefined}
             onClose={closeForm}
             onSave={(saved) => {
               setRecords((prev) => (editRecord ? prev.map((r) => (r.id === saved.id ? saved : r)) : [saved, ...prev]));
-              showToast(editRecord ? 'பதிவு புதுப்பிக்கப்பட்டது' : 'புதிய பதிவு சேர்க்கப்பட்டது');
-              flashRow(saved.id, 'saved');
-              closeForm();
+              if (editRecord) {
+                showToast('பதிவு புதுப்பிக்கப்பட்டது');
+                flashRow(saved.id, 'saved');
+                closeForm();
+              } else {
+                // Confirmation screen in the sheet; it closes the sheet itself.
+                announceAfterSheet.current = saved.id;
+                setCreatedRecord(saved);
+              }
             }}
           />
         </FormSheet>

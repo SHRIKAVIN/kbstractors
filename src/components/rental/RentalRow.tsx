@@ -13,7 +13,7 @@ interface RentalRowProps {
   onEdit?: (record: RentalRecord) => void;
   onDelete?: (record: RentalRecord) => void;
   /** Glow briefly: just saved from the form (after its close transition) or just collected. */
-  highlight?: 'saved' | 'collected' | null;
+  highlight?: 'saved' | 'created' | 'collected' | null;
   /** Changes on every new highlight, so the same row can glow again. */
   highlightKey?: number;
   /** Just became fully paid — pop the badge with a burst. */
@@ -54,7 +54,7 @@ export const RentalRow = memo(function RentalRow({ record, index, onCollect, onE
           key={highlightKey}
           aria-hidden="true"
           className="kbs-row-flash pointer-events-none absolute inset-0 z-10 rounded-[26px]"
-          style={{ '--flash-delay': highlight === 'saved' ? '480ms' : '0ms' } as CSSProperties}
+          style={{ '--flash-delay': highlight === 'saved' ? '480ms' : highlight === 'created' ? '250ms' : '0ms' } as CSSProperties}
         />
       )}
       <button
@@ -68,9 +68,20 @@ export const RentalRow = memo(function RentalRow({ record, index, onCollect, onE
         </ProgressRing>
 
         <div className="min-w-0 flex-1">
-          <h3 data-testid={`customer-name-${index}`} className="truncate text-[16px] font-semibold leading-tight tracking-tight">
-            {record.name}
-          </h3>
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 data-testid={`customer-name-${index}`} className="truncate text-[16px] font-semibold leading-tight tracking-tight">
+              {record.name}
+            </h3>
+            {highlight === 'created' && (
+              <span
+                key={highlightKey}
+                data-testid={`new-badge-${index}`}
+                className="kbs-pop shrink-0 rounded-full bg-brand px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-brand-fg"
+              >
+                புதியது
+              </span>
+            )}
+          </div>
           <p className="mt-1 truncate text-[12.5px] text-fog/45">{summary(record)}</p>
         </div>
 
