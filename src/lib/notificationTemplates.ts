@@ -213,32 +213,34 @@ export function pendingDigest(items: PendingDigestItem[], totalPending: number, 
 }
 
 export interface DailySummaryData {
-  collected: number;
-  /** Money taken back out today (lowered received amounts), as a positive number. */
-  reduced: number;
+  /** Net money received today: collections minus any received amounts taken back. */
+  netCollected: number;
   newEntries: number;
   newEntriesTotal: number;
-  /** Who collected the most today, highest first. */
-  collectors: { name: string; amount: number }[];
   pendingOverall: number;
 }
 
-/** 9:30 PM IST wrap-up of the day. */
+/**
+ * 9:30 PM IST wrap-up of the day — only what matters at a glance: money that
+ * actually came in, new work added, and what's still owed. Same-day
+ * corrections cancel out (collected then reversed = nothing), so there's no
+ * "collected ₹X … reduced ₹X" pair to puzzle over. A net negative day (more
+ * taken back than received, e.g. undoing an earlier payment) is flagged.
+ */
 export function dailySummary(d: DailySummaryData): NotificationMessage {
-  const top = d.collectors
-    .filter((c) => c.amount > 0)
-    .slice(0, 2)
-    .map((c) => `${c.name} ${moneyCompact(c.amount)}`)
-    .join(', ');
+  const title =
+    d.netCollected > 0
+      ? `📊 Today · ${money(d.netCollected)} collected`
+      : d.netCollected < 0
+        ? `📊 Today · ⚠️ ${money(-d.netCollected)} reversed`
+        : '📊 Today · No collections';
   return {
-    title: d.collected > 0 ? `📊 Today · ${money(d.collected)} collected` : '📊 Today · No collections',
+    title,
     body: parts(
       d.newEntries > 0
         ? `${d.newEntries} new ${d.newEntries === 1 ? 'entry' : 'entries'} (${moneyCompact(d.newEntriesTotal)})`
         : 'No new entries',
-      top ? `Top: ${top}` : null,
-      d.reduced > 0 ? `⚠️ ${money(d.reduced)} reduced` : null,
-      `${moneyCompact(d.pendingOverall)} pending overall`,
+      `${moneyCompact(d.pendingOverall)} pending`,
     ),
     kind: 'daily_summary',
   };

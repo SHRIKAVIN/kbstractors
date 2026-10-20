@@ -67,35 +67,22 @@ export default async function handler(req: Req, res: Res) {
       if (!fresh?.length) return res.status(200).json({ ok: true, skipped: `Already sent for ${dayKey}.` });
     }
 
-    const [moneyRes, rentalsRes, jcbsRes, usersRes] = await Promise.all([
-      admin.from('money_events').select('delta, actor_id').gte('created_at', startIso),
+    const [moneyRes, rentalsRes, jcbsRes] = await Promise.all([
+      admin.from('money_events').select('delta').gte('created_at', startIso),
       admin.from('rental_records').select('total_amount, received_amount, old_balance_status, created_at, details'),
       admin.from('jcb_records').select('total_amount, amount_received, old_balance_status, created_at, details'),
-      admin.from('app_users').select('id, name'),
     ]);
     if (moneyRes.error) throw moneyRes.error;
     if (rentalsRes.error) throw rentalsRes.error;
     if (jcbsRes.error) throw jcbsRes.error;
 
-    type MoneyRow = { delta: number | string; actor_id: string | null };
+    type MoneyRow = { delta: number | string };
     type EntryRow = { total_amount: number; created_at: string; details: unknown[] | null; old_balance_status: 'paid' | 'pending' | null };
     type RentalRow = EntryRow & { received_amount: number | null };
     type JcbRow = EntryRow & { amount_received: number | null };
 
-    const names = new Map(((usersRes.data ?? []) as { id: string; name: string }[]).map((u) => [u.id, u.name]));
-    let collected = 0;
-    let reduced = 0;
-    const byActor = new Map<string, number>();
-    for (const row of (moneyRes.data ?? []) as MoneyRow[]) {
-      const delta = Number(row.delta) || 0;
-      if (delta > 0) {
-        collected += delta;
-        const who = (row.actor_id && names.get(row.actor_id)) || 'Other';
-        byActor.set(who, (byActor.get(who) ?? 0) + delta);
-      } else {
-        reduced += -delta;
-      }
-    }
+    // Net: a collection reversed the same day cancels out.
+    const netCollected = ((moneyRes.data ?? []) as MoneyRow[]).reduce((sum, row) => sum + (Number(row.delta) || 0), 0);
 
     const rentals = (rentalsRes.data ?? []) as RentalRow[];
     const jcbs = (jcbsRes.data ?? []) as JcbRow[];
@@ -106,11 +93,9 @@ export default async function handler(req: Req, res: Res) {
       rentals.reduce((sum, r) => sum + getRentalPending(r).amount, 0) + jcbs.reduce((sum, r) => sum + getJCBPending(r).amount, 0);
 
     const message = dailySummary({
-      collected,
-      reduced,
+      netCollected,
       newEntries: newToday.length,
       newEntriesTotal: newToday.reduce((sum, r) => sum + (r.total_amount || 0), 0),
-      collectors: [...byActor.entries()].map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount),
       pendingOverall,
     });
 
