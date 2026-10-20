@@ -8,6 +8,8 @@ import { detailAmount, initials, paidPercent, rentalStatus } from './rentalDispl
 interface RentalRowProps {
   record: RentalRecord;
   index: number;
+  /** Slide in on mount. Only wanted for the first load, not every time the list re-mounts. */
+  animateIn?: boolean;
   /** Omitted when this login isn't allowed to do that action. */
   onCollect?: (record: RentalRecord) => void;
   onEdit?: (record: RentalRecord) => void;
@@ -32,8 +34,10 @@ function summary(record: RentalRecord): string {
  * toasts); rows only redraw when their own record or highlight changes, so
  * transitions start without waiting on the whole list.
  */
-export const RentalRow = memo(function RentalRow({ record, index, onCollect, onEdit, onDelete, highlight = null, highlightKey, celebrate = false }: RentalRowProps) {
+export const RentalRow = memo(function RentalRow({ record, index, animateIn = true, onCollect, onEdit, onDelete, highlight = null, highlightKey, celebrate = false }: RentalRowProps) {
   const [open, setOpen] = useState(false);
+  // Fixed at mount, so a later re-render can't cut the slide-in short.
+  const [slideIn] = useState(animateIn);
   const { status, pending } = rentalStatus(record);
   const percent = paidPercent(record);
   const details = record.details ?? [];
@@ -45,8 +49,10 @@ export const RentalRow = memo(function RentalRow({ record, index, onCollect, onE
     <article
       data-testid={`rental-card-${index}`}
       data-flip={`row-${record.id}`}
-      className={`kbs-surface group relative animate-rise-in overflow-hidden rounded-[26px] transition-colors ${open ? 'bg-night-800' : ''}`}
-      style={{ animationDelay: `${Math.min(index, 10) * 45}ms` }}
+      className={`kbs-surface group relative ${slideIn ? 'animate-rise-in' : ''} cursor-pointer overflow-hidden rounded-[26px] transition-colors ${open ? 'bg-night-800' : ''}`}
+      style={slideIn ? { animationDelay: `${Math.min(index, 10) * 45}ms` } : undefined}
+      // The whole card toggles; the header button's click bubbles here and keeps it keyboard-reachable.
+      onClick={() => setOpen((v) => !v)}
     >
       {highlight && (
         // Separate layer, so the glow never restarts the row's own entrance animation.
@@ -59,7 +65,6 @@ export const RentalRow = memo(function RentalRow({ record, index, onCollect, onE
       )}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className="flex w-full items-center gap-3.5 px-4 py-4 text-left"
       >
@@ -145,7 +150,10 @@ export const RentalRow = memo(function RentalRow({ record, index, onCollect, onE
             <button
               type="button"
               data-testid={`edit-button-${index}`}
-              onClick={() => onEdit(record)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(record);
+              }}
               className="kbs-press flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-line/[0.05] text-[13px] font-medium text-fog/80 hover:bg-line/[0.08]"
             >
               <Pencil className="h-4 w-4" />
@@ -156,7 +164,10 @@ export const RentalRow = memo(function RentalRow({ record, index, onCollect, onE
             <button
               type="button"
               data-testid={`delete-button-${index}`}
-              onClick={() => onDelete(record)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(record);
+              }}
               className="kbs-press flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-line/[0.05] text-[13px] font-medium text-fog/80 hover:bg-coral-500/15 hover:text-coral-300"
             >
               <Trash2 className="h-4 w-4" />
@@ -180,7 +191,10 @@ export const RentalRow = memo(function RentalRow({ record, index, onCollect, onE
           <button
             type="button"
             data-testid={`collect-button-${index}`}
-            onClick={() => onCollect(record)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCollect(record);
+            }}
             className="kbs-press -my-1 inline-flex h-9 items-center gap-1 rounded-full bg-brand pl-3.5 pr-3 text-[13px] font-semibold text-brand-fg shadow-[0_6px_20px_-6px_rgb(var(--brand)/0.55)] hover:bg-brand-hover"
           >
             வசூல்

@@ -231,7 +231,8 @@ export function Dashboard() {
     if (!opts?.silent) setRefreshing(true);
     try {
       const data = await rentalService.getAll();
-      setRecords(data);
+      // The installed app polls every few seconds; only re-render the list when something changed.
+      setRecords((prev) => (JSON.stringify(prev) === JSON.stringify(data) ? prev : data));
     } catch (error) {
       console.error('Error loading records:', error);
     } finally {
@@ -239,6 +240,12 @@ export function Dashboard() {
       setRefreshing(false);
     }
   };
+
+  // Cards slide in once per session; coming back from the form shouldn't replay it.
+  const introPlayed = useRef(false);
+  useEffect(() => {
+    if (!loading) introPlayed.current = true;
+  }, [loading]);
 
   const loadRecordsRef = useRef(loadRecords);
   loadRecordsRef.current = loadRecords;
@@ -667,6 +674,7 @@ export function Dashboard() {
                         key={record.id}
                         record={record}
                         index={rowIndex++}
+                        animateIn={!introPlayed.current}
                         onCollect={can('tractor', 'collect') || can('tractor', 'update') ? setCollectRecord : undefined}
                         onEdit={can('tractor', 'update') ? editRow : undefined}
                         onDelete={can('tractor', 'delete') ? setDeleteRecord : undefined}
