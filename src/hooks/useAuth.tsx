@@ -118,15 +118,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   useEffect(() => {
+    // Supabase re-announces the same session whenever the tab regains focus
+    // (and on every token refresh) with a brand-new user object. Keep the old
+    // object when it's the same person, or everything keyed on `user` would
+    // re-run and the app would flash its loading screen on every tab switch.
+    const keepIfSame = (next: User | null) => setUser((prev) => (prev && next && prev.id === next.id ? prev : next));
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.access_token) void supabase.realtime.setAuth(session.access_token);
-      setUser(session?.user ?? null);
+      keepIfSame(session?.user ?? null);
       if (!session) setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.access_token) void supabase.realtime.setAuth(session.access_token);
-      setUser(session?.user ?? null);
+      keepIfSame(session?.user ?? null);
       if (!session) {
         setProfile(null);
         setLoading(false);
@@ -137,7 +143,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Profile follows the user, and updates live when the owner changes this
-  // login's access on User control (or disables it).
+  // login's access on User control (or disables it). Only a different user
+  // id shows the loading screen; background refreshes update silently.
+  const userId = user?.id ?? null;
   useEffect(() => {
     if (!user) return;
     let disposed = false;
@@ -179,7 +187,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       document.removeEventListener('visibilitychange', refetch);
       void supabase.removeChannel(channel);
     };
-  }, [user]);
+    // Keyed on the id, not the object — see keepIfSame above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const can = useCallback(
     (section: AccessSection, action: AccessAction) =>
