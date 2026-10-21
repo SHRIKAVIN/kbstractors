@@ -155,8 +155,19 @@ export function Dashboard() {
       const y = Math.max(0, window.scrollY);
       const progress = Math.min(y / height, 1);
       if (!reduce) {
-        hero.style.transform = `translate3d(0, ${-y * 0.2}px, 0) scale(${1 - progress * 0.06})`;
-        hero.style.opacity = String(1 - progress * 0.85);
+        if (y === 0) {
+          // At rest: drawn as a normal element, not a GPU layer. iOS Safari
+          // paints rectangular patches around blurred glows inside a layer on
+          // first load (gone after a scroll forces a repaint) — so only become
+          // a layer while actually scrolling.
+          hero.style.transform = '';
+          hero.style.opacity = '';
+          hero.style.willChange = '';
+        } else {
+          hero.style.willChange = 'transform, opacity';
+          hero.style.transform = `translate3d(0, ${-y * 0.2}px, 0) scale(${1 - progress * 0.06})`;
+          hero.style.opacity = String(1 - progress * 0.85);
+        }
       }
       // Mostly covered — don't let its buttons catch taps meant for the sheet.
       hero.style.pointerEvents = progress > 0.65 ? 'none' : '';
@@ -499,7 +510,7 @@ export function Dashboard() {
         <div
           ref={heroRef}
           data-testid="dashboard-hero"
-          className={`fixed inset-x-0 top-0 origin-top will-change-transform ${menuOpen ? 'z-20' : 'z-0'}`}
+          className={`fixed inset-x-0 top-0 origin-top ${menuOpen ? 'z-20' : 'z-0'}`}
         >
         {/* Ambient glow */}
         <div className="pointer-events-none absolute -left-32 -top-40 h-[420px] w-[420px] rounded-full bg-pos/[0.13] blur-[100px]" />
@@ -598,7 +609,7 @@ export function Dashboard() {
               </p>
               <p data-testid="pending-amount-value" className="mt-3 flex items-baseline font-semibold leading-none tracking-[-0.045em]">
                 <span className="mr-1 text-[28px] font-light text-fog/35">₹</span>
-                <span className="bg-gradient-to-b from-fog to-fog/60 bg-clip-text text-[clamp(44px,13vw,64px)] text-transparent">
+                <span className="text-[clamp(44px,13vw,64px)] text-fog">
                   {animatedPending.toLocaleString('en-IN')}
                 </span>
               </p>
