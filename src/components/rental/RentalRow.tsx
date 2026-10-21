@@ -1,5 +1,5 @@
 import { memo, useState, type CSSProperties } from 'react';
-import { ArrowUpRight, Check, ChevronDown, History, Pencil, Trash2 } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, History, MapPin, Pencil, Trash2 } from 'lucide-react';
 import type { RentalRecord } from '../../types/rental';
 import { formatCurrency } from '../../utils/calculations';
 import { Burst, ProgressRing, useCountUp } from './motion';
@@ -114,16 +114,40 @@ export const RentalRow = memo(function RentalRow({ record, index, animateIn = tr
       <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
         <div className="overflow-hidden">
           <div className="mx-4 border-t border-dashed border-line/10 pt-3">
-            {details.map((d, i) => (
-              <div key={i} className="flex items-center justify-between gap-3 py-1.5 text-[13.5px]">
-                <span className="truncate text-fog/60">
-                  <span className="font-medium text-fog/90">{d.equipment_type}</span>
-                  <span className="mx-1.5 text-fog/25">·</span>
-                  {d.equipment_type === 'Dipper' ? `${d.nadai ?? 0} நடை` : `${d.acres} மா × ${d.rounds} சால்`}
-                </span>
-                <span className="shrink-0 text-fog/70">{formatCurrency(detailAmount(d))}</span>
+            {details.length > 0 && (
+              // Each job is its own tile, numbered like the form, so jobs read as separate units.
+              <div className="space-y-2 pb-1">
+                {details.map((d, i) => (
+                  <div
+                    key={i}
+                    data-testid={`job-tile-${index}-${i}`}
+                    className="flex items-start gap-3 rounded-2xl bg-line/[0.035] p-3 ring-1 ring-inset ring-line/[0.06]"
+                  >
+                    <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-pos/10 text-[11.5px] font-semibold text-pos ring-1 ring-inset ring-pos/25">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <span className="truncate text-[14.5px] font-semibold tracking-tight">{d.equipment_type}</span>
+                        <span className="shrink-0 text-[14px] font-semibold text-fog/85">{formatCurrency(detailAmount(d))}</span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="text-[12.5px] text-fog/55">
+                          {d.equipment_type === 'Dipper' ? `${d.nadai ?? 0} நடை` : `${d.acres} மா × ${d.rounds} சால்`}
+                        </span>
+                        {d.place && (
+                          // Wraps instead of truncating, so a long place is always shown in full.
+                          <span className="inline-flex max-w-full items-start gap-1 rounded-xl bg-pos/10 px-2 py-0.5 text-[11.5px] font-medium leading-[1.5] text-pos">
+                            <MapPin className="mt-[3px] h-3 w-3 shrink-0" />
+                            <span className="min-w-0 [overflow-wrap:anywhere]">{d.place}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
             {record.old_balance && (
               <div className="flex items-center justify-between gap-3 py-1.5 text-[13.5px]">
                 <span className="flex min-w-0 items-center gap-1.5 text-fog/60">

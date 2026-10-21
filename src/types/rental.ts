@@ -3,6 +3,8 @@ export interface RentalDetail {
   equipment_type: 'Cage Wheel' | 'Rotavator' | 'Dipper';
   rounds: number;
   nadai?: number;
+  /** Where this job was done (each job in an entry can be at a different place). */
+  place?: string;
 }
 
 export interface RentalRecord {

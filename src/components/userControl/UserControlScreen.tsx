@@ -136,7 +136,7 @@ export function UserControlScreen({ onBack }: UserControlScreenProps) {
     <div data-testid="user-control-screen" className="kbs-app kbs-grain relative min-h-screen overflow-x-clip pb-[calc(3rem+env(safe-area-inset-bottom))]">
       <div className="pointer-events-none absolute -left-32 -top-40 h-[380px] w-[380px] rounded-full bg-pos/[0.12] blur-[100px]" />
 
-      <header className="sticky top-0 z-30 bg-night-950/75 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
+      <header className="sticky top-0 z-30 bg-night-950/75 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
           <button
             type="button"

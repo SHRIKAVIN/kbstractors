@@ -131,6 +131,50 @@ export function Dashboard() {
     return () => window.removeEventListener('scroll', remember);
   }, [onList]);
 
+  // Hero stays put while the list sheet scrolls up over it: the hero gently
+  // drifts up, shrinks and fades as it's covered. Driven straight from scroll
+  // on each frame (transform/opacity only, no React re-render), so it's smooth.
+  const heroRef = useRef<HTMLDivElement>(null);
+  const heroSpacerRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const hero = heroRef.current;
+    const spacer = heroSpacerRef.current;
+    if (!hero || !spacer) return;
+    const fit = () => {
+      spacer.style.height = `${hero.offsetHeight}px`;
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(hero);
+
+    const reduce = prefersReducedMotion();
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const height = hero.offsetHeight || 1;
+      const y = Math.max(0, window.scrollY);
+      const progress = Math.min(y / height, 1);
+      if (!reduce) {
+        hero.style.transform = `translate3d(0, ${-y * 0.2}px, 0) scale(${1 - progress * 0.06})`;
+        hero.style.opacity = String(1 - progress * 0.85);
+      }
+      // Mostly covered — don't let its buttons catch taps meant for the sheet.
+      hero.style.pointerEvents = progress > 0.65 ? 'none' : '';
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+    paint();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [currentView, canReadTractor]);
+
   // The search bar only gets its frosted background once it is pinned to the top.
   useEffect(() => {
     const el = stickySentinel.current;
@@ -276,6 +320,22 @@ export function Dashboard() {
   }, [baseFiltered]);
 
   const filteredRecords = useMemo(() => filterRentals(visibleRecords, filters), [visibleRecords, filters]);
+
+  // Places from past entries, most recent first, for the form's place chips.
+  const recentPlaces = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const record of records) {
+      for (const d of record.details ?? []) {
+        const place = d.place?.trim();
+        if (!place || seen.has(place.toLowerCase())) continue;
+        seen.add(place.toLowerCase());
+        out.push(place);
+      }
+      if (out.length >= 12) break;
+    }
+    return out;
+  }, [records]);
 
   // Rows glide to their new spots when the list changes (delete, filter, tab).
   const listRef = useRef<HTMLDivElement>(null);
@@ -435,11 +495,17 @@ export function Dashboard() {
         disabled={showForm || showFilters || !!collectRecord || !!deleteRecord || menuOpen}
       />
       <div data-testid="dashboard-container" className="kbs-app kbs-grain relative min-h-screen overflow-x-clip pb-[calc(7rem+env(safe-area-inset-bottom))]">
+        {/* Hero: fixed in place; the list sheet below slides up over it. */}
+        <div
+          ref={heroRef}
+          data-testid="dashboard-hero"
+          className={`fixed inset-x-0 top-0 origin-top will-change-transform ${menuOpen ? 'z-20' : 'z-0'}`}
+        >
         {/* Ambient glow */}
         <div className="pointer-events-none absolute -left-32 -top-40 h-[420px] w-[420px] rounded-full bg-pos/[0.13] blur-[100px]" />
         <div className="pointer-events-none absolute -right-40 top-24 h-[360px] w-[360px] rounded-full bg-coral-500/[0.08] blur-[110px]" />
 
-        <header data-testid="dashboard-header" className="relative z-10 mx-auto max-w-5xl px-5 pt-[calc(1rem+env(safe-area-inset-top))] sm:px-8">
+        <header data-testid="dashboard-header" className="relative z-10 mx-auto max-w-5xl px-5 pt-[calc(1.625rem+env(safe-area-inset-top))] sm:px-8">
           <div className="flex items-center gap-3">
             <img
               data-testid="header-logo"
@@ -558,6 +624,18 @@ export function Dashboard() {
             ))}
           </dl>
         </header>
+        </div>
+
+        {/* The list: starts below the hero and scrolls up over it. The spacer
+            lets taps through to the hero buttons behind it. */}
+        <div className="pointer-events-none relative z-10">
+        <div ref={heroSpacerRef} aria-hidden="true" />
+        {/* Same colour as the page, so it looks exactly like the old layout; its
+            top edge fades in so there's no visible line over the hero's glow. */}
+        <div
+          data-testid="list-sheet"
+          className="pointer-events-auto min-h-[100dvh] bg-[linear-gradient(to_bottom,rgb(var(--night-950)/0),rgb(var(--night-950))_24px)]"
+        >
 
         {/* Search + status — sticks under the status bar */}
         {/* Hides the list behind the status bar once scrolled; off at the top so the glow shows through. */}
@@ -689,6 +767,8 @@ export function Dashboard() {
             </div>
           )}
         </main>
+        </div>
+        </div>
 
         {/* New entry */}
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 h-32 bg-gradient-to-t from-night-950 via-night-950/80 to-transparent" />
@@ -744,6 +824,7 @@ export function Dashboard() {
         >
           <RentalForm
             initialData={editRecord ?? undefined}
+            placeSuggestions={recentPlaces}
             onClose={closeForm}
             onSave={(saved) => {
               setRecords((prev) => (editRecord ? prev.map((r) => (r.id === saved.id ? saved : r)) : [saved, ...prev]));

@@ -4,11 +4,14 @@ import { ChevronLeft, Plus, Save, Trash2, History, X } from 'lucide-react';
 import { rentalService } from '../lib/supabase';
 import { calculateTotalAmount, formatCurrency, EQUIPMENT_RATES } from '../utils/calculations';
 import type { RentalRecord, RentalDetail } from '../types/rental';
+import { PlaceField } from './rental/PlaceField';
 
 interface RentalFormProps {
   onClose: () => void;
   onSave: (record: RentalRecord) => void;
   initialData?: RentalRecord;
+  /** Places used in recent entries, most recent first — offered as one-tap chips. */
+  placeSuggestions?: string[];
 }
 
 interface RentalDetailDraft {
@@ -16,7 +19,12 @@ interface RentalDetailDraft {
   equipment_type: 'Cage Wheel' | 'Rotavator' | 'புழுதி' | 'Mini' | 'Dipper';
   rounds: string;
   nadai: string; // input as string, parse as number for calculation
+  /** Where this job was done ('' = no place). Never auto-filled — chips only suggest. */
+  place: string;
 }
+
+const EMPTY_JOB: RentalDetailDraft = { acres: '', equipment_type: 'Cage Wheel', rounds: '', nadai: '', place: '' };
+
 
 const EQUIPMENT_TYPES = ['Cage Wheel', 'புழுதி', 'Rotavator', 'Mini', 'Dipper'] as const;
 const DIPPER_RATE = 500;
@@ -69,7 +77,7 @@ function FieldError({ message, testId }: { message?: string; testId?: string }) 
   return <p data-testid={testId} className="mt-1.5 text-[12.5px] font-medium text-coral-400">{message}</p>;
 }
 
-export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
+export function RentalForm({ onClose, onSave, initialData, placeSuggestions = [] }: RentalFormProps) {
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     mobile_number: initialData?.mobile_number || '',
@@ -79,8 +87,9 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
           equipment_type: d.equipment_type as RentalDetailDraft['equipment_type'],
           rounds: d.equipment_type === 'Dipper' ? '' : String(d.rounds ?? ''),
           nadai: d.equipment_type === 'Dipper' ? String(d.nadai ?? '') : '',
+          place: d.place ?? '',
         }))
-      : [{ acres: '', equipment_type: 'Cage Wheel', rounds: '', nadai: '' } as RentalDetailDraft],
+      : [{ ...EMPTY_JOB }],
     // New entries start at ₹0 received; most are entered before any payment.
     received_amount: initialData ? String(initialData.received_amount) : '0',
     old_balance: initialData?.old_balance || '',
@@ -156,14 +165,18 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
   const handleAddDetail = () => {
     setFormData((prev) => ({
       ...prev,
-      details: [...prev.details, { acres: '', equipment_type: 'Cage Wheel', rounds: '', nadai: '' }],
+      details: [...prev.details, { ...EMPTY_JOB }],
     }));
   };
 
   const handleRemoveDetail = (index: number) => {
+    setFormData((prev) => ({ ...prev, details: prev.details.filter((_, i) => i !== index) }));
+  };
+
+  const setJobPlace = (index: number, place: string) => {
     setFormData((prev) => ({
       ...prev,
-      details: prev.details.filter((_, i) => i !== index),
+      details: prev.details.map((d, i) => (i === index ? { ...d, place } : d)),
     }));
   };
 
@@ -211,18 +224,21 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
         };
       } else {
         const details: RentalDetail[] = formData.details.map((d) => {
+          const place = d.place.trim() ? { place: d.place.trim() } : {};
           if (d.equipment_type === 'Dipper') {
             return {
               equipment_type: 'Dipper',
               nadai: d.nadai ? parseInt(String(d.nadai), 10) : 0,
               acres: 0,
               rounds: 0,
+              ...place,
             };
           }
           return {
             acres: parseFloat(d.acres),
             equipment_type: d.equipment_type as RentalDetail['equipment_type'],
             rounds: parseFloat(d.rounds),
+            ...place,
           };
         });
         recordData = {
@@ -255,6 +271,8 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
       setLoading(false);
     }
   };
+
+  const jobPlaces = formData.details.map((d) => d.place.trim());
 
   const title = initialData
     ? oldBalanceOnly ? 'பழைய பாக்கி திருத்தம்' : 'வாடகை பதிவு திருத்தம்'
@@ -315,7 +333,7 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
       data-testid="rental-form-container"
       className="kbs-app kbs-grain relative min-h-screen overflow-x-clip"
     >
-      <header data-testid="rental-form-header" className="sticky top-0 z-30 bg-night-950/75 pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
+      <header data-testid="rental-form-header" className="sticky top-0 z-30 bg-night-950/75 pt-[calc(0.625rem+env(safe-area-inset-top))] backdrop-blur-2xl">
         <div className="mx-auto flex max-w-2xl items-center gap-2 px-3 py-3 sm:px-5">
           <button
             type="button"
@@ -506,6 +524,21 @@ export function RentalForm({ onClose, onSave, initialData }: RentalFormProps) {
                         </div>
                       </div>
                     )}
+
+                    <label className="kbs-label mt-3 -mb-1" htmlFor={`place-${i}`}>இடம்</label>
+                    <PlaceField
+                      id={`place-${i}`}
+                      testId={`place-input-${i}`}
+                      value={d.place}
+                      onChange={(place) => setJobPlace(i, place)}
+                      // This entry's other jobs first (nearest above first), then recent entries.
+                      suggestions={[
+                        ...jobPlaces.slice(0, i).reverse(),
+                        ...jobPlaces.slice(i + 1),
+                        ...placeSuggestions,
+                      ]}
+                      placeholder="இடம் (எ.கா: பாத்தூர்)"
+                    />
                   </section>
                 );
               })}
