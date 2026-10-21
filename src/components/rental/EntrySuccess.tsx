@@ -39,7 +39,7 @@ export function EntrySuccess({ record, onDone }: EntrySuccessProps) {
       className="absolute inset-0 z-40 flex animate-fade-in cursor-default flex-col items-center justify-center bg-night-950 px-8 pb-[env(safe-area-inset-bottom)] text-center"
       aria-label="New entry saved"
     >
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-pos/[0.14] blur-[90px]" />
+      <div className="pointer-events-none absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ width: 468, height: 468, background: 'radial-gradient(closest-side, rgb(var(--pos) / 0.14), rgb(var(--pos) / 0.070) 45%, transparent 100%)' }} />
 
       <div className="relative grid h-24 w-24 animate-pop-in place-items-center rounded-full bg-brand text-brand-fg shadow-[0_0_0_10px_rgb(var(--brand)/0.12),0_0_80px_10px_rgb(var(--brand)/0.35)]">
         <Burst count={12} />

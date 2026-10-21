@@ -513,8 +513,8 @@ export function Dashboard() {
           className={`fixed inset-x-0 top-0 origin-top ${menuOpen ? 'z-20' : 'z-0'}`}
         >
         {/* Ambient glow */}
-        <div className="pointer-events-none absolute -left-32 -top-40 h-[420px] w-[420px] rounded-full bg-pos/[0.13] blur-[100px]" />
-        <div className="pointer-events-none absolute -right-40 top-24 h-[360px] w-[360px] rounded-full bg-coral-500/[0.08] blur-[110px]" />
+        <div className="pointer-events-none absolute left-[-228px] top-[-260px] rounded-full" style={{ width: 620, height: 620, background: 'radial-gradient(closest-side, rgb(var(--pos) / 0.13), rgb(var(--pos) / 0.065) 45%, transparent 100%)' }} />
+        <div className="pointer-events-none absolute right-[-270px] top-[-14px] rounded-full" style={{ width: 580, height: 580, background: 'radial-gradient(closest-side, rgb(var(--coral-500) / 0.08), rgb(var(--coral-500) / 0.040) 45%, transparent 100%)' }} />
 
         <header data-testid="dashboard-header" className="relative z-10 mx-auto max-w-5xl px-5 pt-[calc(1.625rem+env(safe-area-inset-top))] sm:px-8">
           <div className="flex items-center gap-3">

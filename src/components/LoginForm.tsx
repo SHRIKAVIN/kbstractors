@@ -40,8 +40,8 @@ export function LoginForm() {
         canonical="https://kbstractors.vercel.app/"
       />
       <div data-testid="login-container" className="kbs-app kbs-grain relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10">
-        <div className="pointer-events-none absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-pos/[0.14] blur-[110px]" />
-        <div className="pointer-events-none absolute -bottom-40 -right-32 h-[380px] w-[380px] rounded-full bg-brand/[0.18] blur-[120px]" />
+        <div className="pointer-events-none absolute left-[-238px] top-[-238px] rounded-full" style={{ width: 640, height: 640, background: 'radial-gradient(closest-side, rgb(var(--pos) / 0.14), rgb(var(--pos) / 0.070) 45%, transparent 100%)' }} />
+        <div className="pointer-events-none absolute bottom-[-280px] right-[-248px] rounded-full" style={{ width: 620, height: 620, background: 'radial-gradient(closest-side, rgb(var(--brand) / 0.18), rgb(var(--brand) / 0.090) 45%, transparent 100%)' }} />
 
         <div data-testid="login-card" className="relative z-10 w-full max-w-[400px] animate-rise-in">
           <div className="flex flex-col items-center text-center">
